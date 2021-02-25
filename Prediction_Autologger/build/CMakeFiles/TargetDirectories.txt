@@ -1,0 +1,3 @@
+/home/pi/LuxCode/Prediction_Autologger/build/CMakeFiles/rebuild_cache.dir
+/home/pi/LuxCode/Prediction_Autologger/build/CMakeFiles/BallARENA-dev.dir
+/home/pi/LuxCode/Prediction_Autologger/build/CMakeFiles/edit_cache.dir

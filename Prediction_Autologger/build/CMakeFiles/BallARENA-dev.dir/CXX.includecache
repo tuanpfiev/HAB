@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pi/LuxCode/Prediction_Autologger/ballet.cpp
+ballet_includes.h
+/home/pi/LuxCode/Prediction_Autologger/ballet_includes.h
+
+/home/pi/LuxCode/Prediction_Autologger/ballet.h
+
+/home/pi/LuxCode/Prediction_Autologger/ballet_includes.h
+iostream
+-
+chrono
+-
+string
+-
+fstream
+-
+ostream
+-
+istream
+-
+sstream
+-
+iomanip
+-
+hmath.h
+/home/pi/LuxCode/Prediction_Autologger/hmath.h
+vector
+-
+ballet.h
+/home/pi/LuxCode/Prediction_Autologger/ballet.h
+
+/home/pi/LuxCode/Prediction_Autologger/hmath.h
+cmath
+-
+iostream
+-
+
