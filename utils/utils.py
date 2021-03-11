@@ -31,7 +31,7 @@ def get_port(device_name):
         attach_str = 'usb 1-2.4: pl2303 converter now attached to'  # USB 4
 
     elif device_name == 'RFD900':
-        attach_str = 'usb 1-2.2: FTDI USB Serial Device converter now attached to'  # USB 2
+        attach_str = 'FTDI USB Serial Device converter now attached to'  # USB 2
 
     else:
         print(device_name + ' was not attached')
