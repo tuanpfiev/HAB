@@ -12,7 +12,6 @@ import NetworkManager
 def GPSLoggerSocket():
 
     # set up socket
-    time.sleep(1) # allow time for server to start
     try:
         socket_logger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
         socket_logger.connect((GlobalVals.HOST, GlobalVals.GPS_LOGGER_SOCKET))

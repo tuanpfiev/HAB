@@ -100,7 +100,7 @@ def main():
 #=====================================================
 if __name__ == '__main__':
 
-    GlobalVals.PORT = "COM15"
+    GlobalVals.PORT = "COM6"
     GlobalVals.SYSTEM_ID = 2
     GlobalVals.ERROR_LOG_FILE = "ErrorLog2.txt"
     GlobalVals.PACKET_STATS_FILE = "PacketStats2.txt"

@@ -8,8 +8,8 @@ from threading import Lock
 
 # serial settings 
 TIMEOUT = 0.5                       # Serial port time out 
-#PORT = "COM17"                      # Windows COM por
-PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
+PORT = "COM8"                       # Windows COM por
+#PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
 BAUDRATE = 57600                    # the baud for the serial port connection 
 
 # Socket settings 
@@ -21,10 +21,11 @@ GPS_LOGGER_SOCKET_TIMEOUT = 10
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
-SYSTEM_ID = 2                       # ID of this system on the network (max 255) 
+SYSTEM_ID = 1                       # ID of this system on the network (max 255) 
 ERROR_LOG_FILE = "ErrorLog.txt"
 PING_LOG_FILE = "PingLog.txt"
 PACKET_STATS_FILE = "PacketStats.txt"
+GROUND_STATION_LOG_FILE = "GSLog.txt"
 PING_WAIT_TIME = 0.1
 PING_LOOP_LIMIT = 50
 PING_INTERVAL = 10

@@ -7,7 +7,6 @@ from threading import Lock
 import GlobalVals
 import CustMes
 
-
 # a mutex for the sequence number function
 SEQ_NUMBER_MUTEX = Lock()
 

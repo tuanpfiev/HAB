@@ -15,7 +15,6 @@ import sys
 sys.path.insert(1,'../utils')
 from utils import get_port
 
-
 #=====================================================
 # Main function  
 #=====================================================
