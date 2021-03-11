@@ -31,3 +31,105 @@ Time: 1615424895, System 1, Ping: 1636
 Time: 1615424907, System 1, Ping: 3269
 Time: 1615424916, System 1, Ping: 1846
 Time: 1615424926, System 1, Ping: 1559
+Time: 1615427961, System 1, Ping: 1957
+Time: 1615427970, System 1, Ping: 958
+Time: 1615427980, System 1, Ping: 1106
+Time: 1615427991, System 1, Ping: 1348
+Time: 1615428001, System 1, Ping: 1133
+Time: 1615428011, System 1, Ping: 1697
+Time: 1615428021, System 1, Ping: 1357
+Time: 1615428031, System 1, Ping: 939
+Time: 1615428041, System 1, Ping: 765
+Time: 1615428052, System 1, Ping: 1757
+Time: 1615428061, System 1, Ping: 1126
+Time: 1615428071, System 1, Ping: 1078
+Time: 1615428082, System 1, Ping: 1675
+Time: 1615428092, System 1, Ping: 1033
+Time: 1615428102, System 1, Ping: 1000
+Time: 1615428112, System 1, Ping: 1152
+Time: 1615428123, System 1, Ping: 1442
+Time: 1615428132, System 1, Ping: 778
+Time: 1615428152, System 1, ERROR: Ping timed out.
+Time: 1615428153, System 1, Ping: 1396
+Time: 1615428172, System 1, ERROR: Ping timed out.
+Time: 1615428174, System 1, Ping: 1295
+Time: 1615428192, System 1, ERROR: Ping timed out.
+Time: 1615428193, System 1, Ping: 938
+Time: 1615428204, System 1, Ping: 1225
+Time: 1615428223, System 1, ERROR: Ping timed out.
+Time: 1615428224, System 1, Ping: 866
+Time: 1615428234, System 1, Ping: 647
+Time: 1615428245, System 1, Ping: 1178
+Time: 1615428255, System 1, Ping: 1111
+Time: 1615428265, System 1, Ping: 637
+Time: 1615428276, System 1, Ping: 1684
+Time: 1615428285, System 1, Ping: 1356
+Time: 1615428295, System 1, Ping: 1160
+Time: 1615428305, System 1, Ping: 811
+Time: 1615428316, System 1, Ping: 1129
+Time: 1615428326, System 1, Ping: 844
+Time: 1615428336, System 1, Ping: 1304
+Time: 1615428347, System 1, Ping: 1606
+Time: 1615428356, System 1, Ping: 1073
+Time: 1615428366, System 1, Ping: 1141
+Time: 1615428458, System 1, Ping: 4983
+Time: 1615428469, System 1, Ping: 4955
+Time: 1615428479, System 1, Ping: 5240
+Time: 1615428489, System 1, Ping: 5091
+Time: 1615428499, System 1, Ping: 5091
+Time: 1615428509, System 1, Ping: 4513
+Time: 1615428519, System 1, Ping: 4411
+Time: 1615428529, System 1, Ping: 4473
+Time: 1615428616, System 1, ERROR: Ping timed out.
+Time: 1615428630, System 1, Ping: 8690
+Time: 1615428639, System 1, Ping: 8074
+Time: 1615428647, System 1, Ping: 5475
+Time: 1615428653, System 1, Ping: 1069
+Time: 1615428664, System 1, Ping: 2100
+Time: 1615428673, System 1, Ping: 1484
+Time: 1615428683, System 1, Ping: 1381
+Time: 1615428693, System 1, Ping: 1172
+Time: 1615428704, System 1, Ping: 2007
+Time: 1615428714, System 1, Ping: 1464
+Time: 1615428723, System 1, Ping: 1235
+Time: 1615428735, System 1, Ping: 2294
+Time: 1615428744, System 1, Ping: 1559
+Time: 1615428754, System 1, Ping: 1676
+Time: 1615428765, System 1, Ping: 2195
+Time: 1615428775, System 1, Ping: 1963
+Time: 1615428795, System 1, ERROR: Ping timed out.
+Time: 1615428806, System 1, ERROR: Ping timed out.
+Time: 1615428817, System 1, ERROR: Ping timed out.
+Time: 1615428827, System 1, ERROR: Ping timed out.
+Time: 1615428838, System 1, ERROR: Ping timed out.
+Time: 1615428850, System 1, ERROR: Ping timed out.
+Time: 1615428861, System 1, ERROR: Ping timed out.
+Time: 1615428872, System 1, ERROR: Ping timed out.
+Time: 1615428883, System 1, ERROR: Ping timed out.
+Time: 1615428896, System 1, ERROR: Ping timed out.
+Time: 1615428907, System 1, ERROR: Ping timed out.
+Time: 1615428918, System 1, ERROR: Ping timed out.
+Time: 1615428929, System 1, ERROR: Ping timed out.
+Time: 1615428941, System 1, ERROR: Ping timed out.
+Time: 1615428954, System 1, ERROR: Ping timed out.
+Time: 1615428965, System 1, ERROR: Ping timed out.
+Time: 1615428976, System 1, ERROR: Ping timed out.
+Time: 1615428987, System 1, ERROR: Ping timed out.
+Time: 1615428997, System 1, ERROR: Ping timed out.
+Time: 1615428998, System 1, Ping: 1090
+Time: 1615429011, System 1, Ping: 4581
+Time: 1615429021, System 1, Ping: 4362
+Time: 1615429032, System 1, Ping: 4267
+Time: 1615429042, System 1, Ping: 4532
+Time: 1615429052, System 1, Ping: 4246
+Time: 1615429062, System 1, Ping: 4059
+Time: 1615429072, System 1, Ping: 4060
+Time: 1615429082, System 1, Ping: 4141
+Time: 1615429092, System 1, Ping: 4247
+Time: 1615429102, System 1, Ping: 4181
+Time: 1615429112, System 1, Ping: 4086
+Time: 1615429122, System 1, Ping: 3685
+Time: 1615429133, System 1, Ping: 4305
+Time: 1615429142, System 1, Ping: 3700
+Time: 1615429153, System 1, Ping: 3691
+Time: 1615429163, System 1, Ping: 3816

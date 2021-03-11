@@ -21,7 +21,7 @@ GPS_LOGGER_SOCKET_TIMEOUT = 10
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
-SYSTEM_ID = 1                       # ID of this system on the network (max 255) 
+SYSTEM_ID = 2                       # ID of this system on the network (max 255) 
 ERROR_LOG_FILE = "ErrorLog.txt"
 PING_LOG_FILE = "PingLog.txt"
 PACKET_STATS_FILE = "PacketStats.txt"
