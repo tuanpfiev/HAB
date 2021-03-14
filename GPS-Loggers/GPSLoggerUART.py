@@ -59,6 +59,7 @@ def GPSSerialThread():
         # read some bytes out of the buffer 
         try:
             comOut = serial_port.read(size=bufferRead)
+            # print(comOut)
         except (OSError, serial.SerialException) as e:
             print("ERROR: Failed to read com port.")
             print("Exception: " + str(e.__class__))
@@ -84,7 +85,7 @@ def GPSSerialThread():
         if synced and bufferRead == 5:
             
             # check the message type is correct 
-            messageType = "GPGGA"
+            messageType = "GNGGA"
             messageType_bytes = bytearray(messageType, 'utf-8')
             correctMessage = True
             for x in range(bufferRead):
@@ -363,8 +364,7 @@ def main():
                     return
 
                 # Debug Messages 
-                print(str(lon) + " " + str(lat) + " " + str(alt) + " " + str(GPStime_hour) + ":" + str(GPStime_min) + ":" + str(GPStime_sec))
-                print("GPS Epoch Time: " + str(GPSepoch))
+                print("lon: " + str(lon) + ", lat: " + str(lat) + ", alt: " + str(alt) + ", Time: " + str(GPStime_hour) + ":" + str(GPStime_min) + ":" + str(GPStime_sec)+ ", GPS Epoch Time: " + str(GPSepoch))
 
                 loopLength = loopLength - 1
 
@@ -383,7 +383,7 @@ def main():
                             # /home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 420 6.9 1612614684 .
                             print("Calling Path Prediction.") 
                             argStr = str(lat) + " " + str(lon) + " " + str(alt) + " " + str(GlobalVals.GPSAscentRate) + " " + str(int(GPSepoch)) 
-                            commandStr = "/home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev"
+                            commandStr = "~/HAB/Prediction_Autologger/build/BallARENA-dev " + argStr
                             
                             try:
                                 subprocess.Popen(commandStr, shell=True)
@@ -398,7 +398,7 @@ def main():
                         print("Calling Path Prediction.") 
 
                         try:
-                            subprocess.Popen('/home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
+                            subprocess.Popen('~/HAB/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
                         except Exception as e:
                             print("Exception: " + str(e.__class__))
                             print(e)
@@ -419,9 +419,9 @@ if __name__ == '__main__':
     GPSThread = Thread(target=GPSSerialThread, args=())
     GPSThread.start()
 
-    # start the socket logger thread 
-    SocketThread = Thread(target=LoggerSocket, args=())
-    SocketThread.start()
+    # # start the socket logger thread 
+    # SocketThread = Thread(target=LoggerSocket, args=())
+    # SocketThread.start()
     
     # start the main loop 
     try:
@@ -439,9 +439,9 @@ if __name__ == '__main__':
         GPSThread.join()
     
     # safely end the socket thread 
-    if SocketThread.is_alive():
-        with GlobalVals.EndGPSSocket_Mutex:
-            GlobalVals.EndGPSSocket = True
-        GPSThread.join()
+    # if SocketThread.is_alive():
+    #     with GlobalVals.EndGPSSocket_Mutex:
+    #         GlobalVals.EndGPSSocket = True
+    #     GPSThread.join()
         
 

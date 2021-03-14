@@ -8,7 +8,7 @@ from threading import Lock
 #PORT = "/dev/ttyTHS1"  # Ubuntu GPIO UART
 GPS_UART_PORT = "/dev/ttyUSB7"  # Ubuntu USB UART
 #GPS_UART_PORT = "COM19" 
-GPS_UART_BAUDRATE = 9600
+GPS_UART_BAUDRATE = 38400
 GPS_UART_TIMEOUT = 1
 
 # Networking Settings
@@ -26,7 +26,7 @@ GPS_LOGGER_ASCENT_RATE_LENGTH = 10
 GPS_LOGGER_FILE = "GPSLog.txt"
 
 FAKE_GPS_FLAG = False
-PREDICTION_INTERVAL = 30
+PREDICTION_INTERVAL = 10
 
 #=====================================================
 # Global Variables  
