@@ -1,10 +1,14 @@
 import socket
 import struct
 import time
+from threading import Thread
+import threading
 
 import GlobalVals
 import CustMes 
 import NetworkManager
+
+GPS_DistroThreadLock = threading.Lock()
 
 #=====================================================
 # Thread for local GPS logger socket connection 
@@ -127,6 +131,12 @@ def GPSLoggerSocket():
 #=====================================================
 # Thread for distributing GPS info to other scripts 
 #=====================================================
+def Threaded_Client(connection,msg):
+    while True:
+        with GPS_DistroThreadLock:
+            connection.sendall(msg)
+    connection.close()
+
 def GPSDistributor():
 
     # start socket 
@@ -198,12 +208,12 @@ def GPSDistributor():
 
                 # send the message 
                 try:
-                    Distro_Connection.sendall(messageStr_bytes)
+                    Thread(target=Threaded_Client, args=(Distro_Connection,messageStr_bytes))
+                    # Distro_Connection.sendall(messageStr_bytes)
                 except Exception as e:
                     print("Exception: " + str(e.__class__))
                     print("Error in the logger socket. Now closing thread.")
                     breakThread = True
                     break
-        
-    
+                
     Distro_Connection.close()

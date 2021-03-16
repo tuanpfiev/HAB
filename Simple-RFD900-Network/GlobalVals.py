@@ -18,6 +18,10 @@ GPS_LOGGER_SOCKET = 5001
 GPS_DISTRO_SOCKET = 5002
 GPS_LOGGER_SOCKET_TIMEOUT = 10
 
+IMU_LOGGER_SOCKET = 5003
+IMU_DISTRO_SOCKET = 5004
+IMU_LOGGER_SOCKET_TIMEOUT = 10
+
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
@@ -43,6 +47,8 @@ PACKET_ERROR_QUE = []               # The buffer for error reporting
 SEQ_TRACKERS = []                   # The list containing all sequence trackers 
 GPS_DATA_BUFFER = []
 
+IMU_DATA_BUFFER = []
+
 # Global Lists / Buffers Mutexes 
 PACKET_BUFFER_IN_MUTEX = Lock()
 PACKET_BUFFER_OUT_MUTEX = Lock()
@@ -50,6 +56,8 @@ PACKET_PING_BUFFER_MUTEX = Lock()
 ERROR_DETECTED_MUTEX = Lock()
 SEQ_TRACKERS_MUTEX = Lock()
 GPS_DATA_BUFFER_MUTEX = Lock()
+
+IMU_DATA_BUFFER_MUTEX = Lock()
 
 # Global Flags 
 SEND_PACKETS = False                # This flag informs the network manager to send all packets in the out going buffer
@@ -65,6 +73,11 @@ RECIEVED_GPS_LOCAL_DATA = False
 RECIEVED_GPS_RADIO_DATA = False
 BREAK_IMAGINARY_BALLOONS_THREAD = False
 
+BREAK_IMU_LOGGER_THREAD = False
+RECIEVED_IMU_LOCAL_DATA = False
+BREAK_GPS_DISTRO_THREAD = False
+RECIEVED_IMU_RADIO_DATA = False
+
 # Global Flags Mutexes  
 SEND_PACKETS_MUTEX = Lock()
 RECIEVED_PACKETS_MUTEX = Lock()
@@ -79,6 +92,11 @@ RECIEVED_GPS_LOCAL_DATA_MUTEX = Lock()
 RECIEVED_GPS_RADIO_DATA_MUTEX = Lock()
 PACKET_COUNT_MUTEX = Lock()
 BREAK_IMAGINARY_BALLOONS_MUTEX = Lock()
+
+BREAK_IMU_LOGGER_THREAD_MUTEX = Lock()
+RECIEVED_IMU_LOCAL_DATA_MUTEX = Lock()
+BREAK_IMU_DISTRO_THREAD_MUTEX = Lock()
+RECIEVED_IMU_RADIO_DATA_MUTEX = Lock()
 
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages

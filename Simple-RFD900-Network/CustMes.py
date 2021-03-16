@@ -297,3 +297,182 @@ class MESSAGE_STR:
         
         # return zero indicating there was no problem 
         return 0
+
+# IMU Payload - Message ID = 0x04
+@dataclass
+class MESSAGE_IMU:
+    Epoch: float = 0   
+    Acceleration_i: float = 0 
+    Acceleration_j: float = 0   
+    Acceleration_k: float = 0   
+    MagneticVector_i: float = 0
+    MagneticVector_j: float = 0
+    MagneticVector_k: float = 0
+    RawQT_w: float = 0
+    RawQT_i: float = 0
+    RawQT_j: float = 0
+    RawQT_k: float = 0
+    Euler321_psi: float = 0
+    Euler321_theta: float = 0
+    Euler321_phi: float = 0
+    Gyroscope_i: float = 0
+    Gyroscope_j: float = 0
+    Gyroscope_k: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setAcceleration(self,i,j,k):
+        self.Acceleration_i = i
+        self.Acceleration_j = j
+        self.Acceleration_k = k
+    
+    def setMagneticVector(self,i,j,k):
+        self.MagneticVector_i = i
+        self.MagneticVector_j = j
+        self.MagneticVector_k = k
+        
+    def setRawQT(self,w,i,j,k):
+        self.RawQT_w = w
+        self.RawQT_k = k
+        self.RawQT_i = i
+        self.RawQT_j = j
+    
+    def setEuler321(self,psi,theta,phi):
+        self.Euler321_phi = phi
+        self.Euler321_psi = psi
+        self.Euler321_theta = theta
+    
+    def setGyroscope(self,i,j,k):
+        self.Gyroscope_i = i
+        self.Gyroscope_j = j
+        self.Gyroscope_k = k
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        
+        Acceleration_i_ints = struct.pack('!d',self.Acceleration_i)
+        Acceleration_j_ints = struct.pack('!d',self.Acceleration_j)
+        Acceleration_k_ints = struct.pack('!d',self.Acceleration_k)
+        
+        MagneticVector_i_ints = struct.pack('!d',self.MagneticVector_i)
+        MagneticVector_j_ints = struct.pack('!d',self.MagneticVector_j)
+        MagneticVector_k_ints = struct.pack('!d',self.MagneticVector_k)
+
+        RawQT_i_ints = struct.pack('!d',self.RawQT_i)
+        RawQT_j_ints = struct.pack('!d',self.RawQT_j)
+        RawQT_k_ints = struct.pack('!d',self.RawQT_k)
+        RawQT_w_ints = struct.pack('!d',self.RawQT_w)
+
+        Euler321_phi_ints = struct.pack('!d',self.Euler321_phi)
+        Euler321_theta_ints = struct.pack('!d',self.Euler321_theta)
+        Euler321_psi_ints = struct.pack('!d',self.Euler321_psi)
+
+        Gyroscope_i_ints = struct.pack('!d',self.Gyroscope_i)
+        Gyroscope_j_ints = struct.pack('!d',self.Gyroscope_j)
+        Gyroscope_k_ints = struct.pack('!d',self.Gyroscope_k)
+
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Acceleration_i_ints:
+            payloadBytes.append(x)
+
+        for x in Acceleration_j_ints:
+            payloadBytes.append(x)
+
+        for x in Acceleration_k_ints:
+            payloadBytes.append(x)
+
+        for x in MagneticVector_i_ints:
+            payloadBytes.append(x)
+
+        for x in MagneticVector_j_ints:
+            payloadBytes.append(x)
+
+        for x in MagneticVector_k_ints:
+            payloadBytes.append(x)
+        
+        for x in RawQT_i_ints:
+            payloadBytes.append(x)
+
+        for x in RawQT_j_ints:
+            payloadBytes.append(x)
+
+        for x in RawQT_k_ints:
+            payloadBytes.append(x)
+
+        for x in RawQT_w_ints:
+            payloadBytes.append(x)
+
+        for x in Euler321_phi_ints:
+            payloadBytes.append(x)
+
+        for x in Euler321_theta_ints:
+            payloadBytes.append(x)
+
+        for x in Euler321_psi_ints:
+            payloadBytes.append(x)
+
+        for x in Gyroscope_i_ints:
+            payloadBytes.append(x)
+        
+        for x in Gyroscope_j_ints:
+            payloadBytes.append(x)
+
+        for x in Gyroscope_k_ints:
+            payloadBytes.append(x)
+        
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 136:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        Acceleration_iTuple = struct.unpack('!d',payloadBytes[8:16])
+        Acceleration_jTuple = struct.unpack('!d',payloadBytes[16:24])   
+        Acceleration_kTuple = struct.unpack('!d',payloadBytes[24:32])
+        MagneticVector_iTuple = struct.unpack('!d',payloadBytes[32:40])
+        MagneticVector_jTuple = struct.unpack('!d',payloadBytes[40:48])
+        MagneticVector_kTuple = struct.unpack('!d',payloadBytes[48:56])
+        RawQT_iTuple = struct.unpack('!d',payloadBytes[56:64])
+        RawQT_jTuple = struct.unpack('!d',payloadBytes[64:72])
+        RawQT_kTuple = struct.unpack('!d',payloadBytes[72:80])
+        RawQT_wTuple = struct.unpack('!d',payloadBytes[80:88])
+        Euler321_phiTuple = struct.unpack('!d',payloadBytes[88:96])
+        Euler321_thetaTuple = struct.unpack('!d',payloadBytes[96:104])
+        Euler321_psiTuple = struct.unpack('!d',payloadBytes[104:112])
+        Gyroscope_iTuple = struct.unpack('!d',payloadBytes[112:120])
+        Gyroscope_jTuple = struct.unpack('!d',payloadBytes[120:128])
+        Gyroscope_kTuple = struct.unpack('!d',payloadBytes[128:136])
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Acceleration_i = Acceleration_iTuple[0] 
+        self.Acceleration_j = Acceleration_jTuple[0]    
+        self.Acceleration_k = Acceleration_kTuple[0] 
+        self.MagneticVector_i = MagneticVector_iTuple[0] 
+        self.MagneticVector_j = MagneticVector_jTuple[0] 
+        self.MagneticVector_k = MagneticVector_kTuple[0] 
+        self.RawQT_w = RawQT_wTuple[0]
+        self.RawQT_i = RawQT_iTuple[0]
+        self.RawQT_j = RawQT_jTuple[0] 
+        self.RawQT_k = RawQT_kTuple[0] 
+        self.Euler321_psi = Euler321_psiTuple[0] 
+        self.Euler321_theta = Euler321_thetaTuple[0] 
+        self.Euler321_phi = Euler321_phiTuple[0] 
+        self.Gyroscope_i = Gyroscope_iTuple[0]
+        self.Gyroscope_j = Gyroscope_jTuple[0]
+        self.Gyroscope_k = Gyroscope_kTuple[0]
+
+        return 0

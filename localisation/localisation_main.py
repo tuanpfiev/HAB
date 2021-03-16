@@ -13,6 +13,9 @@ import os
 import re
 import math
 
+sys.path.insert(1,'../utils')
+from navpy import lla2ned
+
 global positionXY, buffer, gps_all
 positionXY = np.array(([1.0,1.0],[2.0,2.0],[3.0,3.0],[4.0,4.0],[5.0,5.0]))
 gps_all = np.array(([1.0,1.0,1.0],[2.0,2.0,2.0],[3.0,3.0,3.0],[4.0,4.0,4.0],[5.0,5.0,5.0]))

@@ -14,6 +14,24 @@ import sys
 
 sys.path.insert(1,'../utils')
 from utils import get_port
+from navpy import lla2ecef
+import numpy as np
+
+global GPS_log
+GPS_log = np.array(([1.0, 1.0, 1.0],[2.0, 2.0, 2.0]))
+
+
+def update_GPS_log(gps_data):
+    global GPS_log
+    index = gps_data.SystemID
+    
+    GPS_log[index-1,:]=[gps_data.Latitude, gps_data.Longitude, gps_data.Altitude]
+
+def distance_calculation(gps_data):
+    p1 = lla2ecef(gps_data[0,0],gps_data[0,1],gps_data[0,2])
+    p2 = lla2ecef(gps_data[1,0],gps_data[1,1],gps_data[1,2])
+    return np.linalg.norm(p1-p2)
+
 
 #=====================================================
 # Main function  
@@ -60,10 +78,15 @@ def main():
                         continue
                     
                     print("GPS Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+                    print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
                     GPSdata.SystemID = recievedPacket.SystemID
+
+                    # update GPS_log
+                    update_GPS_log(GPSdata)
+                    distance = distance_calculation(GPS_log)
+                    print('Distance: ',round(distance,2)," [m]")
 
                     # put data into the buffer
                     with GlobalVals.GPS_DATA_BUFFER_MUTEX:

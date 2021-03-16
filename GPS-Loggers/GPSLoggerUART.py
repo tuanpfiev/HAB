@@ -364,7 +364,7 @@ def main():
                     return
 
                 # Debug Messages 
-                print("lon: " + str(lon) + ", lat: " + str(lat) + ", alt: " + str(alt) + ", Time: " + str(GPStime_hour) + ":" + str(GPStime_min) + ":" + str(GPStime_sec)+ ", GPS Epoch Time: " + str(GPSepoch))
+                print("lon: " + str(round(lon,4)) + ", lat: " + str(round(lat,4)) + ", alt: " + str(round(alt,2)) + ", Time: " + str(GPStime_hour) + ":" + str(GPStime_min) + ":" + str(GPStime_sec)+ ", GPS Epoch Time: " + str(GPSepoch))
 
                 loopLength = loopLength - 1
 
