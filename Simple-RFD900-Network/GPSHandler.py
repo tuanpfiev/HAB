@@ -208,8 +208,8 @@ def GPSDistributor():
 
                 # send the message 
                 try:
-                    Thread(target=Threaded_Client, args=(Distro_Connection,messageStr_bytes))
-                    # Distro_Connection.sendall(messageStr_bytes)
+                    # Thread(target=Threaded_Client, args=(Distro_Connection,messageStr_bytes))
+                    Distro_Connection.sendall(messageStr_bytes)
                 except Exception as e:
                     print("Exception: " + str(e.__class__))
                     print("Error in the logger socket. Now closing thread.")
