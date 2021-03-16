@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
     numArgs = len(sys.argv)
     if numArgs == 2:
-        GlobalVals.SYSTEM_ID = sys.argv[1]
+        GlobalVals.SYSTEM_ID = int(sys.argv[1])
 
     print('SystemID is: ', GlobalVals.SYSTEM_ID)
     # set Port
