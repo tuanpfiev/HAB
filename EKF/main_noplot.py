@@ -9,7 +9,7 @@ from threading import Thread
 
 
 sys.path.insert(1,'../utils')
-from navpy import lla2ecef
+from navpy import lla2ned
 import csv
 
 global buffer, gps_all, imu_all
@@ -236,6 +236,7 @@ if __name__ == '__main__':
     IMUThread = Thread(target=imu_callback, args = (host,port_imu))
 
     sysID = 1
+    gps_ref = GPS(None,-37.62342388464511, 145.12737925483498,0)  # GPS of GMAC
 
     ##
     ## Initialization
@@ -243,20 +244,25 @@ if __name__ == '__main__':
 
     time.sleep(10)
 
-    mag0 = imu_all[sysID-1].mag_vector.T
-    acc0 = imu_all[sysID-1].accel.T
-    gps0 = np.array([gps_all[sysID-1].lat, gps_all[sysID-1].lon, gps_all[sysID-1].alt])
-    pos0 = lla2ecef(gps0)
+    mag0 = imu_all[sysID-1].mag_vector
+    acc0 = imu_all[sysID-1].accel
+    pos0 = lla2ned(gps_all[sysID-1].lat, gps_all[sysID-1].lon, gps_all[sysID-1].alt)
 
-    # mag0 = np.array([[10,10,0]]).T
-    # acc0 = np.array([[acc[0,0],acc[0,1], acc[0,2]]]).T
-    # acc0 = np.array([[0,0,-9.81]]).T
-    # pos0 = np.array([[0,0,0]]).T
 
     node = node(mag0,acc0,pos0)
 
     settings = settings()
     dt = 0.01 ## The sampling time is based on IMU
+    Q_Xsens = True  #If Q_Xsens = False, EKF will solve the Euler angle; 
+                #if Q_Xsens = True, EKF will not solve the Euler angle and the angle from sensor output will be used. 
+                #In the latter case, the quaternion data should be used
+                #For basic experiment, Q_Xsens = False
+                #If it is possible, we can run two parallel scripts -- one using Q_Xsens = False and another using Q_Xsens = True
+    q_sensor = np.array([]) # variable for quaternion data obtianed from sensor
+
+
+    C = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) # Matrix transfering ENU to NED, need this to trasnfer IMU data
+
 
     try:
         os.makedirs("datalog")
@@ -275,12 +281,18 @@ if __name__ == '__main__':
             gps = gps_all[sysID-1]
             imu = imu_all[sysID-1]
 
-            anchor = np.array([[1,2],[3,4],[5,6]])
-            accel = imu.accel
-            gyros = imu.gyros
+            anchor  = np.array([[1,2],[3,4],[5,6]])
+            accel   = imu.accel
+            gyros   = imu.gyros
+            magVec     = imu.mag_vector
+
+            # Rotate the coordinates 
+            accel   = np.dot(C,accel)
+            gyros   = np.dot(C,gyros)
+            magVec  = np.dot(C.magVec) 
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU = np.array([accel[0],accel[1],accel[2],gyros[0],gyros[1],gyros[2]).T
+            IMU = np.concatenate(gyros,accel,magVec)
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
             time_diff = imu.epoch - gps.epoch
@@ -288,12 +300,14 @@ if __name__ == '__main__':
             if time_diff > 2:   # 2secs after losing the GPS data
                 GPS_data = np.array([])
             else:
-                GPS_data = lla2ecef(gps.lat, gps.lon, gps.alt)
+                GPS_data = np.dot(C,lla2ned( gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt))   # ENU ?
 
-            GPS_data = np.array([])  # should be in Cartesian coordinate.  geodetic_to_geocentric( lat, lon, h)
             Dis = np.array([])  # 2D distance !!! Why does it have 3 elements
-
-            node = EKF(settings,dt,node,IMU,anchor,GPS_data,Dis) # EKF
+            
+            if Q_Xsens:
+                q_sensor = imu.raw_qt
+                
+            node = EKF(settings,dt,node,IMU,anchor,GPS_data,Dis,Q_Xsens,q_sensor) # EKF
 
             time.sleep(dt)
 

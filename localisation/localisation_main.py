@@ -220,7 +220,7 @@ if __name__ == "__main__":
             print("Balloon 1: lat", round(gps_temp[0,0],3), "lon: ", round(gps_temp[0,1],3))
             print("Balloon 2: lat", round(gps_temp[1,0],3), "lon: ", round(gps_temp[1,1],3))
 
-            print("localisation error: ", location-positionXY_temp)
+            print("localisation error: \n", location-positionXY_temp)
             output.writerow([positionXY_temp[0,0],positionXY_temp[0,1],positionXY_temp[1,0],positionXY_temp[1,1],positionXY_temp[2,0],positionXY_temp[2,1],positionXY_temp[3,0],positionXY_temp[3,1],positionXY_temp[4,0],positionXY_temp[4,1],location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1],iteration,execution_time,gps_temp[0,0],gps_temp[0,1],gps_temp[0,2],gps_temp[1,0],gps_temp[1,1],gps_temp[1,2],gps_temp[2,0],gps_temp[2,1],gps_temp[2,2],gps_temp[3,0],gps_temp[3,1],gps_temp[3,2],gps_temp[4,0],gps_temp[4,1],gps_temp[4,2]])
 
             time.sleep(rate)
