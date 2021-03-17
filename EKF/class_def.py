@@ -33,7 +33,7 @@ class node:
 class IMU:
     def __init__(self, sysID = None, raw_qt = None, mag_vector = None, accel = None, gyros = None, epoch = None, euler = None, gyro = None):
         self.sysID = sysID if sysID is not None else 0
-        self.raw_qt = raw_qt if raw_qt is not None else np.zeros([4,1])
+        self.raw_qt = raw_qt if raw_qt is not None else np.array([[0.0, 0.0, 1.0, 0.0]]).T
         self.mag_vector = mag_vector if mag_vector is not None else np.zeros([3,1])
         self.accel = accel if accel is not None else np.array([[0.0, 0.0, -9.81]]).T
         self.gyros = gyros if gyros is not None else np.zeros([3,1])

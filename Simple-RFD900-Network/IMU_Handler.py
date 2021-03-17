@@ -10,6 +10,29 @@ import NetworkManager
 
 IMU_DistroThreadLock = threading.Lock()
 
+def extract_string_data(preString,endString,string_data):
+    preIndex = string_data.find(preString)
+    endIndex = string_data.find(endString, preIndex)
+    return string_data[preIndex + len(preString):endIndex]
+
+def convert_to_array(string_data):
+    start_parsing = 0
+    array = []
+    while True:
+        comma_index = string_data.find(",",start_parsing)
+        if comma_index != -1:
+            val = float(string_data[start_parsing:comma_index])
+            array.append(val)
+            start_parsing = comma_index + 1
+        else:
+            try:
+                val = float(string_data[start_parsing:len(string_data)])
+            except:
+                break
+            array.append(val)
+            break
+    return array
+
 #=====================================================
 # Thread for local IMU logger socket connection 
 #=====================================================
@@ -17,12 +40,12 @@ def IMULoggerSocket():
 
     # set up socket
     try:
-        socket_logger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
-        socket_logger.connect((GlobalVals.HOST, GlobalVals.IMU_LOGGER_SOCKET))
+        socket_logger = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        socket_logger.bind((GlobalVals.HOST, GlobalVals.IMU_LOGGER_SOCKET))
         socket_logger.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("There was an error starting the logger socket. This thread will now stop.")
+        print("There was an error starting the IMU logger socket. This thread will now stop.")
         with GlobalVals.BREAK_IMU_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_IMU_LOGGER_THREAD = True
         return 
@@ -42,11 +65,12 @@ def IMULoggerSocket():
 
         # reset buffer read when not synced 
         if not synced:
-            bufferRead = 1
+            bufferRead = 1024
 
         # read the socket 
         try:
-            data_bytes = socket_logger.recv(bufferRead)
+            data_bytes, server = socket_logger.recvfrom(bufferRead)
+            print(data_bytes)
         except:
             print("Connection error.")
             break
@@ -55,68 +79,37 @@ def IMULoggerSocket():
         if len(data_bytes) == 0:
             continue
         
+        raw_data = data_bytes.decode('utf-8')
         # for the sync bytes (0xAA 0x55)
         if not synced:
-            if data_bytes[0] == 0xAA and not syncA:
-                syncA = True
-                bufferRead = 1
+            if raw_data.find("{")==-1 or raw_data.find("}")==-1:
+                synced = False
                 continue
-            elif data_bytes[0] == 0x55 and syncA:
-                syncB = True
-                bufferRead = 136
             else:
-                syncA = False
-                syncB = False
-                bufferRead = 1
-                continue 
-            
-            # if both bytes have been found in order then the socket buffer is synced 
-            if syncA and syncB:
                 synced = True
-                syncA = False
-                syncB = False
-                continue 
-        
+                extract_string_data("{","}",raw_data)
         # once it is scyned read the rest of the data 
-        if synced and bufferRead == 136:
-
-            # convert payload values back to double
-            EpochTuple = struct.unpack('!d',data_bytes[0:8])
-            Acceleration_iTuple = struct.unpack('!d',data_bytes[8:16])
-            Acceleration_jTuple = struct.unpack('!d',data_bytes[16:24])   
-            Acceleration_kTuple = struct.unpack('!d',data_bytes[24:32])
-            MagneticVector_iTuple = struct.unpack('!d',data_bytes[32:40])
-            MagneticVector_jTuple = struct.unpack('!d',data_bytes[40:48])
-            MagneticVector_kTuple = struct.unpack('!d',data_bytes[48:56])
-            RawQT_iTuple = struct.unpack('!d',data_bytes[56:64])
-            RawQT_jTuple = struct.unpack('!d',data_bytes[64:72])
-            RawQT_kTuple = struct.unpack('!d',data_bytes[72:80])
-            RawQT_wTuple = struct.unpack('!d',data_bytes[80:88])
-            Euler321_phiTuple = struct.unpack('!d',data_bytes[88:96])
-            Euler321_thetaTuple = struct.unpack('!d',data_bytes[96:104])
-            Euler321_psiTuple = struct.unpack('!d',data_bytes[104:112])
-            Gyroscope_iTuple = struct.unpack('!d',data_bytes[112:120])
-            Gyroscope_jTuple = struct.unpack('!d',data_bytes[120:128])
-            Gyroscope_kTuple = struct.unpack('!d',data_bytes[128:136])
-
+        if synced:
             # store converted values 
-            Epoch = EpochTuple[0] 
-            Acceleration_i = Acceleration_iTuple[0] 
-            Acceleration_j = Acceleration_jTuple[0]    
-            Acceleration_k = Acceleration_kTuple[0] 
-            MagneticVector_i = MagneticVector_iTuple[0] 
-            MagneticVector_j = MagneticVector_jTuple[0] 
-            MagneticVector_k = MagneticVector_kTuple[0] 
-            RawQT_w = RawQT_wTuple[0]
-            RawQT_i = RawQT_iTuple[0]
-            RawQT_j = RawQT_jTuple[0] 
-            RawQT_k = RawQT_kTuple[0] 
-            Euler321_psi = Euler321_psiTuple[0] 
-            Euler321_theta = Euler321_thetaTuple[0] 
-            Euler321_phi = Euler321_phiTuple[0] 
-            Gyroscope_i = Gyroscope_iTuple[0]
-            Gyroscope_j = Gyroscope_jTuple[0]
-            Gyroscope_k = Gyroscope_kTuple[0]
+            Epoch = float(extract_string_data("EPOCH:",";",raw_data)) 
+            Acceleration_i = convert_to_array(extract_string_data("ACCELERATION:",";",raw_data))[0]
+            Acceleration_j = convert_to_array(extract_string_data("ACCELERATION:",";",raw_data))[1]   
+            Acceleration_k = convert_to_array(extract_string_data("ACCELERATION:",";",raw_data))[2]
+            MagneticVector_i = convert_to_array(extract_string_data("MAGNETIC_VECTOR:",";",raw_data))[0]
+            MagneticVector_j = convert_to_array(extract_string_data("MAGNETIC_VECTOR:",";",raw_data))[1]
+            MagneticVector_k = convert_to_array(extract_string_data("MAGNETIC_VECTOR:",";",raw_data))[2]
+            RawQT_w = convert_to_array(extract_string_data("RAW_QT:",";",raw_data))[0]
+            RawQT_i = convert_to_array(extract_string_data("RAW_QT:",";",raw_data))[1]
+            RawQT_j = convert_to_array(extract_string_data("RAW_QT:",";",raw_data))[2]
+            RawQT_k = convert_to_array(extract_string_data("RAW_QT:",";",raw_data))[3]
+            Euler321_psi = convert_to_array(extract_string_data("EULER_321:","}",raw_data))[0] 
+            Euler321_theta = convert_to_array(extract_string_data("EULER_321:","}",raw_data))[1] 
+            Euler321_phi = convert_to_array(extract_string_data("EULER_321:","}",raw_data))[2] 
+            Gyroscope_i = convert_to_array(extract_string_data("GYRO:",";",raw_data))[0]
+            Gyroscope_j = convert_to_array(extract_string_data("GYRO:",";",raw_data))[1]
+            Gyroscope_k = convert_to_array(extract_string_data("GYRO:",";",raw_data))[2]
+            print(Euler321_phi)
+            print("============================")
 
             # Debug message 
             #print(str(GPSTime) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n")  

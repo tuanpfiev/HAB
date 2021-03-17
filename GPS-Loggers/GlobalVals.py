@@ -14,7 +14,7 @@ GPS_UART_TIMEOUT = 1
 # Networking Settings
 HOST = '127.0.0.1'              # Local host address
 GPS_LOGGER_SOCKET = 5001        # Arbitrary non-privileged port for connecting to radio network
-GPS_LOGGER_SOCKET_TIMEOUT = 20   # Timeout for socket connections  
+GPS_LOGGER_SOCKET_TIMEOUT = 2220   # Timeout for socket connections  
 
 # Buffer Settings 
 GPS_UART_BUFFER_SIZE = 50

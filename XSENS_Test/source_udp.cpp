@@ -48,9 +48,9 @@ int main(int argc,char **argv)
 	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	memset(serverAddr.sin_zero, '\0', sizeof(serverAddr.sin_zero));
 
-	long rc = bind(udpSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+	// long rc = bind(udpSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 
-	std::cout << rc << std::endl;
+	// std::cout << rc << std::endl;
 	
     std::cout << "Creating XsControl object..." << std::endl;
 	XsControl* control = XsControl::construct();
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
 
 				if (packet.containsCalibratedAcceleration() && packet.containsCalibratedGyroscopeData() && packet.containsCalibratedMagneticField() && packet.containsOrientation())
 				{
-					std::string data_packet = "{SYSTEM_ID: " + std::to_string(system_id) + "; "; 
+					std::string data_packet = "{|SYSTEM_ID: " + std::to_string(system_id) + "; "; 
 					data << system_id << ",";
 					data << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << ",";
 					data_packet += "EPOCH: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + "; ";
