@@ -35,7 +35,7 @@ class IMU:
         self.sysID = sysID if sysID is not None else 0
         self.raw_qt = raw_qt if raw_qt is not None else np.zeros([4,1])
         self.mag_vector = mag_vector if mag_vector is not None else np.zeros([3,1])
-        self.accel = accel if accel is not None else np.array([0.0, 0.0, -9.81]).T
+        self.accel = accel if accel is not None else np.array([[0.0, 0.0, -9.81]]).T
         self.gyros = gyros if gyros is not None else np.zeros([3,1])
         self.epoch = epoch if epoch is not None else 0.0
         self.euler = euler if euler is not None else np.zeros([3,1])

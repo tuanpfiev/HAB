@@ -16,6 +16,7 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     u_h = u + delta_u_h
 
     if Q_Xsens == True:
+        temp = x_h[6:,-1]
         x_h[6:,-1] = q_sensor
     else:
         R_data = np.array([1e-4,1e-2,1e-2])

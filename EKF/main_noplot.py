@@ -4,7 +4,7 @@ from EKF import *
 import scipy.io
 import numpy as np 
 from class_def import *
-import socket, time, os
+import socket, time, os, sys
 from threading import Thread
 
 
@@ -12,13 +12,14 @@ sys.path.insert(1,'../utils')
 from navpy import lla2ned
 import csv
 
-global buffer, gps_all, imu_all
+global buffer, gps_all, imu_all, gps_ref
 buffer = 1024
 n_balloon = 5
 gps_all = np.array([GPS()]*n_balloon)
 imu_all = np.array([IMU()]*n_balloon)
+gps_ref = GPS(None,-37.62342388464511, 145.12737925483498,0)  # GPS of GMAC
 
-def sysID_to_index(sysID: int):
+def sysID_to_index(sysID):
     if sysID == 1:
         return 1
     elif sysID == 2:
@@ -228,7 +229,6 @@ def imu_callback(host,port):
 
 
 if __name__ == '__main__':
-    global gps_all
     host = '127.0.0.1'
     port_gps = '5002'
     port_imu = '5004'
@@ -236,7 +236,6 @@ if __name__ == '__main__':
     IMUThread = Thread(target=imu_callback, args = (host,port_imu))
 
     sysID = 1
-    gps_ref = GPS(None,-37.62342388464511, 145.12737925483498,0)  # GPS of GMAC
 
     ##
     ## Initialization
@@ -246,7 +245,7 @@ if __name__ == '__main__':
 
     mag0 = imu_all[sysID-1].mag_vector
     acc0 = imu_all[sysID-1].accel
-    pos0 = lla2ned(gps_all[sysID-1].lat, gps_all[sysID-1].lon, gps_all[sysID-1].alt)
+    pos0 = lla2ned(gps_all[sysID-1].lat, gps_all[sysID-1].lon, gps_all[sysID-1].alt, gps_ref.lat, gps_ref.lon, gps_ref.alt).reshape(3,1)
 
 
     node = node(mag0,acc0,pos0)
@@ -289,10 +288,10 @@ if __name__ == '__main__':
             # Rotate the coordinates 
             accel   = np.dot(C,accel)
             gyros   = np.dot(C,gyros)
-            magVec  = np.dot(C.magVec) 
+            magVec  = np.dot(C,magVec) 
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU = np.concatenate(gyros,accel,magVec)
+            IMU = np.concatenate((gyros,accel,magVec))
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
             time_diff = imu.epoch - gps.epoch
@@ -300,12 +299,12 @@ if __name__ == '__main__':
             if time_diff > 2:   # 2secs after losing the GPS data
                 GPS_data = np.array([])
             else:
-                GPS_data = np.dot(C,lla2ned( gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt))   # ENU ?
+                GPS_data = np.dot(C,lla2ned( gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt)).reshape(3,1)   # ENU ?
 
             Dis = np.array([])  # 2D distance !!! Why does it have 3 elements
             
             if Q_Xsens:
-                q_sensor = imu.raw_qt
+                q_sensor = imu.raw_qt.reshape(4)
                 
             node = EKF(settings,dt,node,IMU,anchor,GPS_data,Dis,Q_Xsens,q_sensor) # EKF
 
