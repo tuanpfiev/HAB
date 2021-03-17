@@ -281,28 +281,12 @@ def Thread_RSSI_publish(host,port,rssi):
                 while len(GlobalVals.RSSI_filtered)>0:
                     RSSI_filtered = GlobalVals.RSSI_filtered.pop(0)
                     distance = GlobalVals.distance.pop(0)
-                    RSSI_time = GlobalVals.RSSI_time.pop(0)
 
-                    socketPayload.append("{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +"}")
+                    socketPayload.append("{RSSI_filter" )
                     
-            socketPayload = bytes(socketPayload)
-            try:
-                Logger_Connection.sendall(socketPayload)
-            except Exception as e:
-                print("Exception: " + str(e.__class__))
-                print("Error in the logger socket. Now closing thread.")
-                breakThread = True
-                break
-        else:
-            time.sleep(0.1)
+                    
 
-    # if the thread is broken set the global flag 
-    if breakThread:
-        with GlobalVals.EndRSSISocket_Mutex:
-            GlobalVals.EndRSSISocket = True
-    
-    # close connection before ending thread 
-    Logger_Connection.close()
+
 
 
 if __name__ == '__main__':
