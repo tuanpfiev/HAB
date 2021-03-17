@@ -178,6 +178,7 @@ def position_callback(host,port):
 
 if __name__ == "__main__":
     
+    print("Localisation node started ...")
     host = '127.0.0.1'
     port = 5002
 

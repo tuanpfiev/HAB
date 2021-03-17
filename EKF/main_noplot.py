@@ -30,8 +30,9 @@ def sysID_to_index(sysID: int):
     elif sysID == 255:
         return 5
     else:
-        print('SysID error')
-        return 1
+        print('SysID should be in the range 1-5')
+        os._exit(1)
+        return 0
 
 def gps_update(new_data):
     global gps_all
@@ -67,7 +68,6 @@ def convert_to_array(string_data):
     return array
 
 
-
 def stringToIMU(raw_data):
     try:
         raw_data.index("'system':")
@@ -76,6 +76,7 @@ def stringToIMU(raw_data):
         raw_data.index("'magneticVector':")
         raw_data.index("'rawQT':")
         raw_data.index("'euler321':")
+        raw_data.index("'gyroscope':")
 
     except ValueError:
         
@@ -88,7 +89,8 @@ def stringToIMU(raw_data):
         imu_i.accel = convert_to_array(extract_string_data("'acceleration': ",";",raw_data))
         imu_i.mag_vector = convert_to_array(extract_string_data("'magneticVector': ",";",raw_data))
         imu_i.raw_qt = convert_to_array(extract_string_data("'rawQT': ",";",raw_data))
-        imu_i.euler = convert_to_array(extract_string_data("'euler321': ","}",raw_data))
+        imu_i.euler = convert_to_array(extract_string_data("'euler321': ",";",raw_data))
+        imu_i.gyros = convert_to_array(extract_string_data("'gyroscope': ","}",raw_data))
 
         return True, imu_i
 
@@ -231,18 +233,25 @@ if __name__ == '__main__':
     port_gps = '5002'
     port_imu = '5004'
     GPSThread = Thread(target=gps_callback, args=(host,port_gps))
-    GPSThread.start()
-
     IMUThread = Thread(target=imu_callback, args = (host,port_imu))
-    IMUThread.start()
+
+    sysID = 1
 
     ##
     ## Initialization
     ##
-    mag0 = np.array([[10,10,0]]).T
-    acc0 = np.array([[acc[0,0],acc[0,1], acc[0,2]]]).T
-    acc0 = np.array([[0,0,-9.81]]).T
-    pos0 = np.array([[0,0,0]]).T
+
+    time.sleep(10)
+
+    mag0 = imu_all[sysID-1].mag_vector.T
+    acc0 = imu_all[sysID-1].accel.T
+    gps0 = np.array([gps_all[sysID-1].lat, gps_all[sysID-1].lon, gps_all[sysID-1].alt])
+    pos0 = lla2ecef(gps0)
+
+    # mag0 = np.array([[10,10,0]]).T
+    # acc0 = np.array([[acc[0,0],acc[0,1], acc[0,2]]]).T
+    # acc0 = np.array([[0,0,-9.81]]).T
+    # pos0 = np.array([[0,0,0]]).T
 
     node = node(mag0,acc0,pos0)
 
@@ -263,12 +272,24 @@ if __name__ == '__main__':
     
 
         while True:
+            gps = gps_all[sysID-1]
+            imu = imu_all[sysID-1]
+
             anchor = np.array([[1,2],[3,4],[5,6]])
+            accel = imu.accel
+            gyros = imu.gyros
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU = np.array([[acc[i,0],acc[i,1],acc[i,2],gyro[i,0],gyro[i,1],gyro[i,2]]]).T
+            IMU = np.array([accel[0],accel[1],accel[2],gyros[0],gyros[1],gyros[2]).T
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
+            time_diff = imu.epoch - gps.epoch
+            print("time_diff: ",time_diff)
+            if time_diff > 2:   # 2secs after losing the GPS data
+                GPS_data = np.array([])
+            else:
+                GPS_data = lla2ecef(gps.lat, gps.lon, gps.alt)
+
             GPS_data = np.array([])  # should be in Cartesian coordinate.  geodetic_to_geocentric( lat, lon, h)
             Dis = np.array([])  # 2D distance !!! Why does it have 3 elements
 

@@ -1,9 +1,7 @@
-global a
-a = [1,2]
+import numpy as np
 
-def update(x,y):
-    x[0] = y
-    return x
+a = np.zeros([3,1])
+print(a)
 
-a = update(a,2)
+a = np.array([0,0,-9.8]).T
 print(a)
