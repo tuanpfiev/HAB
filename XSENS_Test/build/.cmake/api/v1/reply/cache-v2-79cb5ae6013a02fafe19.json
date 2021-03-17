@@ -15,7 +15,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/addr2line"
+			"value" : "/usr/bin/aarch64-linux-gnu-addr2line"
 		},
 		{
 			"name" : "CMAKE_AR",
@@ -31,7 +31,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/ar"
+			"value" : "/usr/bin/aarch64-linux-gnu-ar"
 		},
 		{
 			"name" : "CMAKE_BUILD_TYPE",
@@ -43,7 +43,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "Release"
+			"value" : "Debug"
 		},
 		{
 			"name" : "CMAKE_CACHEFILE_DIR",
@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/rmit/HAB/XSENS_Test/build"
+			"value" : "/home/lux/HAB/XSENS_Test/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -92,6 +92,22 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "6"
+		},
+		{
+			"name" : "CMAKE_COLOR_MAKEFILE",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "Enable/Disable color output during build."
+				}
+			],
+			"type" : "BOOL",
+			"value" : "ON"
 		},
 		{
 			"name" : "CMAKE_COMMAND",
@@ -143,7 +159,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "/usr/bin/g++-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-g++-7"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER_AR",
@@ -159,7 +175,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/gcc-ar-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-gcc-ar-7"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER_RANLIB",
@@ -175,7 +191,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/gcc-ranlib-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-gcc-ranlib-7"
 		},
 		{
 			"name" : "CMAKE_CXX_FLAGS",
@@ -271,7 +287,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "/usr/bin/gcc-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-gcc-7"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_AR",
@@ -287,7 +303,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/gcc-ar-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-gcc-ar-7"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_RANLIB",
@@ -303,7 +319,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/gcc-ranlib-7"
+			"value" : "/usr/bin/aarch64-linux-gnu-gcc-ranlib-7"
 		},
 		{
 			"name" : "CMAKE_C_FLAGS",
@@ -400,6 +416,18 @@
 			],
 			"type" : "FILEPATH",
 			"value" : "CMAKE_DLLTOOL-NOTFOUND"
+		},
+		{
+			"name" : "CMAKE_EDIT_COMMAND",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Path to cache edit program executable."
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/snap/cmake/806/bin/ccmake"
 		},
 		{
 			"name" : "CMAKE_EXECUTABLE_FORMAT",
@@ -527,7 +555,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "Ninja"
+			"value" : "Unix Makefiles"
 		},
 		{
 			"name" : "CMAKE_GENERATOR_INSTANCE",
@@ -575,7 +603,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/rmit/HAB/XSENS_Test"
+			"value" : "/home/lux/HAB/XSENS_Test"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -615,7 +643,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/ld"
+			"value" : "/usr/bin/aarch64-linux-gnu-ld"
 		},
 		{
 			"name" : "CMAKE_MAKE_PROGRAM",
@@ -627,11 +655,11 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "Program used to build from build.ninja files."
+					"value" : "Path to a program."
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/ninja"
+			"value" : "/usr/bin/make"
 		},
 		{
 			"name" : "CMAKE_MODULE_LINKER_FLAGS",
@@ -727,7 +755,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/nm"
+			"value" : "/usr/bin/aarch64-linux-gnu-nm"
 		},
 		{
 			"name" : "CMAKE_NUMBER_OF_MAKEFILES",
@@ -755,7 +783,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/objcopy"
+			"value" : "/usr/bin/aarch64-linux-gnu-objcopy"
 		},
 		{
 			"name" : "CMAKE_OBJDUMP",
@@ -771,7 +799,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/objdump"
+			"value" : "/usr/bin/aarch64-linux-gnu-objdump"
 		},
 		{
 			"name" : "CMAKE_PLATFORM_INFO_INITIALIZED",
@@ -835,7 +863,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/ranlib"
+			"value" : "/usr/bin/aarch64-linux-gnu-ranlib"
 		},
 		{
 			"name" : "CMAKE_READELF",
@@ -851,7 +879,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/readelf"
+			"value" : "/usr/bin/aarch64-linux-gnu-readelf"
 		},
 		{
 			"name" : "CMAKE_ROOT",
@@ -1071,7 +1099,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/usr/bin/strip"
+			"value" : "/usr/bin/aarch64-linux-gnu-strip"
 		},
 		{
 			"name" : "CMAKE_UNAME",
@@ -1111,7 +1139,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/rmit/HAB/XSENS_Test/build"
+			"value" : "/home/lux/HAB/XSENS_Test/build"
 		},
 		{
 			"name" : "XSENS_Test_SOURCE_DIR",
@@ -1123,7 +1151,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/rmit/HAB/XSENS_Test"
+			"value" : "/home/lux/HAB/XSENS_Test"
 		}
 	],
 	"kind" : "cache",

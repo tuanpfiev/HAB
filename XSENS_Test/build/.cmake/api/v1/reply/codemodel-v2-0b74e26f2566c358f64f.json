@@ -18,7 +18,7 @@
 					]
 				}
 			],
-			"name" : "Release",
+			"name" : "Debug",
 			"projects" : 
 			[
 				{
@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "XSENS_Test::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-XSENS_Test-Release-cb5dbea7ea05aa026745.json",
+					"jsonFile" : "target-XSENS_Test-Debug-7145b3fc888494c7dad0.json",
 					"name" : "XSENS_Test",
 					"projectIndex" : 0
 				}
@@ -48,8 +48,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/rmit/HAB/XSENS_Test/build",
-		"source" : "/home/rmit/HAB/XSENS_Test"
+		"build" : "/home/lux/HAB/XSENS_Test/build",
+		"source" : "/home/lux/HAB/XSENS_Test"
 	},
 	"version" : 
 	{

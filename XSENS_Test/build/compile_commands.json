@@ -1,7 +1,7 @@
 [
 {
-  "directory": "/home/rmit/HAB/XSENS_Test/build",
-  "command": "/usr/bin/g++-7 -I../xspublic -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles/XSENS_Test.dir/source_udp.cpp.o -c /home/rmit/HAB/XSENS_Test/source_udp.cpp",
-  "file": "/home/rmit/HAB/XSENS_Test/source_udp.cpp"
+  "directory": "/home/lux/HAB/XSENS_Test/build",
+  "command": "/usr/bin/aarch64-linux-gnu-g++-7  -I/home/lux/HAB/XSENS_Test/xspublic -g -std=gnu++11 -o CMakeFiles/XSENS_Test.dir/source_udp.cpp.o -c /home/lux/HAB/XSENS_Test/source_udp.cpp",
+  "file": "/home/lux/HAB/XSENS_Test/source_udp.cpp"
 }
 ]
