@@ -177,13 +177,13 @@ if __name__ == '__main__':
     ErrorThread = Thread(target=ErrorReporter.ErrorLogger, args=())
     ErrorThread.start()
 
-    # # Start logger socket
-    # GPSLoggerThread = Thread(target=GPSHandler.GPSLoggerSocket, args=())
-    # GPSLoggerThread.start()
+    # Start logger socket
+    GPSLoggerThread = Thread(target=GPSHandler.GPSLoggerSocket, args=())
+    GPSLoggerThread.start()
 
-    # # Start GPS distributor 
-    # GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
-    # GPSDistroThread.start()
+    # Start GPS distributor 
+    GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
+    GPSDistroThread.start()
 
     # Start Ping Logger 
     PingLoggerThread = Thread(target=PingLogger.PingLoggerThread, args=())
@@ -193,9 +193,13 @@ if __name__ == '__main__':
     ImaginaryBalloonsThread = Thread(target=ImaginaryBalloons.ImaginaryBalloons, args=())
     ImaginaryBalloonsThread.start()
 
-    # Start IMU socket
-    IMULoggerThread = Thread(target=IMU_Handler.IMULoggerSocket, args=())
-    IMULoggerThread.start()
+    # # Start IMU socket
+    # IMULoggerThread = Thread(target=IMU_Handler.IMULoggerSocket, args=())
+    # IMULoggerThread.start()
+
+    #  # Start IMU Distro socket
+    # IMUDistroThread = Thread(target=IMU_Handler.IMUDistributor, args=())
+    # IMUDistroThread.start()
 
     try:
         main()
@@ -214,17 +218,17 @@ if __name__ == '__main__':
             GlobalVals.BREAK_ERROR_THREAD = True
         ErrorThread.join()
     
-    # # Safely end the logger socket thread 
-    # if GPSLoggerThread.is_alive():
-    #     with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
-    #         GlobalVals.BREAK_GPS_LOGGER_THREAD = True
-    #     GPSLoggerThread.join()
+    # Safely end the logger socket thread 
+    if GPSLoggerThread.is_alive():
+        with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_GPS_LOGGER_THREAD = True
+        GPSLoggerThread.join()
     
-    # # Safely end the GPS distributor thread 
-    # if GPSDistroThread.is_alive():
-    #     with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
-    #         GlobalVals.BREAK_GPS_DISTRO_THREAD = True
-    #     GPSDistroThread.join()
+    # Safely end the GPS distributor thread 
+    if GPSDistroThread.is_alive():
+        with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_GPS_DISTRO_THREAD = True
+        GPSDistroThread.join()
     
     # Safely end the ping logger thread 
     if PingLoggerThread.is_alive():
@@ -237,8 +241,13 @@ if __name__ == '__main__':
             GlobalVals.BREAK_IMAGINARY_BALLOONS_THREAD = True
         ImaginaryBalloonsThread.join()
 
-    if IMULoggerThread.is_alive():
-        with GlobalVals.BREAK_IMU_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_IMU_LOGGER_THREAD = True
-        IMULoggerThread.join()
+    # if IMULoggerThread.is_alive():
+    #     with GlobalVals.BREAK_IMU_LOGGER_THREAD_MUTEX:
+    #         GlobalVals.BREAK_IMU_LOGGER_THREAD = True
+    #     IMULoggerThread.join()
+
+    # if IMUDistroThread.is_alive():
+    #     with GlobalVals.BREAK_IMU_DISTRO_THREAD_MUTEX:
+    #         GlobalVals.BREAK_IMU_DISTRO_THREAD = True
+    #     IMUDistroThread.join()
     

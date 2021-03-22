@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 
 from localisation_balloons import balloon_main
-from navpy import lla2ned
 import socket, sys
 from _thread import *
 import threading

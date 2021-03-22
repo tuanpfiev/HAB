@@ -70,7 +70,7 @@ def IMULoggerSocket():
         # read the socket 
         try:
             data_bytes, server = socket_logger.recvfrom(bufferRead)
-            print(data_bytes)
+            # print(data_bytes)
         except:
             print("Connection error.")
             break
@@ -87,7 +87,7 @@ def IMULoggerSocket():
                 continue
             else:
                 synced = True
-                extract_string_data("{","}",raw_data)
+                raw_data = extract_string_data("{","}",raw_data)
         # once it is scyned read the rest of the data 
         if synced:
             # store converted values 
@@ -108,8 +108,8 @@ def IMULoggerSocket():
             Gyroscope_i = convert_to_array(extract_string_data("GYRO:",";",raw_data))[0]
             Gyroscope_j = convert_to_array(extract_string_data("GYRO:",";",raw_data))[1]
             Gyroscope_k = convert_to_array(extract_string_data("GYRO:",";",raw_data))[2]
-            print(Euler321_phi)
-            print("============================")
+            # print(Euler321_phi)
+            # print("============================")
 
             # Debug message 
             #print(str(GPSTime) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n")  
@@ -257,12 +257,13 @@ def IMUDistributor():
                     "; 'euler321': " + str(Euler321_psi) + "," + str(Euler321_theta) + "," + str(Euler321_phi) +\
                     "; 'gyroscope': " + str(Gyroscope_i) + "," + str(Gyroscope_j) + "," + str(Gyroscope_k) +\
                     "}"
+                # print(messageStr)
                 messageStr_bytes = messageStr.encode('utf-8')
 
                 # send the message 
                 try:
-                    Thread(target=Threaded_Client, args=(Distro_Connection,messageStr_bytes))
-                    # Distro_Connection.sendall(messageStr_bytes)
+                    # Thread(target=Threaded_Client, args=(Distro_Connection,messageStr_bytes))
+                    Distro_Connection.sendall(messageStr_bytes)
                 except Exception as e:
                     print("Exception: " + str(e.__class__))
                     print("Error in the logger socket. Now closing thread.")

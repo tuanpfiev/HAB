@@ -46,8 +46,8 @@ def Nav_eq(x,u,dt,g_t,x_apo,P_apo,R_data,Q_data):
     if x_apo.size == 0:
         gyro_init = np.array([[0],[0],[0]])
         gyro_acc_init = np.array([[0],[0],[0]])
-        acc_init = np.array([[0],[0],[-9.832]])
-        mag_init=np.array([[0.3579],[0.0744],[-0.9308]])
+        acc_init = np.array([[0],[0],[-9.822]])
+        mag_init=np.array(u[6:9]).reshape(3,1)
         x_apo = np.concatenate((gyro_init,gyro_acc_init,acc_init,mag_init)) #np.array([gyro_init,gyro_acc_init,acc_init,mag_init])
 
     wx = x_apo[0,0]
@@ -136,9 +136,9 @@ def Nav_eq(x,u,dt,g_t,x_apo,P_apo,R_data,Q_data):
 
     Rot_matrix = np.hstack((x_n_b.T,y_n_b.T,z_n_b))
 
-    yaw = np.arctan2(Rot_matrix[2,1],Rot_matrix[2,2])
-    pitch  = -np.arctan(Rot_matrix[2,0]/np.sqrt(1-Rot_matrix[2,0]**2))
-    roll = np.arctan2(Rot_matrix[1,0],Rot_matrix[0,0])
+    yaw = np.arctan2(Rot_matrix[1,2],Rot_matrix[2,2])
+    pitch  = -np.arcsin(Rot_matrix[0,2])
+    roll = np.arctan2(Rot_matrix[0,1],Rot_matrix[0,0])
     q = decm2q(Rot_matrix)
     x[6:10] = q
-    return x, x_apo, P_apo
+    return x, x_apo, P_apo, np.rad2deg([yaw,pitch,roll])

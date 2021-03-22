@@ -4,7 +4,7 @@ from _thread import *
 
 ServerSocket = socket.socket()
 host = '127.0.0.1'
-port = 5001
+port = 5005
 ThreadCount = 0
 try:
     ServerSocket.bind((host, port))

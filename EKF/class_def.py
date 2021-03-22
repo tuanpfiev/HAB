@@ -22,9 +22,9 @@ class node:
         self.delta_u_h = np.zeros((9,1))
         self.GPS = pos
         self.dis = np.array([[1, 1, 1,]]).T
-        self.roll = 0.0
-        self.pitch = 0.0
-        self.yaw = 0.0
+        self.roll = np.array([])
+        self.pitch = np.array([])
+        self.yaw = np.array([])
         self.x_apo = np.array([])
         self.P_apo = (10*np.ones((12,12)))
 
@@ -48,4 +48,10 @@ class GPS:
         self.lon = lon if lon is not None else 0.0
         self.alt = alt if alt is not None else 0.0
         self.epoch = epoch if epoch is not None else 0.0
+
+class RSSI:
+    def __init__(self, rssi_filtered = None, distance = None, epoch = None):
+        self.rssi_filtered = rssi_filtered if rssi_filtered is not None else 0.01
+        self.distance = distance if distance is not None else 0.01
+        self.epoch = epoch if epoch is not None else 0
 

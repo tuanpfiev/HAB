@@ -1,0 +1,42 @@
+from threading import Lock
+from class_def import *
+import numpy as np
+
+HOST = '127.0.0.1'
+GPS_BUFFER = 1024
+IMU_BUFFER = 1024
+RSSI_BUFFER = 1024
+PORT_GPS = 5012
+PORT_IMU = 5003
+PORT_RSSI = 5006
+SYSID = 1
+
+C_NED_ENU = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) # correcting acc
+
+
+dt = 0.02
+
+LAT_REF = -37.62342388464511
+LON_REF = 145.12737925483498
+ALT_REF = 0
+
+ANCHOR = np.array([1,3,4])
+
+GPS_TIMEOUT = 20
+IMU_TIMEOUT = 20
+RSSI_TIMEOUT = 20
+
+N_BALLOON = 4
+
+RSSI = []
+GPS_ALL = np.array([GPS()]*N_BALLOON)
+IMU_ALL = np.array([IMU()]*N_BALLOON)
+GPS_REF = GPS(None, LAT_REF, LON_REF, ALT_REF)
+
+BREAK_GPS_THREAD = False
+BREAK_IMU_THREAD = False
+BREAK_RSSI_THREAD = False
+
+BREAK_GPS_THREAD_MUTEX= Lock()
+BREAK_IMU_THREAD_MUTEX = Lock()
+BREAK_RSSI_THREAD_MUTEX = Lock()

@@ -1,7 +1,6 @@
 from Nav_eq import *
 from state_model import *
 from utilities import *
-
 def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     # anchor = anchor.T
     Ts = dt
@@ -18,19 +17,19 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     if Q_Xsens == True:
         x_h[6:,-1] = q_sensor
     else:
-        R_data = np.array([1e-4,1e-2,1e-2])
-        Q_data = np.array([1e-7,1e-7,1e-7,1e-7])
+        R_data = np.array([1e-4,1e-2,1e-3])
+        Q_data = np.array([1e-5,1e-5,1e-7,1e-7])
         
-        x_h, node.x_apo, node.P_apo = Nav_eq(x_h,u_h,Ts,settings.gravity,node.x_apo,node.P_apo,R_data,Q_data)
+        x_h, node.x_apo, node.P_apo, a = Nav_eq(x_h,u_h,Ts,settings.gravity,node.x_apo,node.P_apo,R_data,Q_data)
 
     F, G = state_model(x_h,u_h,Ts)
     Q = np.eye(Q1.shape[0]+Q2.shape[0])
     Q[0:6,0:6] = Q1
     Q[6:12,6:12] = Q2
     P = np.dot(np.dot(F,P),F.T)+np.dot(np.dot(G,Q),G.T)
-    
-    a = np.rad2deg(rotationMatrixToEulerAngles(q2dcm(np.array([x_h[6:,-1]]).T)))
-    a = np.array([a]).T
+    # dcm = q2dcm(np.array([x_h[6:,-1]]).T)
+    # a = np.rad2deg(rotationMatrixToEulerAngles(q2dcm(np.array([x_h[6:,-1]]).T)))
+    # a = np.array([a]).T
     node.angle = np.column_stack((node.angle,a))
 
     Rn2p = get_Rb2p()*q2dcm(x_h[-4:]).T

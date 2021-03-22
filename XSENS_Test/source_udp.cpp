@@ -199,7 +199,7 @@ int main(int argc,char **argv)
 
 					XsEuler euler = packet.orientationEuler();
 					data << euler.roll() << "," << euler.pitch() << "," << euler.yaw() << "\n";
-					data_packet += "EULER_321: " + std::to_string(euler.roll()) + "," + std::to_string(euler.pitch()) + "," + std::to_string(euler.yaw()) + "}";
+					data_packet += "EULER_321: " + std::to_string(euler.roll()) + "," + std::to_string(euler.pitch()) + "," + std::to_string(euler.yaw()) + ";}";
 
 					sendto(udpSocket, data_packet.c_str(), strlen(data_packet.c_str()), 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 					std::cout << "ACCELERATION: " + std::to_string(r_acc[0]) + ", " + std::to_string(r_acc[1]) + ", " + std::to_string(r_acc[2]) + ", ===GYRO: " + std::to_string(gyr[0]) + ", " + std::to_string(gyr[1]) + ", " + std::to_string(gyr[2]) + " ===EULER_321: " + std::to_string(euler.roll()) + ", " + std::to_string(euler.pitch()) + ", " + std::to_string(euler.yaw()) <<std::endl;

@@ -3,6 +3,9 @@ from threading import Lock
 # Global Constants 
 #=====================================================
 
+HOST = '127.0.0.1'
+PORT = 5006
+
 TIMEOUT = 1                                   # Serial port time out 
 PORT = "COM17"                                  # Windows COM por
 BAUDRATE = 9600                                # the baud for the serial port connection 

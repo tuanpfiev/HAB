@@ -4,6 +4,7 @@ import sys, os
 import GlobalVals
 import numpy as np
 import socket
+from threading import Thread
 
 sys.path.insert(1,'../utils')
 from utils import get_port
@@ -76,15 +77,15 @@ def main(StartState):
 
     # Handshake loop
     while connected:
-        DataReady = False
+        # DataReady = False
         with GlobalVals.NewRSSISocketData_Mutex:
             if GlobalVals.NewRSSISocketData:
-                DataReady = True
+                # DataReady = True
                 GlobalVals.NewRSSISocketData = False
 
-        if not DataReady:
-            time.sleep(0.1)
-            continue
+        # if not DataReady:
+        #     time.sleep(0.1)
+        #     continue
 
 
         # When a handshake is recieved record the rssi
@@ -241,7 +242,7 @@ def main(StartState):
                     waiting = False
                     silent = True
 
-def Thread_RSSI_publish(host,port,rssi):
+def Thread_RSSI_publish(host,port):
     Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     Logger_Socket.bind((host, port))
     Logger_Socket.settimeout(GlobalVals.SOCKET_TIMEOUT)
@@ -283,7 +284,7 @@ def Thread_RSSI_publish(host,port,rssi):
                     distance = GlobalVals.distance.pop(0)
                     RSSI_time = GlobalVals.RSSI_time.pop(0)
 
-                    socketPayload.append("{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +"}")
+                    socketPayload.append("{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}")
                     
             socketPayload = bytes(socketPayload)
             try:
@@ -318,13 +319,14 @@ if __name__ == '__main__':
     #     sys.exit() 
     
     # check if this script will start the handshake or not
-    if sys.argv[1] == 'start':
-        starter = True
-    elif sys.argv[1] == 'wait':
-        starter = False
-    else:
-        print("Incorrect first arg.")
-        sys.exit() 
+    # if sys.argv[1] == 'start':
+    #     starter = True
+    # elif sys.argv[1] == 'wait':
+    #     starter = False
+    # else:
+    #     print("Incorrect first arg.")
+    starter = False
+        # sys.exit() 
     
     # use the third argument as the com port 
 
@@ -335,7 +337,7 @@ if __name__ == '__main__':
         print('PORT: '+ GlobalVals.PORT)
     
     # create log file string 
-    data_log_folder_name = sys.argv[1]
+    data_log_folder_name ="wait"
 
     try:
         os.makedirs(data_log_folder_name)
@@ -346,11 +348,18 @@ if __name__ == '__main__':
     GlobalVals.RSSI_LOG_FILE = file_name
     print(GlobalVals.RSSI_LOG_FILE)
 
+    
+    RSSI_Thread = Thread(target = Thread_RSSI_publish, args = (GlobalVals.HOST,GlobalVals.PORT))
+    RSSI_Thread.start()
     # run the main function until something goes wrong 
     try:
         main(not starter)
     except(KeyboardInterrupt, SystemExit):
         print("Closing Program.")
         
+    if RSSI_Thread.is_alive():
+        with GlobalVals.EndRSSISocket_Mutex:
+            GlobalVals.EndRSSISocket = True
+        RSSI_Thread.join()
 
 
