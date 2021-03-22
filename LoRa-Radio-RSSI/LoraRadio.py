@@ -244,6 +244,7 @@ def main(StartState):
 
 def Thread_RSSI_publish(host,port):
     Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Logger_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
     Logger_Socket.bind((host, port))
     Logger_Socket.settimeout(GlobalVals.SOCKET_TIMEOUT)
 
@@ -276,7 +277,6 @@ def Thread_RSSI_publish(host,port):
             GlobalVals.NewRSSISocketData = False
 
         if newData:
-            socketPayload = []
 
             with GlobalVals.RSSIValues_Mutex:
                 while len(GlobalVals.RSSI_filtered)>0:
@@ -284,18 +284,19 @@ def Thread_RSSI_publish(host,port):
                     distance = GlobalVals.distance.pop(0)
                     RSSI_time = GlobalVals.RSSI_time.pop(0)
 
-                    socketPayload.append("{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}")
-                    
-            socketPayload = bytes(socketPayload)
-            try:
-                Logger_Connection.sendall(socketPayload)
-            except Exception as e:
-                print("Exception: " + str(e.__class__))
-                print("Error in the logger socket. Now closing thread.")
-                breakThread = True
-                break
+                    socketPayload = "{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
+                
+                    socketPayload = socketPayload.encode("utf-8")
+                
+                    try:
+                        Logger_Connection.sendall(socketPayload)
+                    except Exception as e:
+                        print("Exception: " + str(e.__class__))
+                        print("Error in the logger socket. Now closing thread.")
+                        breakThread = True
+                        break
         else:
-            time.sleep(0.1)
+            time.sleep(0.01)
 
     # if the thread is broken set the global flag 
     if breakThread:
@@ -349,7 +350,7 @@ if __name__ == '__main__':
     print(GlobalVals.RSSI_LOG_FILE)
 
     
-    RSSI_Thread = Thread(target = Thread_RSSI_publish, args = (GlobalVals.HOST,GlobalVals.PORT))
+    RSSI_Thread = Thread(target = Thread_RSSI_publish, args = (GlobalVals.HOST,GlobalVals.PORT_RSSI))
     RSSI_Thread.start()
     # run the main function until something goes wrong 
     try:

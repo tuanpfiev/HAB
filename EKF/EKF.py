@@ -30,7 +30,9 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     # dcm = q2dcm(np.array([x_h[6:,-1]]).T)
     # a = np.rad2deg(rotationMatrixToEulerAngles(q2dcm(np.array([x_h[6:,-1]]).T)))
     # a = np.array([a]).T
-    node.angle = np.column_stack((node.angle,a))
+
+    
+    # node.angle = np.column_stack((node.angle,a)) # CHECK THISSSS
 
     Rn2p = get_Rb2p()*q2dcm(x_h[-4:]).T
     H = np.zeros((9,15))

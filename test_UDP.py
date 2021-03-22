@@ -19,7 +19,7 @@ import socket, time
 
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client.settimeout(10)
-client.bind(("127.0.0.1",5003))
+client.bind(('127.0.0.1',5003))
 
 while True:
     try:

@@ -153,8 +153,11 @@ def LoggerSocket():
 
     # start socket 
     Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Logger_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
     Logger_Socket.bind((GlobalVals.HOST, GlobalVals.GPS_LOGGER_SOCKET))
     Logger_Socket.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
+
+
 
     # Wait for connection on logger socket (radio network scripts) 
     try:

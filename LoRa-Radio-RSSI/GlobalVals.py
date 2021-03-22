@@ -4,7 +4,7 @@ from threading import Lock
 #=====================================================
 
 HOST = '127.0.0.1'
-PORT = 5006
+PORT_RSSI = 5006
 
 TIMEOUT = 1                                   # Serial port time out 
 PORT = "COM17"                                  # Windows COM por
@@ -20,7 +20,7 @@ distance = []
 RSSI_time = []
 
 
-SOCKET_TIMEOUT = 10
+SOCKET_TIMEOUT = 60
 
 EndRSSISocket = False
 NewRSSISocketData = False

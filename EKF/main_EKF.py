@@ -15,6 +15,16 @@ from navpy import lla2ned
 import csv
 from common import *
 
+def checkGPS(gps):
+    if gps.lat == 0.0 and gps.lon == 0.0 and gps.alt == 0.0:
+        return False
+    else:
+        return True
+def checkAllGPS(gps_list):
+    for i in range(len(gps_list)):
+        if not checkGPS(gps_list[i]):
+            return False
+    return True
 
 def positionENU(gps,gps_ref):
     pos_ned = lla2ned(gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt).reshape(3,1)
@@ -26,17 +36,14 @@ def distance2D(args):
     gps2 = args[1]
     gps_ref = GlobalVals.GPS_REF
     
-    pos1_ned = lla2ned(gps1.lat, gps1.lon, gps1.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt)
-    pos2_ned = lla2ned(gps2.lat, gps2.lon, gps2.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt)
+    pos1_enu = positionENU(gps1,gps_ref)
+    pos2_enu = positionENU(gps2,gps_ref)
 
-    pos1_enu = np.dot(GlobalVals.C_NED_ENU,pos1_ned)
-    pos2_enu = np.dot(GlobalVals.C_NED_ENU,pos2_ned)
-
-    distance = np.array([math.sqrt((pos1_ned[0]-pos2_ned[0])**2), math.sqrt((pos1_ned[1]-pos2_ned[1])**2)])
+    distance = np.array([math.sqrt((pos1_enu[0]-pos2_enu[0])**2+(pos1_enu[1]-pos2_enu[1])**2)])
 
     if len(args)==3:
         distance_rssi = args[2]
-        distance = distance_rssi/np.linalg.norm(pos1_ned-pos2_ned) * distance
+        distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
     
     return distance
 
@@ -117,12 +124,13 @@ def stringToRSSI(raw_data):
 
     except ValueError:
         
-        return False, GPS()
+        return False, RSSI()
 
-    rssi_i = GPS()
+    rssi_i = RSSI()
 
     try:
-        rssi_i.rssi_filtered = int(extract_string_data("RSSI_filter: ",";",raw_data))
+        temp = extract_string_data("RSSI_filter: ",";",raw_data)
+        rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
         rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
 
@@ -159,37 +167,37 @@ def gps_callback(host,port):
             break
 
         if len(data_bytes) == 0:
-            print('Blank msg!')
-        else:
-            data_str = data_bytes.decode('utf-8')
+            continue
+
+        data_str = data_bytes.decode('utf-8')
+        
+        string_list = []
+        iterator = data_str.find('{')
+        while data_str.find('}', iterator) != -1:
+            substring_end = data_str.find('}', iterator)
+            string_list.append(data_str[iterator:substring_end + 1])
+            iterator = substring_end + 1
+        
+        if len(string_list) > 0:
+            gps_list = []
+            for string in string_list:
+                received, gps_i = stringToGPS(string)
+                if received:
+                    gps_list.append(gps_i)
             
-            string_list = []
-            iterator = 0
-            while data_str.find('}', iterator) != -1:
-                substring_end = data_str.find('}', iterator)
-                string_list.append(data_str[iterator:substring_end + 1])
-                iterator = substring_end + 1
-            
-            if len(string_list) > 0:
-                gps_list = []
-                for string in string_list:
-                    received, gps_i = stringToGPS(string)
-                    if received:
-                        gps_list.append(gps_i)
-                
-                idx = 0
-                while idx < len(gps_list):
-                    gps_update(gps_list[idx])
-                    idx += 1
+            idx = 0
+            while idx < len(gps_list):
+                gps_update(gps_list[idx])
+                idx += 1
 
     s.close()
 
 def imu_callback(host,port):
 
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     try:        
-        s.connect((host,port))
+        s.bind((GlobalVals.HOST,GlobalVals.PORT_IMU))
         s.settimeout(GlobalVals.IMU_TIMEOUT)
     except Exception as e:
         print("Exception: " + str(e.__class__))
@@ -204,35 +212,36 @@ def imu_callback(host,port):
                 break
 
         try:
-            data_bytes = s.recv(GlobalVals.IMU_BUFFER)
+            data_bytes,addr = s.recvfrom(GlobalVals.IMU_BUFFER)
+            # print('Connect to: ',addr)
         except Exception as e:
             print("Exception: " + str(e.__class__))
             print("There was an error starting the IMU receiver socket. This thread will now stop.")
             break
 
         if len(data_bytes) == 0:
-            print('Blank msg!')
-        else:
-            data_str = data_bytes.decode('utf-8')
+            continue
+
+        data_str = data_bytes.decode('utf-8')
+        
+        string_list = []
+        iterator = data_str.find('{')
+        while data_str.find('}', iterator) != -1:
+            substring_end = data_str.find('}', iterator)
+            string_list.append(data_str[iterator:substring_end + 1])
+            iterator = substring_end + 1
+        
+        if len(string_list) > 0:
+            imu_list = []
+            for string in string_list:
+                received, imu_i = stringToIMU(string)
+                if received:
+                    imu_list.append(imu_i)
             
-            string_list = []
-            iterator = 0
-            while data_str.find('}', iterator) != -1:
-                substring_end = data_str.find('}', iterator)
-                string_list.append(data_str[iterator:substring_end + 1])
-                iterator = substring_end + 1
-            
-            if len(string_list) > 0:
-                imu_list = []
-                for string in string_list:
-                    received, imu_i = stringToIMU(string)
-                    if received:
-                        imu_list.append(imu_i)
-                
-                idx = 0
-                while idx < len(imu_list):
-                    imu_update(imu_list[idx])
-                    idx += 1
+            idx = 0
+            while idx < len(imu_list):
+                imu_update(imu_list[idx])
+                idx += 1
     s.close()
 
 
@@ -263,28 +272,28 @@ def distanceRSSI_callback(host,port):
             break
 
         if len(data_bytes) == 0:
-            print('Blank msg!')
-        else:
-            data_str = data_bytes.decode('utf-8')
+            continue
+        
+        data_str = data_bytes.decode('utf-8')
+        
+        string_list = []
+        iterator = data_str.find('{')
+        while data_str.find('}', iterator) != -1 and iterator != -1:
+            substring_end = data_str.find('}', iterator)
+            string_list.append(data_str[iterator:substring_end + 1])
+            iterator = substring_end + 1
+        
+        if len(string_list) > 0:
+            rssi_list = []
+            for string in string_list:
+                received, rssi_i = stringToRSSI(string)
+                if received:
+                    rssi_list.append(rssi_i)
             
-            string_list = []
-            iterator = data_str.find('{')
-            while data_str.find('}', iterator) != -1 and iterator != -1:
-                substring_end = data_str.find('}', iterator)
-                string_list.append(data_str[iterator:substring_end + 1])
-                iterator = substring_end + 1
-            
-            if len(string_list) > 0:
-                rssi_list = []
-                for string in string_list:
-                    received, rssi_i = stringToRSSI(string)
-                    if received:
-                        rssi_list.append(rssi_i)
-                
-                idx = 0
-                while idx < len(rssi_list):
-                    rssi_update(rssi_list[idx])
-                    idx += 1
+            idx = 0
+            while idx < len(rssi_list):
+                rssi_update(rssi_list[idx])
+                idx += 1
     s.close()
 
 if __name__ == '__main__':
@@ -306,10 +315,18 @@ if __name__ == '__main__':
 
     sysID = GlobalVals.SYSID
 
+    while True:
+        # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
+        if GlobalVals.RSSI.epoch != 0.0 :
+
+            break
+        time.sleep(1)
+
+    print("Calculation loop starts")
     # Update anchor list
     for i in range(len(GlobalVals.ANCHOR)):
-        if GlobalVals.ANCHOR[i] == sysID:
-            GlobalVals.ANCHOR = np.delete(GlobalVals.ANCHOR,i,None) 
+        if GlobalVals.ANCHOR[len(GlobalVals.ANCHOR)-i-1] == sysID:
+            GlobalVals.ANCHOR = np.delete(GlobalVals.ANCHOR,len(GlobalVals.ANCHOR)-i-1,None) 
 
     ##
     ## Initialization
@@ -364,15 +381,10 @@ if __name__ == '__main__':
             #     continue
             # print(imu.epoch)
             # print(gps.epoch)
-            anchor_position = []
-            anchor_distance = []
-            for i in GlobalVals.ANCHOR:
-                anchor_position.append(positionENU(GlobalVals.GPS_ALL[i-1],GlobalVals.GPS_REF))
-                if i not in GlobalVals.REAL_BALLOON:
-                    anchor_distance.append(distance2D([gps, GlobalVals.GPS_ALL[i-1]]))
-                else:
-                    anchor_distance.append(distance2D([gps, GlobalVals.GPS_ALL[i-1]],rssi.distance))
-
+            anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
+            for i in range(len(GlobalVals.ANCHOR)):
+                posEN = positionENU(GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],gps_ref).T
+                anchor_position[i,:]=posEN[0][0:2]                
             accel   = imu.accel
             gyros   = imu.gyros
             magVec  = imu.mag_vector
@@ -383,29 +395,44 @@ if __name__ == '__main__':
             # magVec  = np.dot(C,magVec) 
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU = np.concatenate((gyros,accel,magVec))
+            IMU_i = np.concatenate((gyros,accel,magVec))
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
-            timeGPS_IMU_diff = imu.epoch - gps.epoch
-            timeRSSI_IMU_diff = imu.epoch - rssi.epoch
-            # print("time_diff: ",time_diff)
-            if timeGPS_IMU_diff > 2*dt:   
+            timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch
+            timeRSSI_IMU_diff = imu.epoch/1000 - rssi.epoch
+            print("time_GPS_diff: ",timeGPS_IMU_diff)
+            print("time_RSSI_diff: ",timeRSSI_IMU_diff)
+            if timeGPS_IMU_diff >= 2*dt or not checkGPS(gps):   
                 GPS_data = np.array([])
             else:
-                GPS_data = np.dot(GlobalVals.C_NED_ENU,lla2ned( gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt)).reshape(3,1)   # ENU ?
+                GPS_data = positionENU(gps,gps_ref)[0]
+                print(GPS_data)
 
+            anchor_distance = np.array([])
+            if timeRSSI_IMU_diff > 2*dt or not checkAllGPS(GlobalVals.GPS_ALL):
+                anchor_distance = np.array([])
+            else: 
+                anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
+                for i in range(len(GlobalVals.ANCHOR)):
+                    if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
+                        temp = distance2D([gps, GlobalVals.GPS_ALL[i-1]])
+                        anchor_distance[i,:] = distance2D([gps, GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1]])
+                        
+                    else:
+                        temp = distance2D([gps, GlobalVals.GPS_ALL[i-1],rssi.distance])
+                        anchor_distance[i,:] = distance2D([gps, GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],rssi.distance])
+                print(anchor_distance)
+                print("===============")
 
-            if timeRSSI_IMU_diff >= 2*dt:
-                Dis = np.array([])
-            else:
-                Dis = np.array([])  # 2D distance !!! Why does it have 3 elements
-            
             if Q_Xsens:
                 q_sensor = imu.raw_qt.reshape(4)
                 
-            node = EKF(settings,dt,node,IMU,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
+            node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
 
             time.sleep(dt)
+
+    # while True:
+    #     time.sleep(1)
 
     if GPSThread.is_alive():
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
@@ -419,7 +446,7 @@ if __name__ == '__main__':
 
     if RSSIThread.is_alive():
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
-            GlobalVals.BREAK_RSSI_THREAD = True:
+            GlobalVals.BREAK_RSSI_THREAD = True
         RSSIThread.join()
 
 

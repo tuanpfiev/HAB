@@ -1,3 +1,4 @@
+import numpy as np
 def sysID_to_index(sysID):
     if sysID == 1:
         return 1
@@ -35,4 +36,4 @@ def convert_to_array(string_data):
                 break
             array.append(val)
             break
-    return array
+    return np.array(array).reshape(len(array),1)

@@ -141,6 +141,7 @@ def GPSDistributor():
 
     # start socket 
     Distro_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Distro_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
     Distro_Socket.bind((GlobalVals.HOST, GlobalVals.GPS_DISTRO_SOCKET))
     Distro_Socket.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
     

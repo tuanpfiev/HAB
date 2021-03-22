@@ -50,7 +50,7 @@ def position_update(sysID,posXY,lon,lat,alt):
     global positionXY, gps_all
     i = sysID_to_index(sysID)
     positionXY[i-1,:]=posXY
-    gps_all[i-1,:]=[lon,lat,alt]
+    gps_all[i-1,:]=[lat,lon,alt]
 
 
 class stMercator:
