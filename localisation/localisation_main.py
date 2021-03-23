@@ -204,7 +204,7 @@ if __name__ == "__main__":
     time.sleep(1)
     with open(file_name,'w') as file:
         output = csv.writer(file)
-        output.writerow(['p0x','p0y','p1x','p1y','p2x','p2y','p3x','p3y','p4x','p4y','l0x','l0y','l1x','l1y','l2x','l2y','l3x','l3y','l4x','l4y','iteration','execution_time','gps0_lon','gps0_lat','gps0_alt','gps1_lon','gps1_lat','gps1_alt','gps2_lon','gps2_lat','gps2_alt','gps3_lon','gps3_lat','gps3_alt','gps4_lon','gps4_lat','gps4_alt'])
+        output.writerow(['p0x','p0y','p1x','p1y','p2x','p2y','p3x','p3y','l0x','l0y','l1x','l1y','l2x','l2y','l3x','l3y','iteration','execution_time','gps0_lon','gps0_lat','gps0_alt','gps1_lon','gps1_lat','gps1_alt','gps2_lon','gps2_lat','gps2_alt','gps3_lon','gps3_lat','gps3_alt','gps4_lon'])
     
         while True:
             
@@ -220,7 +220,7 @@ if __name__ == "__main__":
             print("Balloon 2: lat", round(gps_temp[1,0],3), "lon: ", round(gps_temp[1,1],3))
 
             print("localisation error: \n", location-positionXY_temp)
-            output.writerow([positionXY_temp[0,0],positionXY_temp[0,1],positionXY_temp[1,0],positionXY_temp[1,1],positionXY_temp[2,0],positionXY_temp[2,1],positionXY_temp[3,0],positionXY_temp[3,1],positionXY_temp[4,0],positionXY_temp[4,1],location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1],iteration,execution_time,gps_temp[0,0],gps_temp[0,1],gps_temp[0,2],gps_temp[1,0],gps_temp[1,1],gps_temp[1,2],gps_temp[2,0],gps_temp[2,1],gps_temp[2,2],gps_temp[3,0],gps_temp[3,1],gps_temp[3,2],gps_temp[4,0],gps_temp[4,1],gps_temp[4,2]])
+            output.writerow([positionXY_temp[0,0],positionXY_temp[0,1],positionXY_temp[1,0],positionXY_temp[1,1],positionXY_temp[2,0],positionXY_temp[2,1],positionXY_temp[3,0],positionXY_temp[3,1],location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],iteration,execution_time,gps_temp[0,0],gps_temp[0,1],gps_temp[0,2],gps_temp[1,0],gps_temp[1,1],gps_temp[1,2],gps_temp[2,0],gps_temp[2,1],gps_temp[2,2],gps_temp[3,0],gps_temp[3,1],gps_temp[3,2]])
 
             time.sleep(rate)
 
