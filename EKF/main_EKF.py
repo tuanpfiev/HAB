@@ -300,14 +300,15 @@ if __name__ == '__main__':
 
     sysID = GlobalVals.SYSID
 
+    print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
     while True:
         # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
-        if GlobalVals.RSSI.epoch != 0.0 :
-
+        if GlobalVals.RSSI.epoch != 0.0 and checkAllGPS(GlobalVals.GPS_ALL):
             break
+
         time.sleep(1)
 
-    print("Calculation loop starts")
+    print("Calculation loop STARTED!!!")
     # Update anchor list
     for i in range(len(GlobalVals.ANCHOR)):
         if GlobalVals.ANCHOR[len(GlobalVals.ANCHOR)-i-1] == sysID:
@@ -334,9 +335,7 @@ if __name__ == '__main__':
                 #If it is possible, we can run two parallel scripts -- one using Q_Xsens = False and another using Q_Xsens = True
     q_sensor = np.array([]) # variable for quaternion data obtianed from sensor
 
-
     C = np.array([[-1,0, 0],[0,-1,0],[0,0,-1]]) # correcting acc
-
 
     try:
         os.makedirs("datalog")
@@ -348,55 +347,38 @@ if __name__ == '__main__':
     time.sleep(2)
     with open(file_name,'w') as file:
         output = csv.writer(file)
-        output.writerow(['px','py','pz',])
-    
+        output.writerow(['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw'])
 
         while True:
             gps = GlobalVals.GPS_ALL[sysID-1]
             imu = GlobalVals.IMU_ALL[sysID-1]
             rssi = GlobalVals.RSSI
 
-            # if imu_prev_time == 0:
-            #     pass
-            # else:
-            #     dt = (imu.epoch - imu_prev_time)/1000
-            #     imu_prev_time = imu.epoch
-
-            # if gps.epoch == 0 or imu.epoch == 0:
-            #     continue
-            # print(imu.epoch)
-            # print(gps.epoch)
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
-            for i in range(len(GlobalVals.ANCHOR)):
+            if checkAllGPS(GlobalVals.GPS_ALL):
+                for i in range(len(GlobalVals.ANCHOR)):
                 posEN = positionENU(GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],gps_ref).T
-                anchor_position[i,:]=posEN[0][0:2]                
-            accel   = imu.accel
-            gyros   = imu.gyros
-            magVec  = imu.mag_vector
-
+                anchor_position[i,:]=posEN[0][0:2]   
+            
             # Rotate the coordinates 
-            accel   = np.dot(C,accel)
-            # gyros   = np.dot(C,gyros)
-            # magVec  = np.dot(C,magVec) 
+            accel   = np.dot(C,imu.accel)
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU_i = np.concatenate((gyros,accel,magVec))
+            IMU_i = np.concatenate((imu.accel,imu.gyros,imu.mag_vector))
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
-            timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch
+            timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch       # IMU epoch is in ms
             timeRSSI_IMU_diff = imu.epoch/1000 - rssi.epoch
             print("time_GPS_diff: ",timeGPS_IMU_diff)
             print("time_RSSI_diff: ",timeRSSI_IMU_diff)
-            if timeGPS_IMU_diff >= 2*dt or not checkGPS(gps):   
-                GPS_data = np.array([])
-            else:
+            
+            GPS_data = np.array([])
+            if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt
                 GPS_data = positionENU(gps,gps_ref)[0]
                 print(GPS_data)
 
             anchor_distance = np.array([])
-            if timeRSSI_IMU_diff > 2*dt or not checkAllGPS(GlobalVals.GPS_ALL):
-                anchor_distance = np.array([])
-            else: 
+            if checkAllGPS(GlobalVals.GPS_ALL) and timeRSSI_IMU_diff <= 2*dt:
                 anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
                 for i in range(len(GlobalVals.ANCHOR)):
                     if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
@@ -413,7 +395,9 @@ if __name__ == '__main__':
                 q_sensor = imu.raw_qt.reshape(4)
                 
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
+            
 
+            output.writerow([node.x_h[0],node.x_h[1],node.x_h[2],node.x_h[3],node.x_h[4],node.x_h[5],node.x_h[6],node.x_h[7],node.x_h[8],node.x_h[9],node.roll,node.pitch,node.yaw])
             time.sleep(dt)
 
     # while True:

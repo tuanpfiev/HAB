@@ -15,12 +15,29 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     u_h = u + delta_u_h
 
     if Q_Xsens == True:
+        # x_h[6:,-1] = q_sensor
         x_h[6:,-1] = q_sensor
+        q2 = q2dcm(x_h[6:10])
+        u2 = u[0:3]
+        f_t = np.dot(q2,u2)
+        acc_t = f_t-settings.gravity
+        
+        A=np.eye(6)
+        A[0,3] = dt
+        A[1,4] = dt
+        A[2,5] = dt
+        B = np.zeros((6,3))
+        B[0:3,:] = (dt**2)/2*np.eye(3)
+        
+        B[3:6,:] = dt*np.eye(3)
+        
+        x_h[0:6]=np.dot(A,x_h[0:6])+np.dot(B,acc_t)
     else:
         R_data = np.array([1e-4,1e-2,1e-3])
         Q_data = np.array([1e-5,1e-5,1e-7,1e-7])
         
         x_h, node.x_apo, node.P_apo, a = Nav_eq(x_h,u_h,Ts,settings.gravity,node.x_apo,node.P_apo,R_data,Q_data)
+        node.angle = np.column_stack((node.angle,a)) 
 
     F, G = state_model(x_h,u_h,Ts)
     Q = np.eye(Q1.shape[0]+Q2.shape[0])
@@ -31,8 +48,7 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     # a = np.rad2deg(rotationMatrixToEulerAngles(q2dcm(np.array([x_h[6:,-1]]).T)))
     # a = np.array([a]).T
 
-    
-    # node.angle = np.column_stack((node.angle,a)) # CHECK THISSSS
+     
 
     Rn2p = get_Rb2p()*q2dcm(x_h[-4:]).T
     H = np.zeros((9,15))

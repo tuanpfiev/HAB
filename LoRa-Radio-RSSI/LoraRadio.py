@@ -258,8 +258,26 @@ def Thread_RSSI_publish(host,port):
         print("Error in the logger socket. Now closing thread.")
         with GlobalVals.EndRSSISocket_Mutex:
             GlobalVals.EndRSSISocket = True
+        return
+        
+
+    Logger_Socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Logger_Socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+    Logger_Socket2.bind((host, 5022))
+    Logger_Socket2.settimeout(GlobalVals.SOCKET_TIMEOUT)
+
+    try: 
+        Logger_Socket2.listen(1)
+        Logger_Connection2, addr2 = Logger_Socket2.accept()  
+        Logger_Connection2.settimeout(GlobalVals.SOCKET_TIMEOUT) 
+        print("Connected to: ",addr2)
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print("Error in the logger socket. Now closing thread.")
+        with GlobalVals.EndRSSISocket_Mutex:
+            GlobalVals.EndRSSISocket = True
         return 
-    
+
     breakThread = False
     newData = False
 
@@ -290,6 +308,7 @@ def Thread_RSSI_publish(host,port):
                 
                     try:
                         Logger_Connection.sendall(socketPayload)
+                        Logger_Connection2.sendall(socketPayload)
                     except Exception as e:
                         print("Exception: " + str(e.__class__))
                         print("Error in the logger socket. Now closing thread.")
@@ -305,6 +324,7 @@ def Thread_RSSI_publish(host,port):
     
     # close connection before ending thread 
     Logger_Connection.close()
+    Logger_Connection2.close()
 
 
 if __name__ == '__main__':
