@@ -34,7 +34,7 @@ def distance2D(args):
 
 def rssi_update(new_data):
     GlobalVals.RSSI = new_data
-    print(GlobalVals.RSSI.epoch)
+    # print(GlobalVals.RSSI.epoch)
 
 def gps_update(new_data):
     i = sysID_to_index(new_data.sysID)
@@ -304,8 +304,8 @@ if __name__ == '__main__':
     print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
     while True:
         # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
-        print(checkAllGPS(GlobalVals.GPS_ALL))
-        print(GlobalVals.RSSI.epoch != 0.0)
+        # print(checkAllGPS(GlobalVals.GPS_ALL))
+        # print(GlobalVals.RSSI.epoch != 0.0)
         if GlobalVals.RSSI.epoch != 0.0 and checkAllGPS(GlobalVals.GPS_ALL):
             break
 

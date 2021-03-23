@@ -153,15 +153,15 @@ def get_distance(n,balloon,offset,Leader,var_measurement,distanceRSSI):
 class balloon_class:
     pass
 
-def balloon_main(Leader,anchor_list,positionXY,sigma_range_measurement_val,distance):
+def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,distance):
     n = GlobalVals.N_BALLOON
     balloon = [0] * n
     loc = np.zeros((n,2))
 
     for i in np.arange(start = 0, stop = n, step = 1):
         balloon[i]=balloon_class()
-        balloon[i].X = positionXY[i,0]
-        balloon[i].Y = positionXY[i,1]
+        balloon[i].X = positionXYZ[i].x
+        balloon[i].Y = positionXYZ[i].y
 
         loc[i,:] = np.array([balloon[i].X,balloon[i].Y])
         

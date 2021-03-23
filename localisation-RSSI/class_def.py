@@ -49,3 +49,15 @@ class GPS:
         self.alt = alt if alt is not None else 0.0
         self.epoch = epoch if epoch is not None else 0.0
 
+class RSSI:
+    def __init__(self, rssi_filtered = None, distance = None, epoch = None):
+        self.rssi_filtered = rssi_filtered if rssi_filtered is not None else 0.01
+        self.distance = distance if distance is not None else 0.01
+        self.epoch = epoch if epoch is not None else 0.0
+
+class POS_XYZ:
+    def __init__(self, x = None, y = None, z = None):
+        self.x = x if x is not None else 0.0
+        self.y = y if y is not None else 0.0
+        self.z = z if z is not None else 0.0
+
