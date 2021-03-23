@@ -1,4 +1,7 @@
+import sys
 import numpy as np
+sys.path.insert(1,'../utils/')
+from navpy import lla2ned
 def sysID_to_index(sysID):
     if sysID == 1:
         return 1
@@ -51,7 +54,9 @@ def checkAllGPS(gps_list):
     return True
 
 def positionENU(gps,gps_ref):
+
+    C_NED_ENU = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) # correcting acc
     pos_ned = lla2ned(gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt).reshape(3,1)
-    pos_enu = np.dot(GlobalVals.C_NED_ENU,pos_ned)
+    pos_enu = np.dot(C_NED_ENU,pos_ned)
     return pos_enu
 

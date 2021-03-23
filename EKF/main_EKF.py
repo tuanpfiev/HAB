@@ -34,6 +34,7 @@ def distance2D(args):
 
 def rssi_update(new_data):
     GlobalVals.RSSI = new_data
+    print(GlobalVals.RSSI.epoch)
 
 def gps_update(new_data):
     i = sysID_to_index(new_data.sysID)
@@ -260,7 +261,7 @@ def distanceRSSI_callback(host,port):
             continue
         
         data_str = data_bytes.decode('utf-8')
-        
+        # print('data RSSI: ',data_str)
         string_list = []
         iterator = data_str.find('{')
         while data_str.find('}', iterator) != -1 and iterator != -1:
@@ -286,7 +287,7 @@ if __name__ == '__main__':
     numArgs = len(sys.argv)
 
     if numArgs == 2:
-        GlobalVals.SYSID = sys.argv[1]
+        GlobalVals.SYSID = int(sys.argv[1])
 
 
     GPSThread = Thread(target=gps_callback, args=(GlobalVals.HOST,GlobalVals.PORT_GPS))
@@ -303,6 +304,8 @@ if __name__ == '__main__':
     print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
     while True:
         # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
+        print(checkAllGPS(GlobalVals.GPS_ALL))
+        print(GlobalVals.RSSI.epoch != 0.0)
         if GlobalVals.RSSI.epoch != 0.0 and checkAllGPS(GlobalVals.GPS_ALL):
             break
 
@@ -396,8 +399,8 @@ if __name__ == '__main__':
                 
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
             
-
-            output.writerow([node.x_h[0],node.x_h[1],node.x_h[2],node.x_h[3],node.x_h[4],node.x_h[5],node.x_h[6],node.x_h[7],node.x_h[8],node.x_h[9],node.roll,node.pitch,node.yaw])
+            x_h = np.array([node.x_h[:,-1]]).T
+            output.writerow([x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw])
             time.sleep(dt)
 
     # while True:

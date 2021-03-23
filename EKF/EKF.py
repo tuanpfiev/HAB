@@ -37,6 +37,8 @@ def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
         Q_data = np.array([1e-5,1e-5,1e-7,1e-7])
         
         x_h, node.x_apo, node.P_apo, a = Nav_eq(x_h,u_h,Ts,settings.gravity,node.x_apo,node.P_apo,R_data,Q_data)
+        [node.yaw, node.pitch, node.roll] = a
+        
         node.angle = np.column_stack((node.angle,a)) 
 
     F, G = state_model(x_h,u_h,Ts)

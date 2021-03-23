@@ -53,5 +53,5 @@ class RSSI:
     def __init__(self, rssi_filtered = None, distance = None, epoch = None):
         self.rssi_filtered = rssi_filtered if rssi_filtered is not None else 0.01
         self.distance = distance if distance is not None else 0.01
-        self.epoch = epoch if epoch is not None else 0
+        self.epoch = epoch if epoch is not None else 0.0
 
