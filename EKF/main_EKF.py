@@ -15,21 +15,6 @@ from navpy import lla2ned
 import csv
 from common import *
 
-def checkGPS(gps):
-    if gps.lat == 0.0 and gps.lon == 0.0 and gps.alt == 0.0:
-        return False
-    else:
-        return True
-def checkAllGPS(gps_list):
-    for i in range(len(gps_list)):
-        if not checkGPS(gps_list[i]):
-            return False
-    return True
-
-def positionENU(gps,gps_ref):
-    pos_ned = lla2ned(gps.lat, gps.lon, gps.alt, gps_ref.lat, gps_ref.lon, gps_ref.alt).reshape(3,1)
-    pos_enu = np.dot(GlobalVals.C_NED_ENU,pos_ned)
-    return pos_enu
 
 def distance2D(args):
     gps1 = args[0]

@@ -18,56 +18,17 @@ import GlobalVals
 
 sys.path.insert(1,'../utils')
 from navpy import lla2ned
+from common import *
 
 
 global buffer, gps_all, imu_all, gps_ref, positionXY, distance
 buffer = GlobalVals.BUFFER
 
 
-def sysID_to_index(sysID):
-    if sysID == 1:
-        return 1
-    elif sysID == 2:
-        return 2
-    elif sysID == 253:
-        return 3
-    elif sysID == 254:
-        return 4
-    elif sysID == 255:
-        return 5
-    else:
-        print('SysID should be in the range 1-5')
-        os._exit(1)
-        return 0
-
-
 def position_update(posXY,new_gps):
     i = sysID_to_index(new_gps.sysID)
     GlobalVals.POSITIONXY[i-1,:]=posXY
     GlobalVals.GPS_ALL[i-1]=new_gps
-
-def extract_string_data(preString,endString,string_data):
-    preIndex = string_data.find(preString)
-    endIndex = string_data.find(endString, preIndex)
-    return string_data[preIndex + len(preString):endIndex]
-
-def convert_to_array(string_data):
-    start_parsing = 0
-    array = []
-    while True:
-        comma_index = string_data.find(",",start_parsing)
-        if comma_index != -1:
-            val = float(string_data[start_parsing:comma_index])
-            array.append(val)
-            start_parsing = comma_index + 1
-        else:
-            try:
-                val = float(string_data[start_parsing:len(string_data)])
-            except:
-                break
-            array.append(val)
-            break
-    return array
 
 def stringToGPS(raw_data):
     try:
@@ -128,9 +89,7 @@ def gps_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         
         string_list = []
-        iterator = 0
-
-
+        iterator = data_str.find('{')
 
         while data_str.find('}', iterator) != -1:
             substring_end = data_str.find('}', iterator)
@@ -146,7 +105,7 @@ def gps_callback(host,port):
             
             idx = 0
             while idx < len(gps_list):
-                ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].atl, gps_ref.lat, gps_ref.lon, gps_ref.alt)
+                ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].atl, GlobalVals.GPS_REF.lat, GlobalVals.GPS_REF.lon, GlobalVals.GPS_REF.alt)
                 posXY = ned[0:2]   
                 position_update(posXY, gps_list[idx])
                 idx += 1
@@ -227,6 +186,14 @@ if __name__ == "__main__":
     location = GlobalVals.POSITIONXY
 
     time.sleep(1)
+
+    print("Reading GPS signals ...")
+    while True:
+        if checkAllGPS(GlobalVals.GPS_ALL):
+            break
+    
+    print("Algorithm started ....")
+
     with open(file_name,'w') as file:
         output = csv.writer(file)
         output.writerow(['p0x','p0y','p1x','p1y','p2x','p2y','p3x','p3y','p4x','p4y','l0x','l0y','l1x','l1y','l2x','l2y','l3x','l3y','l4x','l4y','iteration','execution_time','gps0_lon','gps0_lat','gps0_alt','gps1_lon','gps1_lat','gps1_alt','gps2_lon','gps2_lat','gps2_alt','gps3_lon','gps3_lat','gps3_alt','gps4_lon','gps4_lat','gps4_alt'])

@@ -183,9 +183,9 @@ if __name__ == "__main__":
 
     start_new_thread(position_callback,(host,port))
 
-    n_balloons = 5                      # No. of balloons
+    n_balloons = 4                      # No. of balloons
     leader = 0                          
-    anchor_list = np.array([0,1,2])     # Balloons that are used as anchors
+    anchor_list = np.array([0,2,3])     # Balloons that are used as anchors
     sigma_range_measurement_val = 1     # this depends on the real data
 
     rateHz = 0.05                       # rate to run the localisation algorithm
