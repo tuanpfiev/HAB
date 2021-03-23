@@ -357,8 +357,8 @@ if __name__ == '__main__':
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
             if checkAllGPS(GlobalVals.GPS_ALL):
                 for i in range(len(GlobalVals.ANCHOR)):
-                posEN = positionENU(GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],gps_ref).T
-                anchor_position[i,:]=posEN[0][0:2]   
+                    posEN = positionENU(GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],gps_ref).T
+                    anchor_position[i,:]=posEN[0][0:2]   
             
             # Rotate the coordinates 
             accel   = np.dot(C,imu.accel)
@@ -373,7 +373,7 @@ if __name__ == '__main__':
             print("time_RSSI_diff: ",timeRSSI_IMU_diff)
             
             GPS_data = np.array([])
-            if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt
+            if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt:
                 GPS_data = positionENU(gps,gps_ref)[0]
                 print(GPS_data)
 

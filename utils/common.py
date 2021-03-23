@@ -37,7 +37,8 @@ def convert_to_array(string_data):
             array.append(val)
             break
     return np.array(array).reshape(len(array),1)
-    def checkGPS(gps):
+
+def checkGPS(gps):
     if gps.lat == 0.0 and gps.lon == 0.0 and gps.alt == 0.0:
         return False
     else:
