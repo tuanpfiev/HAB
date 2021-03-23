@@ -350,12 +350,16 @@ if __name__ == '__main__':
     time.sleep(2)
     with open(file_name,'w') as file:
         output = csv.writer(file)
-        output.writerow(['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw'])
+        output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
+            'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt',\
+                'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch'])
 
         while True:
+            gps_all = GlobalVals.GPS_ALL
             gps = GlobalVals.GPS_ALL[sysID-1]
             imu = GlobalVals.IMU_ALL[sysID-1]
             rssi = GlobalVals.RSSI
+            epoch = time.time()
 
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
             if checkAllGPS(GlobalVals.GPS_ALL):
@@ -399,8 +403,10 @@ if __name__ == '__main__':
                 
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
             
-            x_h = np.array([node.x_h[:,-1]]).T
-            output.writerow([x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw])
+            x_h = np.array([epoch, node.x_h[:,-1]]).T
+            output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
+                gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
+                    imu.gyros[0],imu.gyros[1],imu.gyros[2],imu.accel[0],imu.accel[1],imu.accel[2],imu.raw_qt[0],imu.raw_qt[1],imu.raw_qt[2],imu.raw_qt[3]])
             time.sleep(dt)
 
     # while True:

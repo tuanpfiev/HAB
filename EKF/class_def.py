@@ -31,7 +31,7 @@ class node:
 #{RAW_QT: 1,2,3,4; MAGNETIC_VECTOR: 1,2,3; ACCELERATION: 1,2,3; EPOCH: 123456789; EULER_321: 1,2,3; MAG_HEADING: 123} 
 
 class IMU:
-    def __init__(self, sysID = None, raw_qt = None, mag_vector = None, accel = None, gyros = None, epoch = None, euler = None, gyro = None):
+    def __init__(self, sysID = None, raw_qt = None, mag_vector = None, accel = None, gyros = None, epoch = None, euler = None):
         self.sysID = sysID if sysID is not None else 0
         self.raw_qt = raw_qt if raw_qt is not None else np.array([[0.0, 0.0, 1.0, 0.0]]).T
         self.mag_vector = mag_vector if mag_vector is not None else np.zeros([3,1])
@@ -39,7 +39,7 @@ class IMU:
         self.gyros = gyros if gyros is not None else np.zeros([3,1])
         self.epoch = epoch if epoch is not None else 0.0
         self.euler = euler if euler is not None else np.zeros([3,1])
-        self.gyro = gyro if gyro is not None else np.zeros([3,1])
+
 
 class GPS:
     def __init__(self, sysID = None, lat = None, lon = None, alt = None, epoch = None):
