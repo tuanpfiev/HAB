@@ -356,7 +356,7 @@ def main():
                 
                 # Log the GPS data
                 logString = str(GPSepoch) + "," + str(lon) + "," + str(lat) + "," + str(alt) + "," + str(GlobalVals.GPSAscentRate) + "\n"
-
+                timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(GPSepoch))
                 try:
                     fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
                     fileObj.write(logString)
@@ -367,7 +367,7 @@ def main():
                     return
 
                 # Debug Messages 
-                print("lon: " + str(round(lon,4)) + ", lat: " + str(round(lat,4)) + ", alt: " + str(round(alt,2)) + ", Time: " + str(GPStime_hour) + ":" + str(GPStime_min) + ":" + str(GPStime_sec)+ ", GPS Epoch Time: " + str(GPSepoch))
+                print("lon: " + str(round(lon,4)) + ", lat: " + str(round(lat,4)) + ", alt: " + str(round(alt,2)) + ", Time: ", timeLocal)
 
                 loopLength = loopLength - 1
 

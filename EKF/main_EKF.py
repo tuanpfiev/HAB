@@ -403,10 +403,10 @@ if __name__ == '__main__':
                 
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
             
-            x_h = np.array([epoch, node.x_h[:,-1]]).T
+            x_h = np.array([node.x_h[:,-1]]).T
             output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                 gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0],imu.gyros[1],imu.gyros[2],imu.accel[0],imu.accel[1],imu.accel[2],imu.raw_qt[0],imu.raw_qt[1],imu.raw_qt[2],imu.raw_qt[3]])
+                    imu.gyros[0],imu.gyros[1],imu.gyros[2],imu.accel[0],imu.accel[1],imu.accel[2],imu.raw_qt[0],imu.raw_qt[1],imu.raw_qt[2],imu.raw_qt[3],epoch])
             time.sleep(dt)
 
     # while True:
