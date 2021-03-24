@@ -331,7 +331,7 @@ if __name__ == '__main__':
     settings = settings()
     dt = GlobalVals.dt ## The sampling time is based on IMU
     imu_prev_time = 0
-    Q_Xsens = False  #If Q_Xsens = False, EKF will solve the Euler angle; 
+    Q_Xsens = True  #If Q_Xsens = False, EKF will solve the Euler angle; 
                 #if Q_Xsens = True, EKF will not solve the Euler angle and the angle from sensor output will be used. 
                 #In the latter case, the quaternion data should be used
                 #For basic experiment, Q_Xsens = False
@@ -352,7 +352,8 @@ if __name__ == '__main__':
         output = csv.writer(file)
         output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
             'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt',\
-                'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch'])
+                'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
+                    'magVec1','magVec2','magVec3'])
 
         while True:
             gps_all = GlobalVals.GPS_ALL
@@ -368,10 +369,10 @@ if __name__ == '__main__':
                     anchor_position[i,:]=posEN[0][0:2]   
             
             # Rotate the coordinates 
-            imu.accel   = np.dot(C,imu.accel)
+            accel   = np.dot(C,imu.accel)
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU_i = np.concatenate((imu.accel,imu.gyros,imu.mag_vector))
+            IMU_i = np.concatenate((accel,imu.gyros,imu.mag_vector))
             ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
             ## The sampling time is based on that of IMU
             timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch       # IMU epoch is in ms
@@ -406,7 +407,8 @@ if __name__ == '__main__':
             x_h = np.array([node.x_h[:,-1]]).T
             output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                 gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],imu.accel[0][0],imu.accel[1][0],imu.accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch])
+                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
+                        imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
             time.sleep(dt)
 
     # while True:

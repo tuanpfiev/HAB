@@ -24,9 +24,15 @@ from common import *
 global buffer, gps_all, imu_all, gps_ref, positionXY, distance
 buffer = GlobalVals.BUFFER
 
+def list_to_str(list_args):
+    list_str = ""
+    for i in range(len(list_args)):
+        list_str = list_str + str(list_args[i]) + ","
+    return list_str[:-1] + "\n"
+
 def rssi_update(new_data):
     GlobalVals.RSSI = new_data
-    print(GlobalVals.RSSI.epoch)
+    # print(GlobalVals.RSSI.epoch)
 
 def position_update(posXYZ,new_gps):
     i = sysID_to_index(new_gps.sysID)
@@ -60,6 +66,30 @@ def stringToGPS(raw_data):
     except ValueError:
 
         return False, GPS()
+
+def stringToRSSI(raw_data):
+    try:
+        raw_data.index("RSSI_filter:")
+        raw_data.index("distance:")
+        raw_data.index("time:")
+
+    except ValueError:
+        
+        return False, RSSI()
+
+    rssi_i = RSSI()
+
+    try:
+        temp = extract_string_data("RSSI_filter: ",";",raw_data)
+        rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
+        rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
+        rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
+
+        return True, rssi_i
+
+    except ValueError:
+
+        return False, RSSI()
 
 def gps_callback(host,port):
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -109,7 +139,7 @@ def gps_callback(host,port):
             
             idx = 0
             while idx < len(gps_list):
-                ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].atl, GlobalVals.GPS_REF.lat, GlobalVals.GPS_REF.lon, GlobalVals.GPS_REF.alt)
+                ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].alt, GlobalVals.GPS_REF.lat, GlobalVals.GPS_REF.lon, GlobalVals.GPS_REF.alt)
                 posXYZ = POS_XYZ(ned[0],ned[1])   
                 position_update(posXYZ, gps_list[idx])
                 idx += 1
@@ -190,7 +220,7 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
 
-    file_name = "datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationEKF.csv"
+    file_name = "datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
     
     # Logging
     location = GlobalVals.POS_XYZ
@@ -204,33 +234,42 @@ if __name__ == "__main__":
     
     print("Algorithm started ....")
 
-    with open(file_name,'w') as file:
-        output = csv.writer(file)
-        output.writerow(['p0x','p0y','p1x','p1y','p2x','p2y','p3x','p3y','l0x','l0y','l1x','l1y','l2x','l2y','l3x','l3y','iteration','execution_time','epoch','gps0_lon','gps0_lat','gps0_alt','gps1_lon','gps1_lat','gps1_alt','gps2_lon','gps2_lat','gps2_alt','gps3_lon','gps3_lat','gps3_alt','gps4_lon','gps4_lat','gps4_alt'])
+    # with open(file_name,'w') as file:
+    #     output = csv.writer(file)
+    #     output.writerow(['p0x','p0y','p1x','p1y','p2x','p2y','p3x','p3y','l0x','l0y','l1x','l1y','l2x','l2y','l3x','l3y','iteration','execution_time','epoch','gps0_lon','gps0_lat','gps0_alt','gps1_lon','gps1_lat','gps1_alt','gps2_lon','gps2_lat','gps2_alt','gps3_lon','gps3_lat','gps3_alt','gps4_lon','gps4_lat','gps4_alt'])
     
-        while True:
-            
-            posXYZ_tmp = GlobalVals.POS_XYZ
-            gps_tmp = GlobalVals.GPS_ALL
-            distance = GlobalVals.RSSI.distance
+    while True:
+        
+        posXYZ_tmp = GlobalVals.POS_XYZ
+        gps_tmp = GlobalVals.GPS_ALL
+        distance = GlobalVals.RSSI.distance
 
-            start_time = time.time()
-            location,_,iteration = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,distance)
-            execution_time = time.time()-start_time
-            
-            pos_error = []
-            for i in range(GlobalVals.N_BALLOON):
-                pos_error.append([location[i,0]-posXYZ_tmp[i].x, location[i,1]-posXYZ_tmp[i].y])
+        start_time = time.time()
+        location,_,iteration = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,distance)
+        execution_time = time.time()-start_time
+        
+        pos_error = np.zeros([GlobalVals.N_BALLOON,2])
+        for i in range(GlobalVals.N_BALLOON):
+            pos_error[i,:] = [location[i,0]-posXYZ_tmp[i].x, location[i,1]-posXYZ_tmp[i].y]
 
-            print('----- start printing ------')
-            print('Time: ', start_time)
-            print("Balloon 1: lat", round(gps_tmp[0].lat,3), "lon: ", round(gps_tmp[0].lon,3))
-            print("Balloon 2: lat", round(gps_tmp[1].lat,3), "lon: ", round(gps_tmp[1].lon,3))
+        print('----- start printing ------')
+        print('Time: ', start_time)
+        print("Balloon 1: lat", round(gps_tmp[0].lat,3), "lon: ", round(gps_tmp[0].lon,3))
+        print("Balloon 2: lat", round(gps_tmp[1].lat,3), "lon: ", round(gps_tmp[1].lon,3))
 
-            print("localisation error: \n", pos_error)
-            output.writerow([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
-
-            time.sleep(rate)
+        print("localisation error: \n", pos_error)
+        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
+        # output.writerow([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
+                            # write log string to file  
+        try:
+            fileObj = open(file_name, "a")
+            fileObj.write(logString)
+            fileObj.close()
+        except Exception as e:
+            print("LoRa Radio: Error writting to file. Breaking thread.")
+            print("LoRa Radio: Exception: " + str(e.__class__))
+            break
+        time.sleep(rate)
 
     if GPS_Thread.is_alive():
         with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
