@@ -60,3 +60,9 @@ def positionENU(gps,gps_ref):
     pos_enu = np.dot(C_NED_ENU,pos_ned)
     return pos_enu
 
+def list_to_str(list_args):
+    list_str = ""
+    for i in range(len(list_args)):
+        list_str = list_str + str(list_args[i]) + ","
+    return list_str[:-1] + "\n"
+
