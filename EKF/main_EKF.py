@@ -304,8 +304,8 @@ if __name__ == '__main__':
     print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
     while True:
         # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
-        # print(checkAllGPS(GlobalVals.GPS_ALL))
-        # print(GlobalVals.RSSI.epoch != 0.0)
+        print(checkAllGPS(GlobalVals.GPS_ALL))
+        print(GlobalVals.RSSI.epoch != 0.0)
         if GlobalVals.RSSI.epoch != 0.0 and checkAllGPS(GlobalVals.GPS_ALL):
             break
 
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     settings = settings()
     dt = GlobalVals.dt ## The sampling time is based on IMU
     imu_prev_time = 0
-    Q_Xsens = True  #If Q_Xsens = False, EKF will solve the Euler angle; 
+    Q_Xsens = False  #If Q_Xsens = False, EKF will solve the Euler angle; 
                 #if Q_Xsens = True, EKF will not solve the Euler angle and the angle from sensor output will be used. 
                 #In the latter case, the quaternion data should be used
                 #For basic experiment, Q_Xsens = False
@@ -360,7 +360,7 @@ if __name__ == '__main__':
             imu = GlobalVals.IMU_ALL[sysID-1]
             rssi = GlobalVals.RSSI
             epoch = time.time()
-
+            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
             if checkAllGPS(GlobalVals.GPS_ALL):
                 for i in range(len(GlobalVals.ANCHOR)):
@@ -368,7 +368,7 @@ if __name__ == '__main__':
                     anchor_position[i,:]=posEN[0][0:2]   
             
             # Rotate the coordinates 
-            accel   = np.dot(C,imu.accel)
+            imu.accel   = np.dot(C,imu.accel)
 
             # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
             IMU_i = np.concatenate((imu.accel,imu.gyros,imu.mag_vector))
@@ -376,13 +376,13 @@ if __name__ == '__main__':
             ## The sampling time is based on that of IMU
             timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch       # IMU epoch is in ms
             timeRSSI_IMU_diff = imu.epoch/1000 - rssi.epoch
-            print("time_GPS_diff: ",timeGPS_IMU_diff)
-            print("time_RSSI_diff: ",timeRSSI_IMU_diff)
+            # print("time_GPS_diff: ",timeGPS_IMU_diff)
+            # print("time_RSSI_diff: ",timeRSSI_IMU_diff)
             
             GPS_data = np.array([])
             if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt:
                 GPS_data = positionENU(gps,gps_ref)[0]
-                print(GPS_data)
+                # print(GPS_data)
 
             anchor_distance = np.array([])
             if checkAllGPS(GlobalVals.GPS_ALL) and timeRSSI_IMU_diff <= 2*dt:
@@ -395,18 +395,18 @@ if __name__ == '__main__':
                     else:
                         temp = distance2D([gps, GlobalVals.GPS_ALL[i-1],rssi.distance])
                         anchor_distance[i,:] = distance2D([gps, GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],rssi.distance])
-                print(anchor_distance)
-                print("===============")
+                # print(anchor_distance)
+                # print("===============")
 
             if Q_Xsens:
                 q_sensor = imu.raw_qt.reshape(4)
-                
+            print('Time: ',timeLocal)
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
             
             x_h = np.array([node.x_h[:,-1]]).T
             output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                 gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0],imu.gyros[1],imu.gyros[2],imu.accel[0],imu.accel[1],imu.accel[2],imu.raw_qt[0],imu.raw_qt[1],imu.raw_qt[2],imu.raw_qt[3],epoch])
+                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],imu.accel[0][0],imu.accel[1][0],imu.accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch])
             time.sleep(dt)
 
     # while True:
