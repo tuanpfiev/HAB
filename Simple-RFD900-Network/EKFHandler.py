@@ -17,8 +17,7 @@ GPS_DistroThreadLock = threading.Lock()
 
 
 def gps_update(new_data):
-    i = sysID_to_index(new_data.sysID)
-    GlobalVals.EKF_GPS_ALL[i-1] = new_data
+    GlobalVals.EKF_GPS_ALL = new_data
     
 
 #=====================================================
@@ -91,32 +90,31 @@ def EKFGPSLoggerSocket():
                 gps_update(gps_list[idx])
                 idx += 1
             
-            for i in range(len(GlobalVals.EKF_GPS_ALL)):
-                gps_i = GlobalVals.EKF_GPS_ALL[i]
-            
-                GPSData = CustMes.MESSAGE_GPS()
-                GPSData.Longitude = gps_i.lon
-                GPSData.Latitude = gps_i.lat
-                GPSData.Altitude = gps_i.alt
-                GPSData.GPSTime = gps_i.epoch
-                GPSData.SystemID = gps_i.sysID
+            gps_i = GlobalVals.EKF_GPS_ALL
+        
+            GPSData = CustMes.MESSAGE_GPS()
+            GPSData.Longitude = gps_i.lon
+            GPSData.Latitude = gps_i.lat
+            GPSData.Altitude = gps_i.alt
+            GPSData.GPSTime = gps_i.epoch
+            GPSData.SystemID = gps_i.sysID
 
-                # add data to the gps buffer 
-                # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
-         
-                # set the flag for the data 
-                # with GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX:
-                #     GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA = True
+            # add data to the gps buffer 
+            # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
+        
+            # set the flag for the data 
+            # with GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX:
+            #     GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA = True
 
-                # send GPS data to other balloons 
-                GPSPacket = CustMes.MESSAGE_FRAME()
-                GPSPacket.SystemID = GlobalVals.SYSTEM_ID
-                GPSPacket.MessageID = 5
-                GPSPacket.TargetID = 0
-                GPSPacket.Payload = GPSData.data_to_bytes()
-                NetworkManager.sendPacket(GPSPacket)
-                # print(GPSData)
-                # print("***************************")
+            # send GPS data to other balloons 
+            GPSPacket = CustMes.MESSAGE_FRAME()
+            GPSPacket.SystemID = GlobalVals.SYSTEM_ID
+            GPSPacket.MessageID = 5
+            GPSPacket.TargetID = 0
+            GPSPacket.Payload = GPSData.data_to_bytes()
+            NetworkManager.sendPacket(GPSPacket)
+            print(GPSData)
+            print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
