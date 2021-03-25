@@ -20,6 +20,7 @@ import json
 from common import *
 from common_class import *
 import random
+import boto3
 
 stream_name = 'RMITballoon_Data'
 k_client = boto3.client('kinesis', region_name='ap-southeast-2')
@@ -32,9 +33,10 @@ count_history = np.array([0]*n_real_balloon)
 def update_GPS_log(gps_data):
     global GPS_log
     index = gps_data.SystemID
-    
-    GPS_log[index-1,:]= GPS(gps_data.SystemID, gps_data.Latitude, gps_data.Longitude, gps_data.Altitude,gps_data.GPSTime)
-    
+    try:    
+        GPS_log[index-1]= GPS(gps_data.SystemID, gps_data.Latitude, gps_data.Longitude, gps_data.Altitude,gps_data.GPSTime)
+    except:
+        print('here')
 
 def distance_calculation(gps_data):
     p1 = lla2ecef(gps_data[0].lat,gps_data[0].lon,gps_data[0].alt)
@@ -191,8 +193,8 @@ def main():
                         GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
 
                     # set the flags for the buffer 
-                    with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
-                        GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
+                    # with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
+                    #     GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
                     
                     continue
 
