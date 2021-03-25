@@ -10,7 +10,7 @@ import ErrorReporter
 import GPSHandler
 import PingLogger
 import ImaginaryBalloons
-import sys
+import sys, os
 
 sys.path.insert(1,'../utils')
 from utils import get_port
