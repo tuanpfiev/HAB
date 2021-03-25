@@ -249,6 +249,11 @@ if __name__ == '__main__':
     GlobalVals.PORT=get_port('RFD900')
     print('PORT: '+ GlobalVals.PORT)
 
+    try:
+        os.makedirs("../datalog")
+    except FileExistsError:
+        pass
+
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.SerialManagerThread,args=())
     NetworkThread.daemon = True

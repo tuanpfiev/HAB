@@ -12,7 +12,7 @@ import PingLogger
 import ImaginaryBalloons
 import IMU_Handler
 import EKFHandler
-import sys
+import sys, os
 
 sys.path.insert(1,'../utils')
 from utils import get_port
@@ -168,6 +168,12 @@ if __name__ == '__main__':
     # set Port
     GlobalVals.PORT=get_port('RFD900')
     print('PORT: '+ GlobalVals.PORT)
+
+    try:
+        os.makedirs("../datalog")
+    except FileExistsError:
+        pass
+
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.SerialManagerThread,args=())

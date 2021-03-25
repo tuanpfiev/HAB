@@ -335,11 +335,11 @@ if __name__ == '__main__':
     C = np.array([[-1,0, 0],[0,-1,0],[0,0,-1]]) # correcting acc
 
     try:
-        os.makedirs("datalog")
+        os.makedirs("../datalog")
     except FileExistsError:
         pass
 
-    file_name = "datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ekf.csv"
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ekf.csv"
 
     time.sleep(2)
     with open(file_name,'w') as file:

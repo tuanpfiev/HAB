@@ -34,11 +34,13 @@ if __name__ == "__main__":
         sysID = ""
     
     try:
-        os.makedirs("datalog")
+        os.makedirs("../datalog")
     except FileExistsError:
         pass
 
-    file_name = "datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-temperature.txt"
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-temperature.txt"
+    GlobalVals.GPS_LOGGER_FILE = file_name
+
     
     
     zone_paths = thermal_zone.get_thermal_zone_paths()

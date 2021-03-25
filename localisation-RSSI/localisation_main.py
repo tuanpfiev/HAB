@@ -216,11 +216,23 @@ if __name__ == "__main__":
     rate = 1/rateHz                     
 
     try:
-        os.makedirs("datalog")
+        os.makedirs("../datalog")
     except FileExistsError:
         pass
 
-    file_name = "datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
+
+    logString = "px1, py1, px2, py2, px3, py3, px4, py4, lx2, ly2, lx3, ly3, lx4, ly4, iteration, execution time, epoch, gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon \n"
+    
+    try:
+        fileObj = open(file_name, "a")
+        fileObj.write(logString)
+        fileObj.close()
+    except Exception as e:
+        print("Localisation: Error writting to file. Breaking thread.")
+        print("Localisation: Exception: " + str(e.__class__))
+
+
     
     # Logging
     location = GlobalVals.POS_XYZ

@@ -9,7 +9,7 @@ import socket
 import struct
 import subprocess
 
-import sys
+import sys, os
 sys.path.insert(1,'../utils')
 from utils import get_port
 
@@ -417,7 +417,24 @@ if __name__ == '__main__':
     GlobalVals.GPS_UART_PORT=get_port('GPS')
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
 
-    
+    try:
+        os.makedirs("../datalog")
+    except FileExistsError:
+        pass
+
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GPSLogger.csv"
+    GlobalVals.GPS_LOGGER_FILE = file_name
+
+    logString = "epoch, lon, lat, alt, ascent_rate \n"
+
+    try:
+        fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
+        fileObj.write(logString)
+        fileObj.close()
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print("Error using error log file, ending error thread")
+
     # start the serial thread 
     GPSThread = Thread(target=GPSSerialThread, args=())
     GPSThread.start()

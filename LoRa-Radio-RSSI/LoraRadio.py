@@ -362,16 +362,24 @@ if __name__ == '__main__':
         print('PORT: '+ GlobalVals.PORT)
     
     # create log file string 
-    data_log_folder_name ="wait"
-
     try:
-        os.makedirs(data_log_folder_name)
+        os.makedirs("../datalog")
     except FileExistsError:
         pass
 
-    file_name = data_log_folder_name+"/"+time.strftime("%Y%m%d-%H%M%S")+"-RSSILog.txt"
-    GlobalVals.RSSI_LOG_FILE = file_name
-    print(GlobalVals.RSSI_LOG_FILE)
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-LoraRSSI.csv"
+    GlobalVals.GPS_LOGGER_FILE = file_name
+
+    logString = "epoch, rssi, filtered_RSSI, distance \n"
+
+    try:
+        fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
+        fileObj.write(logString)
+        fileObj.close()
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print("Error using error log file, ending error thread")
+
 
     
     RSSI_Thread = Thread(target = Thread_RSSI_publish, args = (GlobalVals.HOST,GlobalVals.PORT_RSSI))
