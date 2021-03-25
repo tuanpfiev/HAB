@@ -16,6 +16,9 @@ try:
 	socket_logger.connect(('127.0.0.1',6000))
 	socket_logger.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
 except Exception as e:
+	if e.args[1] != 'Connection refused'
+		break
+
 	print("Exception: " + str(e.__class__))
 	print("There was an error starting the logger socket. This thread will now stop.")
 	# with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:

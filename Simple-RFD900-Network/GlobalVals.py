@@ -60,7 +60,7 @@ GPS_DATA_BUFFER = []
 IMU_DATA_BUFFER = []
 AWS_GPS_DATA_BUFFER = [] 
 EKF_GPS_DATA_BUFFER = []
-EKF_GPS_ALL = np.array([GPS()]*N_BALLOON)
+EKF_GPS_ALL = np.array([GPS()])
 
 
 # Global Lists / Buffers Mutexes 

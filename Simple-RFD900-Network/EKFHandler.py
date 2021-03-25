@@ -115,10 +115,11 @@ def EKFGPSLoggerSocket():
                 GPSPacket.TargetID = 0
                 GPSPacket.Payload = GPSData.data_to_bytes()
                 NetworkManager.sendPacket(GPSPacket)
-                # print(GlobalVals.SYSTEM_ID)
+                # print(GPSData)
+                # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
-        time.sleep(0.11)  
+        time.sleep(1)  
 
     socket_logger.close()
     return 

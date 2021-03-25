@@ -55,16 +55,23 @@ def imu_update(new_data):
 def gps_callback(host,port):
 
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
-    try:        
-        s.connect((host,port))
-        s.settimeout(GlobalVals.GPS_TIMEOUT)
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print("There was an error starting the GPS socket. This thread will now stop.")
-        with GlobalVals.BREAK_GPS_THREAD_MUTEX:
-            GlobalVals.BREAK_GPS_THREAD = True
-        return 
+    
+    while True:
+        try:        
+            s.connect((host,port))
+            s.settimeout(GlobalVals.GPS_TIMEOUT)
+        except Exception as e:
+            if e.args[1] == 'Connection refused':
+                print('Retry connecting to GPS....')
+                time.sleep(1)
+                continue
+            else:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the GPS socket. This thread will now stop.")
+                with GlobalVals.BREAK_GPS_THREAD_MUTEX:
+                    GlobalVals.BREAK_GPS_THREAD = True
+                return 
+        break
 
     while True:
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
@@ -160,16 +167,22 @@ def imu_callback(host,port):
 def distanceRSSI_callback(host,port):
 
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
-    try:        
-        s.connect((host,port))
-        s.settimeout(GlobalVals.RSSI_TIMEOUT)
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print("There was an error starting the RSSI socket. This thread will now stop.")
-        with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
-            GlobalVals.BREAK_RSSI_THREAD = True
-        return 
+    while True:
+        try:        
+            s.connect((host,port))
+            s.settimeout(GlobalVals.RSSI_TIMEOUT)
+        except Exception as e:
+            if e.args[1] == 'Connection refused':
+                print('Retry connecting to EKF....')
+                time.sleep(1)
+                continue
+            else:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the RSSI socket. This thread will now stop.")
+                with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
+                    GlobalVals.BREAK_RSSI_THREAD = True
+                return 
+        break
 
     while True:
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
@@ -246,7 +259,8 @@ def LLA_EKF_Distributor():
 
                 messageStr = "{'system': " + str(llaEKF.sysID) + "; 'altitude': " + str(llaEKF.alt) + "; 'latitude': " + str(llaEKF.lat) + "; 'longitude': " + str(llaEKF.lon) + "; 'time': " + str(llaEKF.epoch) + "}"
                 messageStr_bytes = messageStr.encode('utf-8')
-
+                # print(messageStr_bytes)
+                # print("*******************************")
                 try:
                     # Thread(target=Threaded_Client, args=([Distro_Connection,messageStr_bytes]))
                     # start_new_thread(Threaded_Client,(Distro_Connection,messageStr_bytes))
