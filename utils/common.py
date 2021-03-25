@@ -2,6 +2,8 @@ import sys
 import numpy as np
 sys.path.insert(1,'../utils/')
 from navpy import lla2ned
+from common_class import *
+
 def sysID_to_index(sysID):
     if sysID == 1:
         return 1
@@ -65,4 +67,86 @@ def list_to_str(list_args):
     for i in range(len(list_args)):
         list_str = list_str + str(list_args[i]) + ","
     return list_str[:-1] + "\n"
+
+#{|SYSTEM_ID: 1; EPOCH: 1615999399811; ACCELERATION: -0.237756,0.271728,9.774710; GYRO: 0.003350,-0.001536,0.004171; MAGNETIC_VECTOR: -0.068429,0.860688,0.786252; RAW_QT: 0.545915,0.010954,-0.008901,-0.837722; EULER_321: 1.539973,0.494716,-113.811455}
+def stringToIMU(raw_data):
+    try:
+        raw_data.index("SYSTEM_ID:")
+        raw_data.index("EPOCH:")
+        raw_data.index("ACCELERATION:")
+        raw_data.index("GYRO:")
+        raw_data.index("MAGNETIC_VECTOR:")
+        raw_data.index("RAW_QT:")
+        raw_data.index("EULER_321:")
+
+    except ValueError:
+        
+        return False, IMU()
+
+    imu_i = IMU()
+    try:
+        imu_i.sysID = int(extract_string_data("SYSTEM_ID: ",";",raw_data))
+        imu_i.epoch = float(extract_string_data("EPOCH: ",";",raw_data))
+        imu_i.accel = convert_to_array(extract_string_data("ACCELERATION: ",";",raw_data))
+        imu_i.mag_vector = convert_to_array(extract_string_data("MAGNETIC_VECTOR: ",";",raw_data))
+        imu_i.raw_qt = convert_to_array(extract_string_data("RAW_QT: ",";",raw_data))
+        imu_i.euler = convert_to_array(extract_string_data("EULER_321: ",";",raw_data))
+        imu_i.gyros = convert_to_array(extract_string_data("GYRO: ",";",raw_data))
+
+        return True, imu_i
+
+    except ValueError:
+
+        return False, IMU()
+
+def stringToGPS(raw_data):
+    try:
+        raw_data.index("'system':")
+        raw_data.index("'altitude':")
+        raw_data.index("'latitude':")
+        raw_data.index("'longitude':")
+        raw_data.index("'time':")
+
+    except ValueError:
+        
+        return False, GPS()
+
+    gps_i = GPS()
+
+    try:
+        gps_i.sysID = int(extract_string_data("'system': ",";",raw_data))
+        gps_i.alt = float(extract_string_data("'altitude': ",";",raw_data))
+        gps_i.lat = float(extract_string_data("'latitude': ",";",raw_data))
+        gps_i.lon = float(extract_string_data("'longitude': ",";",raw_data))
+        gps_i.epoch = float(extract_string_data("'time': ","}",raw_data))
+
+        return True, gps_i
+
+    except ValueError:
+
+        return False, GPS()
+
+def stringToRSSI(raw_data):
+    try:
+        raw_data.index("RSSI_filter:")
+        raw_data.index("distance:")
+        raw_data.index("time:")
+
+    except ValueError:
+        
+        return False, RSSI()
+
+    rssi_i = RSSI()
+
+    try:
+        temp = extract_string_data("RSSI_filter: ",";",raw_data)
+        rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
+        rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
+        rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
+
+        return True, rssi_i
+
+    except ValueError:
+
+        return False, RSSI()
 

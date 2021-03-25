@@ -13,12 +13,12 @@ import time
 import os
 import re
 import math
-from class_def import *
 import GlobalVals
 
 sys.path.insert(1,'../utils')
 from navpy import lla2ned
 from common import *
+from common_class import *
 
 
 global buffer, gps_all, imu_all, gps_ref, positionXY, distance

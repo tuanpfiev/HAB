@@ -14,6 +14,13 @@ sys.path.insert(1,'../utils/')
 from navpy import lla2ned
 import csv
 from common import *
+from common_class import *
+
+
+def enu2lla(enu, gps_ref, latlon_unit='deg', alt_unit='m', model='wgs84'):
+    ned = np.dot(GlobalVals.C_ENU_NED,enu)
+    lla = ned2lla(ned,gps_ref.lat, gps_ref.lon, gps_ref.alt, latlon_unit, alt_unit, model)
+    return lla
 
 
 def distance2D(args):
@@ -44,87 +51,6 @@ def imu_update(new_data):
     i = sysID_to_index(new_data.sysID)
     GlobalVals.IMU_ALL[i-1] = new_data
 
-#{|SYSTEM_ID: 1; EPOCH: 1615999399811; ACCELERATION: -0.237756,0.271728,9.774710; GYRO: 0.003350,-0.001536,0.004171; MAGNETIC_VECTOR: -0.068429,0.860688,0.786252; RAW_QT: 0.545915,0.010954,-0.008901,-0.837722; EULER_321: 1.539973,0.494716,-113.811455}
-def stringToIMU(raw_data):
-    try:
-        raw_data.index("SYSTEM_ID:")
-        raw_data.index("EPOCH:")
-        raw_data.index("ACCELERATION:")
-        raw_data.index("GYRO:")
-        raw_data.index("MAGNETIC_VECTOR:")
-        raw_data.index("RAW_QT:")
-        raw_data.index("EULER_321:")
-
-    except ValueError:
-        
-        return False, IMU()
-
-    imu_i = IMU()
-    try:
-        imu_i.sysID = int(extract_string_data("SYSTEM_ID: ",";",raw_data))
-        imu_i.epoch = float(extract_string_data("EPOCH: ",";",raw_data))
-        imu_i.accel = convert_to_array(extract_string_data("ACCELERATION: ",";",raw_data))
-        imu_i.mag_vector = convert_to_array(extract_string_data("MAGNETIC_VECTOR: ",";",raw_data))
-        imu_i.raw_qt = convert_to_array(extract_string_data("RAW_QT: ",";",raw_data))
-        imu_i.euler = convert_to_array(extract_string_data("EULER_321: ",";",raw_data))
-        imu_i.gyros = convert_to_array(extract_string_data("GYRO: ",";",raw_data))
-
-        return True, imu_i
-
-    except ValueError:
-
-        return False, IMU()
-
-def stringToGPS(raw_data):
-    try:
-        raw_data.index("'system':")
-        raw_data.index("'altitude':")
-        raw_data.index("'latitude':")
-        raw_data.index("'longitude':")
-        raw_data.index("'time':")
-
-    except ValueError:
-        
-        return False, GPS()
-
-    gps_i = GPS()
-
-    try:
-        gps_i.sysID = int(extract_string_data("'system': ",";",raw_data))
-        gps_i.alt = float(extract_string_data("'altitude': ",";",raw_data))
-        gps_i.lat = float(extract_string_data("'latitude': ",";",raw_data))
-        gps_i.lon = float(extract_string_data("'longitude': ",";",raw_data))
-        gps_i.epoch = float(extract_string_data("'time': ","}",raw_data))
-
-        return True, gps_i
-
-    except ValueError:
-
-        return False, GPS()
-
-def stringToRSSI(raw_data):
-    try:
-        raw_data.index("RSSI_filter:")
-        raw_data.index("distance:")
-        raw_data.index("time:")
-
-    except ValueError:
-        
-        return False, RSSI()
-
-    rssi_i = RSSI()
-
-    try:
-        temp = extract_string_data("RSSI_filter: ",";",raw_data)
-        rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
-        rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
-        rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
-
-        return True, rssi_i
-
-    except ValueError:
-
-        return False, RSSI()
 
 def gps_callback(host,port):
 
@@ -282,6 +208,56 @@ def distanceRSSI_callback(host,port):
                 idx += 1
     s.close()
 
+
+def LLA_EKF_Distributor():
+    # start socket 
+    Distro_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Distro_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
+    Distro_Socket.bind((GlobalVals.HOST, GlobalVals.EKF_GPS_DISTRO_SOCKET))
+    Distro_Socket.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
+    
+
+    # Wait for connection on the distro socket 
+    try:
+        Distro_Socket.listen(1) 
+        Distro_Connection, addr = Distro_Socket.accept()  
+        Distro_Connection.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT) 
+        print("Logger Connected to ", addr)                                            
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print("Error in the logger socket. Now closing thread.")
+        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
+        return
+
+    breakThread = False
+
+    while True:
+        if breakThread:
+            break
+
+        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
+            if GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD:
+                break
+
+        with GlobalVals.LLA_EKF_BUFFER_MUTEX:
+            while len(GlobalVals.LLA_EKF_BUFFER)>0:
+                llaEKF = GlobalVals.LLA_EKF_BUFFER.pop(0)
+
+                messageStr = "{'system': " + str(llaEKF.sysID) + "; 'altitude': " + str(llaEKF.alt) + "; 'latitude': " + str(llaEKF.lat) + "; 'longitude': " + str(llaEKF.lon) + "; 'time': " + str(llaEKF.epoch) + "}"
+                messageStr_bytes = messageStr.encode('utf-8')
+
+                try:
+                    # Thread(target=Threaded_Client, args=([Distro_Connection,messageStr_bytes]))
+                    # start_new_thread(Threaded_Client,(Distro_Connection,messageStr_bytes))
+                    Distro_Connection.sendall(messageStr_bytes)
+                except Exception as e:
+                    print("Exception: " + str(e.__class__))
+                    print("Error in the EKF logger socket. Now closing thread.")
+                    breakThread = True
+                    break
+    Distro_Connection.close()
+
 if __name__ == '__main__':
 
     numArgs = len(sys.argv)
@@ -298,6 +274,10 @@ if __name__ == '__main__':
 
     RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
     RSSIThread.start()
+
+
+    LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
+    LLA_EKF_DistributorThread.start()
 
     sysID = GlobalVals.SYSID
 
@@ -411,6 +391,15 @@ if __name__ == '__main__':
                         imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
             time.sleep(dt)
 
+
+            posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
+            llaEKF = enu2lla(posENU_EKF, gps_ref)
+            
+            with GlobalVals.LLA_EKF_BUFFER_MUTEX:
+                GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
+
+
+            
     # while True:
     #     time.sleep(1)
 
@@ -428,5 +417,10 @@ if __name__ == '__main__':
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
             GlobalVals.BREAK_RSSI_THREAD = True
         RSSIThread.join()
+
+    if LLA_EKF_DistributorThread.is_alive():
+        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
+        LLA_EKF_DistributorThread.join()
 
 

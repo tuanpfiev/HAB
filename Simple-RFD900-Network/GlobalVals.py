@@ -19,9 +19,13 @@ GPS_DISTRO_SOCKET = 5002
 GPS_DISTRO_SOCKET2 = 5012
 GPS_LOGGER_SOCKET_TIMEOUT = 60
 
+
 IMU_LOGGER_SOCKET = 5003
 IMU_DISTRO_SOCKET = 5004
 IMU_LOGGER_SOCKET_TIMEOUT = 60
+
+EKF_GPS_LOGGER_SOCKET = 5051
+EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
@@ -49,6 +53,9 @@ SEQ_TRACKERS = []                   # The list containing all sequence trackers
 GPS_DATA_BUFFER = []
 
 IMU_DATA_BUFFER = []
+AWS_GPS_DATA_BUFFER = [] 
+EKF_GPS_DATA_BUFFER = []
+
 
 # Global Lists / Buffers Mutexes 
 PACKET_BUFFER_IN_MUTEX = Lock()
@@ -59,6 +66,8 @@ SEQ_TRACKERS_MUTEX = Lock()
 GPS_DATA_BUFFER_MUTEX = Lock()
 
 IMU_DATA_BUFFER_MUTEX = Lock()
+AWS_GPS_DATA_BUFFER_MUTEX = Lock()
+
 
 # Global Flags 
 SEND_PACKETS = False                # This flag informs the network manager to send all packets in the out going buffer
@@ -79,6 +88,10 @@ RECIEVED_IMU_LOCAL_DATA = False
 BREAK_IMU_DISTRO_THREAD = False
 RECIEVED_IMU_RADIO_DATA = False
 
+BREAK_EKF_GPS_LOGGER_THREAD = False
+BREAK_AWS_GPS_THREAD = False
+RECIEVED_EKF_GPS_LOCAL_DATA = False
+
 # Global Flags Mutexes  
 SEND_PACKETS_MUTEX = Lock()
 RECIEVED_PACKETS_MUTEX = Lock()
@@ -98,6 +111,10 @@ BREAK_IMU_LOGGER_THREAD_MUTEX = Lock()
 RECIEVED_IMU_LOCAL_DATA_MUTEX = Lock()
 BREAK_IMU_DISTRO_THREAD_MUTEX = Lock()
 RECIEVED_IMU_RADIO_DATA_MUTEX = Lock()
+BREAK_EKF_GPS_LOGGER_THREAD_MUTEX = Lock()
+
+EKF_GPS_DATA_BUFFER_MUTEX = Lock()
+RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX = Lock()
 
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages
