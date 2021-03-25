@@ -2,10 +2,15 @@ import time
 from dataclasses import dataclass
 from threading import Lock
 
+import numpy as np
+import sys
+sys.path.insert(1,'../utils/')
+from common_class import *
+
 #=====================================================
 # Global Constants 
 #=====================================================
-
+N_BALLOON = 4
 # serial settings 
 TIMEOUT = 0.5                       # Serial port time out 
 PORT = "COM8"                       # Windows COM por
@@ -55,6 +60,7 @@ GPS_DATA_BUFFER = []
 IMU_DATA_BUFFER = []
 AWS_GPS_DATA_BUFFER = [] 
 EKF_GPS_DATA_BUFFER = []
+EKF_GPS_ALL = np.array([GPS()]*N_BALLOON)
 
 
 # Global Lists / Buffers Mutexes 

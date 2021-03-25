@@ -1,6 +1,5 @@
 import numpy as np 
-from init_nav_state import *
-from init_filter import *
+
 
 #{RAW_QT: 1,2,3,4; MAGNETIC_VECTOR: 1,2,3; ACCELERATION: 1,2,3; EPOCH: 123456789; EULER_321: 1,2,3; MAG_HEADING: 123} 
 

@@ -11,7 +11,7 @@ import math
 
 
 sys.path.insert(1,'../utils/')
-from navpy import lla2ned
+from navpy import lla2ned, ned2lla
 import csv
 from common import *
 from common_class import *

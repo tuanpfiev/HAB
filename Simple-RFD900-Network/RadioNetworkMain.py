@@ -11,6 +11,7 @@ import GPSHandler
 import PingLogger
 import ImaginaryBalloons
 import IMU_Handler
+import EKFHandler
 import sys
 
 sys.path.insert(1,'../utils')
@@ -201,6 +202,10 @@ if __name__ == '__main__':
     # IMUDistroThread = Thread(target=IMU_Handler.IMUDistributor, args=())
     # IMUDistroThread.start()
 
+    # start EKF logger
+    EKF_GPS_Thread = Thread(target=EKFHandler.EKFGPSLoggerSocket, args = ())
+    EKF_GPS_Thread.start()
+
     try:
         main()
     except(KeyboardInterrupt, SystemExit):
@@ -250,4 +255,9 @@ if __name__ == '__main__':
     #     with GlobalVals.BREAK_IMU_DISTRO_THREAD_MUTEX:
     #         GlobalVals.BREAK_IMU_DISTRO_THREAD = True
     #     IMUDistroThread.join()
+
+    if EKF_GPS_Thread.is_alive():
+        with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
+        EKF_GPS_Thread.join()
     

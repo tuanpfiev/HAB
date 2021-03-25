@@ -8,6 +8,7 @@ import GlobalVals
 import CustMes 
 import NetworkManager
 
+import sys
 sys.path.insert(1,'../utils')
 from common import *
 from common_class import *
@@ -17,7 +18,7 @@ GPS_DistroThreadLock = threading.Lock()
 
 def gps_update(new_data):
     i = sysID_to_index(new_data.sysID)
-    GlobalVals.GPS_ALL[i-1] = new_data
+    GlobalVals.EKF_GPS_ALL[i-1] = new_data
     
 
 #=====================================================
@@ -26,26 +27,34 @@ def gps_update(new_data):
 def EKFGPSLoggerSocket():
 
     # set up socket
-    try:
-        socket_logger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
-        socket_logger.connect((GlobalVals.HOST, GlobalVals.EKF_GPS_LOGGER_SOCKET))
-        socket_logger.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print("There was an error starting the logger socket. This thread will now stop.")
-        with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
-        return 
-
+    while True:
+        try:
+            socket_logger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
+            socket_logger.connect((GlobalVals.HOST, GlobalVals.EKF_GPS_LOGGER_SOCKET))
+            socket_logger.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
+            
+        except Exception as e:
+            if e.args[1] == 'Connection refused':
+                print('Retry connecting to EKF....')
+                time.sleep(1)
+                continue
+            else:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the logger socket. This thread will now stop.")
+                with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
+                    GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
+                return 
+        break
+    print('Connected to EKF!!!')
     # intialize variables 
     bufferRead = 1024
 
     while True:
         
         # if flag is set break the thread 
-        with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
-            if GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD:
-                break
+        # with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
+        #     if GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD:
+        #         break
 
         # read the socket 
         try:
@@ -69,33 +78,44 @@ def EKFGPSLoggerSocket():
         
         if len(string_list) > 0:
             gps_list = []
+            message_buffer = []
+            # print("============================")
+            # print(string_list)
             for string in string_list:
                 received, gps_i = stringToGPS(string)
                 if received:
                     gps_list.append(gps_i)
-# 
-                    GPSData = CustMes.MESSAGE_GPS()
-                    GPSData.Longitude = gps_i.lon
-                    GPSData.Latitude = gps_i.lat
-                    GPSData.Altitude = gps_i.alt
-                    GPSData.GPSTime = gps_i.epoch
-                    GPSData.SystemID = gps_i.sysID
 
-                    # add data to the gps buffer 
-                    # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
-                    GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSData)
-        
-                    # set the flag for the data 
-                    # with GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX:
-                    #     GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA = True
+            idx = 0
+            while idx < len(gps_list):
+                gps_update(gps_list[idx])
+                idx += 1
+            
+            for i in range(len(GlobalVals.EKF_GPS_ALL)):
+                gps_i = GlobalVals.EKF_GPS_ALL[i]
+            
+                GPSData = CustMes.MESSAGE_GPS()
+                GPSData.Longitude = gps_i.lon
+                GPSData.Latitude = gps_i.lat
+                GPSData.Altitude = gps_i.alt
+                GPSData.GPSTime = gps_i.epoch
+                GPSData.SystemID = gps_i.sysID
 
-        # send GPS data to other balloons 
-        GPSPacket = CustMes.MESSAGE_FRAME()
-        GPSPacket.SystemID = GlobalVals.SYSTEM_ID
-        GPSPacket.MessageID = 5
-        GPSPacket.TargetID = 0
-        GPSPacket.Payload = GPSData.data_to_bytes()
-        NetworkManager.sendPacket(GPSPacket)
+                # add data to the gps buffer 
+                # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
+         
+                # set the flag for the data 
+                # with GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX:
+                #     GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA = True
+
+                # send GPS data to other balloons 
+                GPSPacket = CustMes.MESSAGE_FRAME()
+                GPSPacket.SystemID = GlobalVals.SYSTEM_ID
+                GPSPacket.MessageID = 5
+                GPSPacket.TargetID = 0
+                GPSPacket.Payload = GPSData.data_to_bytes()
+                NetworkManager.sendPacket(GPSPacket)
+                # print(GlobalVals.SYSTEM_ID)
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(0.11)  

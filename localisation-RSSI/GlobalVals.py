@@ -1,6 +1,9 @@
 from threading import Lock
 import numpy as np
-from class_def import *
+
+import sys
+sys.path.insert(1,'../utils/')
+from common_class import *
 
 HOST = "127.0.0.1"
 BUFFER = 1024
