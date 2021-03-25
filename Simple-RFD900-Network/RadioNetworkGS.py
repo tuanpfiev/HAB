@@ -149,37 +149,6 @@ def main():
                         GlobalVals.RECIEVED_GPS_RADIO_DATA = True
                     
                     continue
-
-                # if the packet is an EKF GPS data packet 
-                if recievedPacket.MessageID == 5:
-                    
-                    # get the GPS data
-                    GPSdata = CustMes.MESSAGE_GPS()                    
-                    error = GPSdata.bytes_to_data(recievedPacket.Payload)
-                    if error != 0:
-                        print ("Radio Network Main: GPS data error " + str(error) + ".\n")
-                        continue
-                    
-                    print("GPS Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
-
-                    # set the system id for the GPS data
-                    GPSdata.SystemID = recievedPacket.SystemID
-
-                    # update GPS_log
-                    update_GPS_log(GPSdata)
-                    distance = distance_calculation(GPS_log)
-                    print('Distance EKF: ',round(distance,2)," [m]")
-
-                    # put data into the buffer
-                    with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
-                        GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
-
-                    # set the flags for the buffer 
-                    with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
-                        GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
-                    
-                    continue
                 
                 # if the packet is string message  
                 if recievedPacket.MessageID == 3: 
@@ -195,7 +164,38 @@ def main():
                     print(StrData.MessageStr)
 
                     continue
-            
+
+                # if the packet is an EKF GPS data packet 
+                if recievedPacket.MessageID == 5:
+                    
+                    # get the GPS data
+                    GPSdata = CustMes.MESSAGE_GPS()                    
+                    error = GPSdata.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: GPS data error " + str(error) + ".\n")
+                        continue
+                    print("=================================================")
+                    print("EKF GPS Data from " + str(recievedPacket.SystemID) + ":")
+                    print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+
+                    # set the system id for the GPS data
+                    GPSdata.SystemID = recievedPacket.SystemID
+
+                    # update GPS_log
+                    update_GPS_log(GPSdata)
+                    distance = distance_calculation(GPS_log)
+                    print('Distance EKF: ',round(distance,2)," [m]")
+                    print('------------------------------------------------')
+                    # put data into the buffer
+                    with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
+                        GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
+                    
+                    continue
+
         # if radio GPS data has been recived record it 
         if GlobalVals.RECIEVED_GPS_RADIO_DATA:
 
