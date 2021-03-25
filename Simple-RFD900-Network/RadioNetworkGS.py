@@ -22,8 +22,7 @@ from common_class import *
 import random
 import boto3
 
-stream_name = 'RMITballoon_Data'
-k_client = boto3.client('kinesis', region_name='ap-southeast-2')
+
 
 global GPS_log, count_history
 n_real_balloon = 2
@@ -44,48 +43,54 @@ def distance_calculation(gps_data):
     return np.linalg.norm(p1-p2)
 
 def gps_lambda_handler():
-        # global count_history
-        
-        # telemetry_data = []
 
-        #     each_balloon = {
-        #         'sysID': str(i), 
-        #         'timeStamp': str(sys_time), 
-        #         'lat': str(data_all[i].lat + random.uniform(-0.1,0.1)),
-        #         'lon': str(data_all[i].lon+ random.uniform(-0.1,0.1)),
-        #         'alt': str(data_all[i].alt+ random.uniform(-20,20))
-        #     }
-        #     telemetry_data.append(each_balloon)
+    stream_name = 'RMITballoon_Data'
+    k_client = boto3.client('kinesis', region_name='ap-southeast-2')
 
-        # count_history = count_history + 1
-        # if count_history % 5 == 1:
-        #     for i in range(len(data_all)):
-        #         latLon = {
-        #             'sysID_h': str(i),
-        #             'time_h': str(sys_time),
-        #             'lat_h': str(data_all[i].lat),
-        #             'lon_h': str(data_all[i].lon),
-        #             'alt_h': str(data_all[i].alt),
-
-        #         }
-        #         telemetry_data.append(latLon)
-            
-
-        print(GlobalVals.AWS_GPS_DATA_BUFFER)
-        n = 3
+    while True:
+                    
+        # print("***************************************************************************")
+        # print(GlobalVals.AWS_GPS_DATA_BUFFER)
+        # print("***************************************************************************")
         aws_message = []
-        with GlobalVals.AWS_GPS_DATA_BUFFER_MUTEX:
-            if len(GlobalVals.AWS_GPS_DATA_BUFFER)>n:
-                for _ in range(n):
-                    aws_message.append(GlobalVals.AWS_GPS_DATA_BUFFER.pop(0))
-        
-                response = k_client.put_record(
-                        StreamName=stream_name,
-                        Data=json.dumps(aws_message),
-                        PartitionKey=str(random.randrange(10000))
+        for i in range(len(GPS_log)):
+            each_balloon = {
+                'sysID': str(1),
+                'timeStamp': str(GPS_log[i].epoch),
+                'lat': str(GPS_log[i].lat),
+                'lon': str(GPS_log[i].lon),
+                'alt': str(GPS_log[i].alt),
+                'pressure': str(0),
+                'signal_strength': str(0)
+            }
+            aws_message.append(each_balloon)
 
-                # time.sleep(10)
+        path = []
+        for i in range(len(GPS_log)):
+            each_balloon = {
+                'sysID_h': str(1),
+                'time_h': str(GPS_log[i].epoch),
+                'lat_h': str(GPS_log[i].lat),
+                'lon_h': str(GPS_log[i].lon),
+                'alt_h': str(GPS_log[i].alt),
+
+            }
+            path.append(each_balloon)
+        
+        aws_message.append(path)
+
+        response = k_client.put_record(
+                StreamName=stream_name,
+                Data=json.dumps(aws_message),
+                # Data = '[{"sysID": "0", "timeStamp": "1616664193158.4873", "lat": "5.206728581869298", "lon": "32.464139215264524", "alt": "200.19366866684368", "pressure": "1538.358674366736", "signal_strength": "-78.84911771441294"}, {"sysID": "1", "timeStamp": "1616664193.1584873", "lat": "5.308554001275203", "lon": "32.37461053504348", "alt": "227.88151976770965", "pressure": "1661.610419273367", "signal_strength": "-76.36356412110052"}, {"sysID": "2", "timeStamp": "1616664193.1584873", "lat": "8.123481650386552", "lon": "37.87815098798116", "alt": "278.68562668245113", "pressure": "1353.3783098051533", "signal_strength": "-89.91233630179218"}, {"sysID": "3", "timeStamp": "1616664193.1584873", "lat": "6.489141170725179", "lon": "33.53937285828535", "alt": "224.23065648851028", "pressure": "1538.9333055493116", "signal_strength": "-78.84729804332947"}, {"sysID": "4", "timeStamp": "1616664193.1584873", "lat": "1.2494047201518554", "lon": "39.538746616103836", "alt": "227.66821532645596", "pressure": "1757.8155350482111", "signal_strength": "-89.95481461416858"}, [{"sysID_h": "0", "time_h": "1616664193.1584873", "lat_h": "-36.71756565615016", "lon_h": "142.21421971321564", "alt_h": "297.2000452618081"}, {"sysID_h": "1", "time_h": "1616664193.1584873", "lat_h": "-36.71907273180851", "lon_h": "142.20937797351252", "alt_h": "243.4553806587891"}, {"sysID_h": "2", "time_h": "1616664193.1584873", "lat_h": "-36.71538691546569", "lon_h": "142.18636041981281", "alt_h": "210.70848360023982"}, {"sysID_h": "3", "time_h": "1616664193.1584873", "lat_h": "-36.715342802396464", "lon_h": "142.2777564240451", "alt_h": "280.72262902738765"}, {"sysID_h": "4", "time_h": "1616664193.1584873", "lat_h": "-36.718430732855374", "lon_h": "142.11824349751765", "alt_h": "270.1717911308283"}, {"sysID_h": "0", "time_h": "1616664193.1584873", "lat_h": "-36.71637743399295", "lon_h": "142.14831562184483", "alt_h": "213.859304696758"}, {"sysID_h": "1", "time_h": "1616664193.1584873", "lat_h": "-36.71980524861051", "lon_h": "142.12980132216143", "alt_h": "254.33563542394694"}, {"sysID_h": "2", "time_h": "1616664193.1584873", "lat_h": "-36.71934078447395", "lon_h": "142.219660100136", "alt_h": "239.80918393657032"}, {"sysID_h": "3", "time_h": "1616664193.1584873", "lat_h": "-36.7153725217811", "lon_h": "142.16116885498164", "alt_h": "284.34822781414795"}, {"sysID_h": "4", "time_h": "1616664193.1584873", "lat_h": "-36.7189435667627", "lon_h": "142.10132189614723", "alt_h": "296.39948010459364"}]]',
+                PartitionKey=str(random.randrange(10000))
         )
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        print(json.dumps(aws_message))
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+
+        time.sleep(1)
+        
 
 #=====================================================
 # Main function  
@@ -217,16 +222,16 @@ def main():
                     logString = logString + str(GPSTime) + "," + str(SystemID) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n"
 
                     # AWS msg
-                    each_balloon = {
-                        'sysID': str(SystemID),
-                        'timeStamp': str(GPSData.GPSTime),
-                        'lat': str(Latitude),
-                        'lon': str(Longitude),
-                        'alt': str(Altitude)
-                    }
+                    # each_balloon = {
+                    #     'sysID': str(SystemID),
+                    #     'timeStamp': str(GPSData.GPSTime),
+                    #     'lat': str(Latitude),
+                    #     'lon': str(Longitude),
+                    #     'alt': str(Altitude)
+                    # }
 
-                    with GlobalVals.AWS_GPS_DATA_BUFFER_MUTEX:
-                        GlobalVals.AWS_GPS_DATA_BUFFER.append(each_balloon)
+                    # with GlobalVals.AWS_GPS_DATA_BUFFER_MUTEX:
+                    #     GlobalVals.AWS_GPS_DATA_BUFFER.append(each_balloon)
 
             # write the log string to file  
             try:

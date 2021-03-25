@@ -1,3 +1,0 @@
-sysID,PLL-therm,CPU-therm,PMIC-Die,GPU-therm,AO-therm,thermal-fan-est,epoch
-2,42.5,44.5,100.0,43.5,50.5,43.25,1616653747.7901683
-2,44.0,46.0,100.0,44.0,51.0,45.0,1616653747.7901683
