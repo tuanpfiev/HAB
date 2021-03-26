@@ -18,10 +18,8 @@ def Rt2b(ang):
 
 
 def decm2q(R):
-    # print('-------------------------------')
-    # print(R)
-    # print('-------------------------------')
     q = np.zeros((4,1))
+    
     q[3] = 0.5*np.sqrt( 1 + sum(np.diag(R)))
     q[0] = (R[2,1] - R[1,2])/q[3]*0.25
     q[1] = (R[0,2] - R[2,0])/q[3]*0.25
@@ -104,10 +102,11 @@ def rotationMatrixToEulerAngles(R):
     return np.array([x, y, z])
 
 def dcm2euler(U):
+    sy = U[0,0]*U[0,0]+U[1,0]*U[1,0]
     y = np.zeros((3,1))
     y[0]= np.arctan2(U[2,1],U[2,2])
-    y[1] = np.arcsin(-U[2,0]) 
-    y[2] = -np.arctan(U[1,0]/U[0,0])
+    y[1] = np.arctan2(-U[2,0],sy) 
+    y[2] = np.arctan2(U[1,0],U[0,0])
     return y
 
 def dis_fun(anchor,node_pos):
@@ -135,3 +134,21 @@ def geodetic_to_geocentric(latitude, longitude, height):
     y = r * sin(lambda_angle)
     z = (n * (1 - e2) + height) * sin_phi
     return x, y, z
+
+
+def quaternion_to_rotation_matrix(s1, x1, y1, z1):
+       
+
+        
+        # Check the norm of the quaternion! It must be a unit quaternion!
+    n = np.sqrt(s1**2+x1**2+y1**2+z1**2)
+    s = s1/n
+    x= x1/n
+    y = y1/n
+    z = z1/n    
+        
+    R = np.array([[1 - 2*(y**2 + z**2), 2*(x*y - s*z),   2*(x*z + s*y) ],
+    [2*(x*y + s*z), 1 - 2*(x**2 + z**2),   2*(y*z - s*x)],
+    [2*(x*z - s*y),   2*(y*z + s*x), 1 - 2*(x**2 + y**2)]])
+        
+    return R.reshape(3,3)

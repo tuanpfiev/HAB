@@ -334,6 +334,10 @@ if __name__ == '__main__':
 
     C = np.array([[-1,0, 0],[0,-1,0],[0,0,-1]]) # correcting acc
 
+    GPS_data_vel_pre = np.array([])
+    GPS_time = 1
+    flag = 0
+
     try:
         os.makedirs("../datalog")
     except FileExistsError:
@@ -354,8 +358,9 @@ if __name__ == '__main__':
             gps = GlobalVals.GPS_ALL[sysID-1]
             imu = GlobalVals.IMU_ALL[sysID-1]
             rssi = GlobalVals.RSSI
-            epoch = time.time()
-            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
+            epochMS = imu.epoch
+
+            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epochMS))
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
             if checkAllGPS(GlobalVals.GPS_ALL):
                 for i in range(len(GlobalVals.ANCHOR)):
@@ -375,9 +380,28 @@ if __name__ == '__main__':
             # print("time_RSSI_diff: ",timeRSSI_IMU_diff)
             
             GPS_data = np.array([])
+            GPS_data_vel = np.array([])  # Should be in Cartesian coordinate.  geodetic_to_geocentric( lat, lon, h)
+
             if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt:
                 GPS_data = positionENU(gps,gps_ref)[0]
                 # print(GPS_data)
+
+            if GPS_data.size != 0:
+                if flag == 0:
+                    v = np.zeros((3,1))
+                    GPS_data_vel = np.concatenate((GPS_data,v))  
+                    GPS_data_vel_pre = GPS_data_vel
+                    GPS_time_pre = gps.epoch
+                    flag = 1
+                else:                    
+                    dt_GPS = gps.epoch - GPS_time_pre
+                    v[0] = (GPS_data[0]-GPS_data_vel_pre[0])/dt_GPS
+                    v[1] = (GPS_data[1]-GPS_data_vel_pre[1])/dt_GPS
+                    v[2] = (GPS_data[2]-GPS_data_vel_pre[2])/dt_GPS
+                    GPS_data_vel = np.concatenate((GPS_data,v))  
+                    GPS_data_vel = np.concatenate((GPS_data,v))  
+                    GPS_data_vel_pre = GPS_data_vel
+                    GPS_time_pre = gps.epoch
 
             anchor_distance = np.array([])
             if checkAllGPS(GlobalVals.GPS_ALL) and timeRSSI_IMU_diff <= 2*dt:
@@ -401,9 +425,8 @@ if __name__ == '__main__':
             x_h = np.array([node.x_h[:,-1]]).T
             output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                 gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
+                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epochMS,\
                         imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
-            time.sleep(dt)
 
 
             posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
@@ -411,6 +434,7 @@ if __name__ == '__main__':
             
             with GlobalVals.LLA_EKF_BUFFER_MUTEX:
                 GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
+        time.sleep(dt)
 
 
             

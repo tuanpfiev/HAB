@@ -3,7 +3,10 @@ from utilities import *
 
 def Nav_eq(x,u,dt,g_t,x_apo,P_apo,R_data,Q_data):
     q2 = q2dcm(x[6:10])
-    u2 = u[0:3]
+    u2 = u.copy()
+    u[0:3] = u2[3:6]
+    u[3:6] = u2[0:3]
+    u2 = u[3:6]
     f_t = np.dot(q2,u2)
     acc_t = f_t-g_t
 
@@ -135,10 +138,12 @@ def Nav_eq(x,u,dt,g_t,x_apo,P_apo,R_data,Q_data):
     x_n_b = x_n_b/np.linalg.norm(x_n_b,2)
 
     Rot_matrix = np.hstack((x_n_b.T,y_n_b.T,z_n_b))
-
-    yaw = np.arctan2(Rot_matrix[1,2],Rot_matrix[2,2])
-    pitch  = -np.arcsin(Rot_matrix[0,2])
-    roll = np.arctan2(Rot_matrix[0,1],Rot_matrix[0,0])
+    # angle = np.rad2deg(rotationMatrixToEulerAngles(Rot_matrix))
+    # yaw = np.arctan2(Rot_matrix[1,2],Rot_matrix[2,2])
+    # pitch  = -np.arcsin(Rot_matrix[0,2])
+    # roll = np.arctan2(Rot_matrix[0,1],Rot_matrix[0,0])
     q = decm2q(Rot_matrix)
+    a = np.rad2deg(rotationMatrixToEulerAngles(Rot_matrix))
+    # b = np.rad2deg([yaw,pitch,roll])
     x[6:10] = q
-    return x, x_apo, P_apo, np.rad2deg([yaw,pitch,roll])
+    return x, x_apo, P_apo, a

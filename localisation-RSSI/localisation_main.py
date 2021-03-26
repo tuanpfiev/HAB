@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
 
     leader = 0                          
-    sigma_range_measurement_val = 1     # this depends on the real data
+    sigma_range_measurement_val = 200     # this depends on the real data
 
     rateHz = 0.05                       # rate to run the localisation algorithm
     rate = 1/rateHz                     
