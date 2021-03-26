@@ -141,11 +141,13 @@ def get_distance(n,balloon,offset,Leader,var_measurement,distanceRSSI):
             Y = np.array([balloon[jj].X,balloon[jj].Y])
             if i == 0 and jj == 1:
                 distance_matrix[i,jj]= distanceRSSI
+                sigma[i,jj] = var_measurement
+                sigma[jj,i] = var_measurement
             else:
                 distance_matrix[i,jj] = np.linalg.norm(X-Y) + random.uniform(-10,10)  # CHECK THIS!! SHOULD WE ADD NOISE TO MEASUREMENT?
+                sigma[i,jj] = 5
+                sigma[jj,i] = 5
             
-            sigma[i,jj] = var_measurement
-            sigma[jj,i] = var_measurement
             distance_matrix[jj,i] = distance_matrix[i,jj]
             
     return distance_matrix,sigma

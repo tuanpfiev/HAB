@@ -1,6 +1,8 @@
 # import libraries 
 import time
 from threading import Thread
+import calendar
+from datetime import datetime
 
 # import files 
 import GlobalVals
@@ -26,7 +28,8 @@ import boto3
 
 global GPS_log, count_history
 n_real_balloon = 2
-GPS_log = np.array([GPS()]*n_real_balloon)
+# GPS_log = np.array([GPS()]*n_real_balloon)
+GPS_log = np.array([GPS(1), GPS(2)])
 count_history = np.array([0]*n_real_balloon)
 
 def update_GPS_log(gps_data):
@@ -43,8 +46,8 @@ def distance_calculation(gps_data):
     return np.linalg.norm(p1-p2)
 
 def gps_lambda_handler():
-
-    stream_name = 'RMITballoon_Data'
+    
+    stream_name = 'RMIT_Balloon_DataStream'
     k_client = boto3.client('kinesis', region_name='ap-southeast-2')
 
     while True:
@@ -53,29 +56,34 @@ def gps_lambda_handler():
         # print(GlobalVals.AWS_GPS_DATA_BUFFER)
         # print("***************************************************************************")
         aws_message = []
+        t0 = time.time()
         for i in range(len(GPS_log)):
             each_balloon = {
-                'sysID': str(1),
-                'timeStamp': str(GPS_log[i].epoch),
-                'lat': str(GPS_log[i].lat),
-                'lon': str(GPS_log[i].lon),
-                'alt': str(GPS_log[i].alt),
-                'pressure': str(0),
-                'signal_strength': str(0)
+                'sysID': str(GPS_log[i].sysID),
+                'timeStamp': str(t0),
+                'lat': str(GPS_log[i].lat + random.uniform(0,10)),
+                'lon': str(GPS_log[i].lon+ random.uniform(0,10)),
+                'alt': str(GPS_log[i].alt+ random.uniform(0,10)),
+                'pressure': str(0+ random.uniform(0,10)),
+                'signal_strength': str(0+ random.uniform(0,10))
             }
             aws_message.append(each_balloon)
 
         path = []
-        for i in range(len(GPS_log)):
-            each_balloon = {
-                'sysID_h': str(1),
-                'time_h': str(GPS_log[i].epoch),
-                'lat_h': str(GPS_log[i].lat),
-                'lon_h': str(GPS_log[i].lon),
-                'alt_h': str(GPS_log[i].alt),
+        count = 0
+        while count < 3:
+            count = count + 1
+            for i in range(len(GPS_log)):
+                
+                each_balloon = {
+                    'sysID_h': str(GPS_log[i].sysID),
+                    'time_h': str(t0),
+                    'lat_h': str(GPS_log[i].lat + random.uniform(-36.72,-36.715)),
+                    'lon_h': str(GPS_log[i].lon + random.uniform(142.1,142.3)),
+                    'alt_h': str(GPS_log[i].alt + random.uniform(200,300)),
 
-            }
-            path.append(each_balloon)
+                }
+                path.append(each_balloon)
         
         aws_message.append(path)
 
@@ -89,7 +97,7 @@ def gps_lambda_handler():
         print(json.dumps(aws_message))
         print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 
-        time.sleep(1)
+        time.sleep(3)
         
 
 #=====================================================
@@ -143,7 +151,7 @@ def main():
                     GPSdata.SystemID = recievedPacket.SystemID
 
                     # update GPS_log
-                    update_GPS_log(GPSdata)
+                    # update_GPS_log(GPSdata)
                     distance = distance_calculation(GPS_log)
                     print('Distance: ',round(distance,2)," [m]")
 
