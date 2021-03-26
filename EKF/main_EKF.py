@@ -297,13 +297,11 @@ if __name__ == '__main__':
 
     print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
     while True:
-        # if not GlobalVals.RSSI and checkAllGPS(GlobalVals.GPS_ALL):
-        print(checkAllGPS(GlobalVals.GPS_ALL))
-        print(GlobalVals.RSSI.epoch != 0.0)
+        print("All GPS ready ?: ", checkAllGPS(GlobalVals.GPS_ALL))
+        print("RSSI ready ?:    ", GlobalVals.RSSI.epoch != 0.0)
         if GlobalVals.RSSI.epoch != 0.0 and checkAllGPS(GlobalVals.GPS_ALL):
             break
-
-        time.sleep(1)
+        time.sleep(2)
 
     print("Calculation loop STARTED!!!")
     # Update anchor list
@@ -358,9 +356,9 @@ if __name__ == '__main__':
             gps = GlobalVals.GPS_ALL[sysID-1]
             imu = GlobalVals.IMU_ALL[sysID-1]
             rssi = GlobalVals.RSSI
-            epochMS = imu.epoch
+            epoch =time.time()
 
-            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epochMS))
+            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
             anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
             if checkAllGPS(GlobalVals.GPS_ALL):
                 for i in range(len(GlobalVals.ANCHOR)):
@@ -419,19 +417,19 @@ if __name__ == '__main__':
 
             if Q_Xsens:
                 q_sensor = imu.raw_qt.reshape(4)
-            print('Time: ',timeLocal)
             node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
             
             x_h = np.array([node.x_h[:,-1]]).T
             output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                 gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epochMS,\
+                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
                         imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
 
 
             posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
             llaEKF = enu2lla(posENU_EKF, gps_ref)
-            
+            print('Lon: ',llaEKF[1], ', Lat: ', llaEKF[0], ', Alt: ', llaEKF[2], 'Time: ',timeLocal, '\n')
+
             with GlobalVals.LLA_EKF_BUFFER_MUTEX:
                 GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
         time.sleep(dt)

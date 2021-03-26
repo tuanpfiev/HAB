@@ -1,7 +1,7 @@
 from Nav_eq import *
 from state_model import *
 from utilities import *
-def EKF2(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
+def EKF(settings,dt,node,IMU,anchor,GPS,Dis,Q_Xsens,q_sensor):
     # anchor = anchor.T
     Ts = dt
     u = IMU
