@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/lux/HAB/XSENS_Test/xspublic
+CXX_INCLUDES = -I/home/rmit/HAB/XSENS_Test/xspublic
 
 CXX_FLAGS = -std=gnu++11
 

@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "XSENS_Test::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-XSENS_Test-ca0d720e679a5f283f58.json",
+					"jsonFile" : "target-XSENS_Test-92cf992e17c2ff4c36d4.json",
 					"name" : "XSENS_Test",
 					"projectIndex" : 0
 				}
@@ -48,8 +48,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/lux/HAB/XSENS_Test/build",
-		"source" : "/home/lux/HAB/XSENS_Test"
+		"build" : "/home/rmit/HAB/XSENS_Test/build",
+		"source" : "/home/rmit/HAB/XSENS_Test"
 	},
 	"version" : 
 	{

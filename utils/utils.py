@@ -25,10 +25,12 @@ def run_command(command):
 def get_port(device_name):
 
     if device_name == 'Lora':
-        attach_str = 'usb 1-2.3: pl2303 converter now attached to'  # USB 3
+        attach_str = ['usb 1-2.1.1.4: pl2303 converter now attached to', \
+            'usb 1-2.3: pl2303 converter now attached to']
     
     elif device_name == 'GPS':
-        attach_str = 'usb 1-2.4: pl2303 converter now attached to'  # USB 4
+        attach_str = ['usb 1-2.1.1.3: pl2303 converter now attached to', \
+            'usb 1-2.4: pl2303 converter now attached to']
 
     elif device_name == 'RFD900':
         attach_str = 'FTDI USB Serial Device converter now attached to'  # USB 2

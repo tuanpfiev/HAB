@@ -1,4 +1,4 @@
-# Install script for directory: /home/lux/HAB/XSENS_Test
+# Install script for directory: /home/rmit/HAB/XSENS_Test
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/lux/HAB/XSENS_Test/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/rmit/HAB/XSENS_Test/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

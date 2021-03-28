@@ -158,6 +158,20 @@ int main(int argc,char **argv)
 	big_effoff_csv << "yaw\n";
 
 	big_effoff_csv.close();
+
+	std::ofstream trn_csv;
+	trn_csv.open("/home/rmit/HAB-ACTAN/providence/cmu331s4_acquisition/acquisitions/imu_log.csv");
+	
+	trn_csv << "high_res_epoch,";
+	trn_csv << "q_w,";
+	trn_csv << "q_i,";
+	trn_csv << "q_j,";
+	trn_csv << "q_k,";
+	trn_csv << "r_acc_x,";
+	trn_csv << "r_acc_y,";
+	trn_csv << "r_acc_z\n";
+
+	trn_csv.close();
 	
 	bool recorded;
 
@@ -165,6 +179,9 @@ int main(int argc,char **argv)
 	{
 		std::ofstream data;
 		data.open("imu_data_file.csv", std::ios::app);
+		
+		std::ofstream trn_data;
+		trn_data.open("/home/rmit/HAB-ACTAN/providence/cmu331s4_acquisition/acquisitions/imu_log.csv", std::ios::app);
 
 		recorded = false;
 
@@ -195,6 +212,8 @@ int main(int argc,char **argv)
 
 					XsQuaternion quaternion = packet.orientationQuaternion();
 					data << quaternion.w() << "," << quaternion.x() << "," << quaternion.y() << "," << quaternion.z() << ",";
+					auto now = std::chrono::high_resolution_clock::now();
+					trn_data << std::to_string(now.time_since_epoch().count()) << "," << quaternion.w() << "," << quaternion.x() << "," << quaternion.y() << "," << quaternion.z() << "," << r_acc[0] << "," << r_acc[1] << "," << r_acc[2] << "\n";
 					data_packet += "RAW_QT: " + std::to_string(quaternion.w()) + "," + std::to_string(quaternion.x()) + "," + std::to_string(quaternion.y()) + "," + std::to_string(quaternion.z()) + "; ";
 
 					XsEuler euler = packet.orientationEuler();
@@ -204,12 +223,13 @@ int main(int argc,char **argv)
 					sendto(udpSocket, data_packet.c_str(), strlen(data_packet.c_str()), 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 					std::cout << "ACCELERATION: " + std::to_string(r_acc[0]) + ", " + std::to_string(r_acc[1]) + ", " + std::to_string(r_acc[2]) + ", ===GYRO: " + std::to_string(gyr[0]) + ", " + std::to_string(gyr[1]) + ", " + std::to_string(gyr[2]) + " ===EULER_321: " + std::to_string(euler.roll()) + ", " + std::to_string(euler.pitch()) + ", " + std::to_string(euler.yaw()) <<std::endl;
 					recorded = true;
-					XsTime::msleep(100);
+					XsTime::msleep(200);
 				}
 			}
 		}
 
 		data.close();
+		trn_data.close();
 	}
 	std::cout << "\n" << std::string(79, '-') << "\n";
 	std::cout << std::endl;

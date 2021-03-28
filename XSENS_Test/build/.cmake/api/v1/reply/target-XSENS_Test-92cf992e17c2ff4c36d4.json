@@ -63,7 +63,7 @@
 			[
 				{
 					"backtrace" : 4,
-					"path" : "/home/lux/HAB/XSENS_Test/xspublic"
+					"path" : "/home/rmit/HAB/XSENS_Test/xspublic"
 				}
 			],
 			"language" : "CXX",
@@ -92,21 +92,21 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "-L/home/lux/HAB/XSENS_Test/xspublic/xscommon",
+				"fragment" : "-L/home/rmit/HAB/XSENS_Test/xspublic/xscommon",
 				"role" : "libraryPath"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "-L/home/lux/HAB/XSENS_Test/xspublic/xscontroller",
+				"fragment" : "-L/home/rmit/HAB/XSENS_Test/xspublic/xscontroller",
 				"role" : "libraryPath"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "-L/home/lux/HAB/XSENS_Test/xspublic/xstypes",
+				"fragment" : "-L/home/rmit/HAB/XSENS_Test/xspublic/xstypes",
 				"role" : "libraryPath"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/lux/HAB/XSENS_Test/xspublic/xscommon:/home/lux/HAB/XSENS_Test/xspublic/xscontroller:/home/lux/HAB/XSENS_Test/xspublic/xstypes",
+				"fragment" : "-Wl,-rpath,/home/rmit/HAB/XSENS_Test/xspublic/xscommon:/home/rmit/HAB/XSENS_Test/xspublic/xscontroller:/home/rmit/HAB/XSENS_Test/xspublic/xstypes",
 				"role" : "libraries"
 			},
 			{

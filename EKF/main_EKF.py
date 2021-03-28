@@ -106,7 +106,8 @@ def gps_callback(host,port):
             
             idx = 0
             while idx < len(gps_list):
-                gps_update(gps_list[idx])
+                with GlobalVals.GPS_UPDATE:
+                    gps_update(gps_list[idx])
                 idx += 1
 
     s.close()
@@ -159,7 +160,8 @@ def imu_callback(host,port):
             
             idx = 0
             while idx < len(imu_list):
-                imu_update(imu_list[idx])
+                with GlobalVals.IMU_UPDATE:
+                    imu_update(imu_list[idx])
                 idx += 1
     s.close()
 
@@ -217,8 +219,11 @@ def distanceRSSI_callback(host,port):
             
             idx = 0
             while idx < len(rssi_list):
-                rssi_update(rssi_list[idx])
+                with GlobalVals.RSSI_UPDATE:
+                    rssi_update(rssi_list[idx])
+                    # print(rssi_list[idx].epoch, rssi_list[idx].rssi_filtered)
                 idx += 1
+            # print('----------------------------')
     s.close()
 
 
@@ -351,88 +356,113 @@ if __name__ == '__main__':
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
                     'magVec1','magVec2','magVec3'])
 
+        gps_all_prev = GlobalVals.GPS_ALL
+        gps_prev = gps_all_prev[sysID-1]
+        imu_prev = GlobalVals.IMU_ALL[sysID-1]
+        rssi_prev = GlobalVals.RSSI
+        epoch_prev = 0
+
         while True:
-            gps_all = GlobalVals.GPS_ALL
-            gps = GlobalVals.GPS_ALL[sysID-1]
-            imu = GlobalVals.IMU_ALL[sysID-1]
-            rssi = GlobalVals.RSSI
-            epoch =time.time()
-
-            timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
-            anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
-            if checkAllGPS(GlobalVals.GPS_ALL):
-                for i in range(len(GlobalVals.ANCHOR)):
-                    posEN = positionENU(GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],gps_ref).T
-                    anchor_position[i,:]=posEN[0][0:2]   
+            with GlobalVals.GPS_UPDATE:
+                gps_all = GlobalVals.GPS_ALL
+            gps = gps_all[sysID-1]
             
-            # Rotate the coordinates 
-            accel   = np.dot(C,imu.accel)
+            with GlobalVals.IMU_UPDATE:
+                imu = GlobalVals.IMU_ALL[sysID-1]
 
-            # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
-            IMU_i = np.concatenate((accel,imu.gyros,imu.mag_vector))
-            ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
-            ## The sampling time is based on that of IMU
-            timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch       # IMU epoch is in ms
-            timeRSSI_IMU_diff = imu.epoch/1000 - rssi.epoch
-            # print("time_GPS_diff: ",timeGPS_IMU_diff)
-            # print("time_RSSI_diff: ",timeRSSI_IMU_diff)
+            with GlobalVals.RSSI_UPDATE:
+                rssi = GlobalVals.RSSI
             
-            GPS_data = np.array([])
-            GPS_data_vel = np.array([])  # Should be in Cartesian coordinate.  geodetic_to_geocentric( lat, lon, h)
+            dt = (imu.epoch - imu_prev.epoch)/1000
 
-            if checkGPS(gps) and timeGPS_IMU_diff <= 2*dt:
-                GPS_data = positionENU(gps,gps_ref)[0]
-                # print(GPS_data)
+            if dt > 0:
+                print('dt: ',dt)
+                epoch =time.time()
+                # epoch = imu.epoch
 
-            if GPS_data.size != 0:
-                if flag == 0:
-                    v = np.zeros((3,1))
-                    GPS_data_vel = np.concatenate((GPS_data,v))  
-                    GPS_data_vel_pre = GPS_data_vel
-                    GPS_time_pre = gps.epoch
-                    flag = 1
-                else:                    
-                    dt_GPS = gps.epoch - GPS_time_pre
-                    v[0] = (GPS_data[0]-GPS_data_vel_pre[0])/dt_GPS
-                    v[1] = (GPS_data[1]-GPS_data_vel_pre[1])/dt_GPS
-                    v[2] = (GPS_data[2]-GPS_data_vel_pre[2])/dt_GPS
-                    GPS_data_vel = np.concatenate((GPS_data,v))  
-                    GPS_data_vel = np.concatenate((GPS_data,v))  
-                    GPS_data_vel_pre = GPS_data_vel
-                    GPS_time_pre = gps.epoch
+                timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
+                anchor_position = np.zeros([len(GlobalVals.ANCHOR),2])
+                if checkAllGPS(gps_all):
+                    for i in range(len(GlobalVals.ANCHOR)):
+                        posEN = positionENU(gps_all[GlobalVals.ANCHOR[i]-1],gps_ref).T
+                        anchor_position[i,:]=posEN[0][0:2]   
+                
+                # Rotate the coordinates 
+                accel   = np.dot(C,imu.accel)
 
-            anchor_distance = np.array([])
-            if checkAllGPS(GlobalVals.GPS_ALL) and timeRSSI_IMU_diff <= 2*dt:
-                anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
-                for i in range(len(GlobalVals.ANCHOR)):
-                    if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
-                        temp = distance2D([gps, GlobalVals.GPS_ALL[i-1]])
-                        anchor_distance[i,:] = distance2D([gps, GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1]])
-                        
-                    else:
-                        temp = distance2D([gps, GlobalVals.GPS_ALL[i-1],rssi.distance])
-                        anchor_distance[i,:] = distance2D([gps, GlobalVals.GPS_ALL[GlobalVals.ANCHOR[i]-1],rssi.distance])
-                # print(anchor_distance)
-                # print("===============")
+                # IMU data, format: [acc_x,acc_y,axx_z,gyro_x,gyro_y,gyro_z]
+                IMU_i = np.concatenate((accel,imu.gyros,imu.mag_vector))
+                ## GPS and Dis are allowed to be empty, which means that these dara are not available at this sampling time
+                ## The sampling time is based on that of IMU
+                timeGPS_IMU_diff = imu.epoch/1000 - gps.epoch       # IMU epoch is in ms
+                timeRSSI_IMU_diff = imu.epoch/1000 - rssi.epoch
+                # print("time_GPS_diff: ",timeGPS_IMU_diff)
+                # print("time_RSSI_diff: ",timeRSSI_IMU_diff)
+                
+                GPS_data = np.array([])
+                GPS_data_vel = np.array([])  # Should be in Cartesian coordinate.  geodetic_to_geocentric( lat, lon, h)
+                # print(rssi.epoch)
+                if checkGPS(gps) and gps.epoch - gps_prev.epoch> 0:
+                    GPS_data = positionENU(gps,gps_ref)
+                    # print('update GPS')
+                    # print(GPS_data)
 
-            if Q_Xsens:
-                q_sensor = imu.raw_qt.reshape(4)
-            node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
-            
-            x_h = np.array([node.x_h[:,-1]]).T
-            output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
-                gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
-                    imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                        imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
+                if GPS_data.size != 0:
+                    if flag == 0:
+                        v = np.zeros((3,1))
+                        print(GPS_data)
+                        GPS_data_vel = np.concatenate((GPS_data,v))  
+                        GPS_data_vel_pre = GPS_data_vel
+                        GPS_time_pre = gps.epoch
+                        flag = 1
+                    else:                    
+                        dt_GPS = gps.epoch - GPS_time_pre
+                        v[0] = (GPS_data[0]-GPS_data_vel_pre[0])/dt_GPS
+                        v[1] = (GPS_data[1]-GPS_data_vel_pre[1])/dt_GPS
+                        v[2] = (GPS_data[2]-GPS_data_vel_pre[2])/dt_GPS
+                        GPS_data_vel = np.concatenate((GPS_data,v))  
+                        GPS_data_vel = np.concatenate((GPS_data,v))  
+                        GPS_data_vel_pre = GPS_data_vel
+                        GPS_time_pre = gps.epoch
+
+                anchor_distance = np.array([])
+                if checkAllGPS(gps_all) and rssi.epoch - rssi_prev.epoch > 0:
+                    # print('update rssi')
+                    anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
+                    for i in range(len(GlobalVals.ANCHOR)):
+                        if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
+                            temp = distance2D([gps, gps_all[i-1]])
+                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1]])
+                            
+                        else:
+                            temp = distance2D([gps, gps_all[i-1],rssi.distance])
+                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],rssi.distance])
+                    # print(anchor_distance)
+                    # print("===============")
+
+                if Q_Xsens:
+                    q_sensor = imu.raw_qt.reshape(4)
+                node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data,anchor_distance,Q_Xsens,q_sensor) # EKF
+                
+                x_h = np.array([node.x_h[:,-1]]).T
+                output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
+                    gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
+                        imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
 
 
-            posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
-            llaEKF = enu2lla(posENU_EKF, gps_ref)
-            print('Lon: ',llaEKF[1], ', Lat: ', llaEKF[0], ', Alt: ', llaEKF[2], 'Time: ',timeLocal, '\n')
+                posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
+                llaEKF = enu2lla(posENU_EKF, gps_ref)
+                print('Lon: ',llaEKF[1], ', Lat: ', llaEKF[0], ', Alt: ', llaEKF[2], 'Time: ',timeLocal, '\n')
 
-            with GlobalVals.LLA_EKF_BUFFER_MUTEX:
-                GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
-        time.sleep(dt)
+                with GlobalVals.LLA_EKF_BUFFER_MUTEX:
+                    GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
+
+                gps_all_prev = gps_all
+                gps_prev = gps
+                imu_prev = imu
+                rssi_prev = rssi
+                epoch_prev = epoch
 
 
             

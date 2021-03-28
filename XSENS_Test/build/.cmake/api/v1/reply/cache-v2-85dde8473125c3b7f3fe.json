@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/lux/HAB/XSENS_Test/build"
+			"value" : "/home/rmit/HAB/XSENS_Test/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -607,7 +607,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/lux/HAB/XSENS_Test"
+			"value" : "/home/rmit/HAB/XSENS_Test"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1143,7 +1143,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/lux/HAB/XSENS_Test/build"
+			"value" : "/home/rmit/HAB/XSENS_Test/build"
 		},
 		{
 			"name" : "XSENS_Test_SOURCE_DIR",
@@ -1155,7 +1155,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/lux/HAB/XSENS_Test"
+			"value" : "/home/rmit/HAB/XSENS_Test"
 		}
 	],
 	"kind" : "cache",
