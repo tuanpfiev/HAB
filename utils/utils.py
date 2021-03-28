@@ -43,8 +43,9 @@ def get_port(device_name):
     port = ''
     for line in run_command(command):
         tmp = line.decode('utf-8')
-        if attach_str in tmp:
-            index = tmp.find('ttyUSB')
-            port = tmp[index:-1]
+        for i in range(len(attach_str)):
+            if attach_str[i] in tmp:
+                index = tmp.find('ttyUSB')
+                port = tmp[index:-1]
 
     return '/dev/'+port
