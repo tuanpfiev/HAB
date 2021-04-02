@@ -280,8 +280,6 @@ def Thread_RSSI_publish(host,port):
         return
         
 
-   
-
     breakThread = False
     newData = False
 
@@ -368,12 +366,12 @@ if __name__ == '__main__':
         pass
 
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-LoraRSSI.csv"
-    GlobalVals.GPS_LOGGER_FILE = file_name
+    GlobalVals.RSSI_LOG_FILE = file_name
 
     logString = "epoch, rssi, filtered_RSSI, distance \n"
 
     try:
-        fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
+        fileObj = open(GlobalVals.RSSI_LOG_FILE, "a")
         fileObj.write(logString)
         fileObj.close()
     except Exception as e:
@@ -381,7 +379,6 @@ if __name__ == '__main__':
         print("Error using error log file, ending error thread")
 
 
-    
     RSSI_Thread = Thread(target = Thread_RSSI_publish, args = (GlobalVals.HOST,GlobalVals.PORT_RSSI))
     RSSI_Thread.start()
     # run the main function until something goes wrong 

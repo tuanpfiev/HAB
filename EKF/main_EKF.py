@@ -91,11 +91,8 @@ def gps_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         
         string_list = []
-        iterator = data_str.find('{')
-        while data_str.find('}', iterator) != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
+
         
         if len(string_list) > 0:
             gps_list = []
@@ -145,11 +142,8 @@ def imu_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         
         string_list = []
-        iterator = data_str.find('{')
-        while data_str.find('}', iterator) != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
+
         
         if len(string_list) > 0:
             imu_list = []
@@ -204,11 +198,8 @@ def distanceRSSI_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         # print('data RSSI: ',data_str)
         string_list = []
-        iterator = data_str.find('{')
-        while data_str.find('}', iterator) != -1 and iterator != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
+
         
         if len(string_list) > 0:
             rssi_list = []
@@ -357,25 +348,30 @@ if __name__ == '__main__':
                     'magVec1','magVec2','magVec3'])
 
         gps_all_prev = GlobalVals.GPS_ALL
-        gps_prev = gps_all_prev[sysID-1]
-        imu_prev = GlobalVals.IMU_ALL[sysID-1]
-        rssi_prev = GlobalVals.RSSI
+        gps_prev = GPS()
+        imu_prev = IMU()
+        rssi_prev = RSSI()
         epoch_prev = 0
+        flag_start = True
 
         while True:
+            # print('1')
             with GlobalVals.GPS_UPDATE:
                 gps_all = GlobalVals.GPS_ALL
+                # print('1')
             gps = gps_all[sysID-1]
-            
+            # print('2')
             with GlobalVals.IMU_UPDATE:
                 imu = GlobalVals.IMU_ALL[sysID-1]
-
+                # print('2')
+            # print('3')
             with GlobalVals.RSSI_UPDATE:
                 rssi = GlobalVals.RSSI
-            
+                # print('3')
             dt = (imu.epoch - imu_prev.epoch)/1000
+            # print(dt)
 
-            if dt > 0:
+            if dt > 0 or flag_start:
                 print('dt: ',dt)
                 epoch =time.time()
                 # epoch = imu.epoch
@@ -463,6 +459,7 @@ if __name__ == '__main__':
                 imu_prev = imu
                 rssi_prev = rssi
                 epoch_prev = epoch
+                flag_start = False
 
 
             

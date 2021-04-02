@@ -99,7 +99,7 @@ def gps_callback(host,port):
         s.settimeout(GlobalVals.GPS_TIMEOUT)
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("There was an error starting the distanceEKF socket. This thread will now stop.")
+        print("There was an error starting the GPS socket. This thread will now stop.")
         with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_LOGGER_THREAD = True
         return 
@@ -114,7 +114,7 @@ def gps_callback(host,port):
             data_bytes = s.recv(GlobalVals.BUFFER)
         except Exception as e:
             print("Exception: " + str(e.__class__))
-            print("There was an error starting the distanceEKF socket. This thread will now stop.")
+            print("There was an error starting the GPS socket. This thread will now stop.")
             break
 
         if len(data_bytes) == 0:
@@ -123,12 +123,7 @@ def gps_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         
         string_list = []
-        iterator = data_str.find('{')
-
-        while data_str.find('}', iterator) != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
             gps_list = []
@@ -177,11 +172,8 @@ def distanceRSSI_callback(host,port):
         data_str = data_bytes.decode('utf-8')
         # print('data RSSI: ',data_str)
         string_list = []
-        iterator = data_str.find('{')
-        while data_str.find('}', iterator) != -1 and iterator != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
+
         
         if len(string_list) > 0:
             rssi_list = []
@@ -222,7 +214,7 @@ if __name__ == "__main__":
 
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
 
-    logString = "px1, py1, px2, py2, px3, py3, px4, py4, lx2, ly2, lx3, ly3, lx4, ly4, iteration, execution time, epoch, gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon \n"
+    logString = "px1, py1, px2, py2, px3, py3, px4, py4, lx2, ly2, lx3, ly3, lx4, ly4, iteration, execution time, epoch, distance, gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon \n"
     
     try:
         fileObj = open(file_name, "a")
@@ -266,11 +258,12 @@ if __name__ == "__main__":
 
         print('----- start printing ------')
         print('Time: ', start_time)
-        print("Balloon 1: lat", round(gps_tmp[0].lat,3), "lon: ", round(gps_tmp[0].lon,3))
-        print("Balloon 2: lat", round(gps_tmp[1].lat,3), "lon: ", round(gps_tmp[1].lon,3))
+        print("Balloon 1: lat", round(gps_tmp[0].lat,4), "lon: ", round(gps_tmp[0].lon,4))
+        print("Balloon 2: lat", round(gps_tmp[1].lat,4), "lon: ", round(gps_tmp[1].lon,4))
 
         print("localisation error: \n", pos_error)
-        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
+        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, distance, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
+        
         # output.writerow([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon])
                             # write log string to file  
         try:

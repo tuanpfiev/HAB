@@ -139,7 +139,6 @@ def stringToRSSI(raw_data):
     rssi_i = RSSI()
 
     try:
-        temp = extract_string_data("RSSI_filter: ",";",raw_data)
         rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
         rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
@@ -149,4 +148,14 @@ def stringToRSSI(raw_data):
     except ValueError:
 
         return False, RSSI()
+
+def extract_str_btw_curly_brackets(data_str):
+    string_list = []
+    iterator = data_str.find('{')
+    
+    while data_str.find('}', iterator) != -1:
+        substring_end = data_str.find('}', iterator)
+        string_list.append(data_str[iterator:substring_end + 1])
+        iterator = substring_end + 1
+    return string_list
 

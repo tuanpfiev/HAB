@@ -56,8 +56,9 @@ if __name__ == "__main__":
       
     print('Start logging temperature ...')
     
-    epoch = time.time()
+    
 
     while True:
+        epoch = time.time()
         logTemperature(zone_paths,zone_names, file_name, sysID,epoch)
         time.sleep(30)
