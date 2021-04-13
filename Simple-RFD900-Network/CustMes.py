@@ -476,3 +476,51 @@ class MESSAGE_IMU:
         self.Gyroscope_k = Gyroscope_kTuple[0]
 
         return 0
+
+# IMU Payload - Message ID = 0x04
+@dataclass
+class MESSAGE_TEMP:
+    Epoch: float = 0   
+    Temperature: float = 0 
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setTemperature(self,temperature):
+        self.Temperature = temperature
+        
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        Temperature_ints = struct.pack('!d',self.Temperature)
+        
+
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Temperature_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 16:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        TemperatureTuple = struct.unpack('!d',payloadBytes[8:16])
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Temperature = TemperatureTuple[0] 
+        
+        return 0

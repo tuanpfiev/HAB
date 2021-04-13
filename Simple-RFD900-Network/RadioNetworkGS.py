@@ -25,7 +25,7 @@ import random
 import boto3
 from threading import Lock
 import csv
-
+import math
 
 GPS_Log_LOCK = Lock()
 EKF_LOG_LOCK = Lock()
@@ -49,7 +49,7 @@ class Path:
 
         self.epoch_range = [self.trajectory[0].epoch, self.trajectory[-1].epoch]
 
-    def get_gps(self, query_epoch):
+    def getGPS(self, query_epoch):
 
         if query_epoch <= self.epoch_range[0]:
             return self.trajectory[0]
@@ -69,29 +69,50 @@ class Path:
         alt_interp = self.trajectory[idx].lat + (self.trajectory[idx+1].alt - self.trajectory[idx].alt) * ratio
 
         return GPS(self.sysID,lat_interp,lon_interp,alt_interp,query_epoch)
+    
+    def getDistance(self, gps):
 
-def dataTruncate(dataList,nData):
-    if len(dataList)==0 or len(dataList)<nData:
+        predictedGPS = self.getGPS(gps.epoch)
+
+        positionENU_Relative = positionENU(gps,predictedGPS)
+        distance = math.sqrt(positionENU_Relative[0]**2+positionENU_Relative[1]**2)
+        
+        return distance
+
+
+def dataTruncate(dataList,nData,nBalloon):
+    if len(dataList)==0 or len(dataList)<nData*nBalloon:
         return dataList
     
-    interval = int(len(dataList)/nData)
-    selectedIndex = np.arange(0,len(dataList),interval)
+    # interval = int(len(dataList)/nData/nBalloon)
+    interval = nData*nBalloon
+
+    selectedIndex = np.array([],dtype=np.int64)
+    for i in range(nBalloon):
+        tmp = np.arange(i,len(dataList),interval)
+        selectedIndex = np.append(selectedIndex,tmp)
+
+    selectedIndex = np.sort(selectedIndex)
     result = []
     for i in range(len(selectedIndex)):
         result.append(dataList[selectedIndex[i]])
     
     # add the last element:
-    result.append(dataList[-1])
+    for i in range(nBalloon):
+        result.append(dataList[-1-i])
     return result
 
 
 # global balloonPaths
 balloonPaths = []
 baloonPathAll = [Path("Balloon_254.csv", 1), Path("Balloon_253.csv", 2)]
+baloonPathAllOriginal = baloonPathAll[:]
 nTruncate = 5
+fireLocation = GPS(None,-36.373326870216395, 142.36570090762967, 0);
+
 
 for i in range(len(baloonPathAll)):
-    baloonPathAll[i].trajectory = dataTruncate(baloonPathAll[i].trajectory,nTruncate)
+    baloonPathAll[i].trajectory = dataTruncate(baloonPathAll[i].trajectory,nTruncate,1)
 
 for i in range(len(baloonPathAll)):
     for j in range(len(baloonPathAll[0].trajectory)):
@@ -99,7 +120,6 @@ for i in range(len(baloonPathAll)):
                     'idP': str(baloonPathAll[i].trajectory[j].sysID),
                     'tP': str(baloonPathAll[i].trajectory[j].epoch),
                     'latP': str(baloonPathAll[i].trajectory[j].lat),
-
                     'lonP': str(baloonPathAll[i].trajectory[j].lon),
                     'altP': str(baloonPathAll[i].trajectory[j].alt)
                 }
@@ -140,27 +160,33 @@ def gps_lambda_handler():
     # global balloonPaths
     global count_t, count_history, pathHistory
 
-    stream_name = 'RMIT_Balloon_DataStream'
+    stream_name = 'RMITballoon_Data'
     k_client = boto3.client('kinesis', region_name='ap-southeast-2')
 
     np.random.seed(1)
     init_lat = np.random.uniform(low=-36.78, high = -36.8,size=(len(GPS_Log),1))
     np.random.seed(1)
-    init_lon = np.random.uniform(low=142.8, high = 142.9,size=(len(GPS_Log),1))
-    print(init_lat)
-    print(init_lon)
+    init_lon = np.random.uniform(low=142.1, high = 142.9,size=(len(GPS_Log),1))
+    # print(init_lat)
+    # print(init_lon)
 
-    vlat = np.array([0.01, 0.02,0.024, 0.03])
-    # vlat = np.array([0.01, 0.01,0.01, 0.01])
+    vlat = np.array([0.01, 0.02,0.024, 0.03])*0.2
     while True:
         count_t = count_t + 1
-             
-        # print("***************************************************************************")
-        # print(GlobalVals.AWS_GPS_DATA_BUFFER)
-        # print("***************************************************************************")
         aws_message = balloonPaths[:]
         t0 = time.time()
+
         for i in range(len(GPS_Log)):
+            if i < nRealBalloon:
+                predictedOffset = baloonPathAllOriginal[i].getDistance(GPS_Log[i])
+                targetOffset = baloonPathAllOriginal[i].getDistance(fireLocation)
+            else:
+                positionENU_RelativeEKF = positionENU(GPS_Log[i],GPS_Log[i-nRealBalloon])
+                predictedOffset = math.sqrt(positionENU_RelativeEKF[0]**2+positionENU_RelativeEKF[1]**2)
+                targetOffset = 0
+
+            temperatureOutside = random.uniform(50,60)
+
             GPS_Log[i].lat = init_lat[i][0]+ count_t * vlat[i]
             GPS_Log[i].lon = init_lon[i][0]+ count_t * 0.01
             GPS_Log[i].alt = count_t * vlat[i]*100
@@ -171,29 +197,19 @@ def gps_lambda_handler():
                 'lon': str(GPS_Log[i].lon),
                 'alt': str(GPS_Log[i].alt),
                 'prs': str(0+ random.uniform(0,10)),
-                'ss': str(0+ random.uniform(0,10))
+                'ss': str(0+ random.uniform(0,10)),
+                'd': str(predictedOffset),
+                'tar': str(targetOffset),
+                'tmp': str(temperatureOutside)
             }
+            # print(targetOffset)
             aws_message.append(each_balloon)
+            # print(each_balloon)
         path = []
         count = 0
         count_history = count_history + 1
 
-        if count_history % 5 == 0:
-            for i in range(len(GPS_Log)):
-                each_balloon = {
-                    'idH': str(GPS_Log[i].sysID),
-                    'tH': str(t0),
-                    'latH': str(GPS_Log[i].lat),
-                    'lonH': str(GPS_Log[i].lon),
-                    'altH': str(random.uniform(200,300)),
-                }
-                pathHistory.append(each_balloon)
-        pathHistory = dataTruncate(pathHistory,nTruncate)
-
-        for i in pathHistory:
-            aws_message.append(i)
-
-        # add current position to trajectories
+        # if count_history % 5 == 0:
         for i in range(len(GPS_Log)):
             each_balloon = {
                 'idH': str(GPS_Log[i].sysID),
@@ -201,8 +217,26 @@ def gps_lambda_handler():
                 'latH': str(GPS_Log[i].lat),
                 'lonH': str(GPS_Log[i].lon),
                 'altH': str(random.uniform(200,300)),
+                'tmpH': str(temperatureOutside)
             }
-            aws_message.append(each_balloon)
+            pathHistory.append(each_balloon)
+
+        pathHistory = dataTruncate(pathHistory,nTruncate,len(GPS_Log))
+
+        for i in pathHistory:
+            aws_message.append(i)
+
+        # add current position to trajectories
+        # for i in range(len(GPS_Log)):
+        #     each_balloon = {
+        #         'idH': str(GPS_Log[i].sysID),
+        #         'tH': str(t0),
+        #         'latH': str(GPS_Log[i].lat),
+        #         'lonH': str(GPS_Log[i].lon),
+        #         'altH': str(random.uniform(200,300)),
+        #         'tmpH': str(temperatureOutside)
+        #     }
+        #     aws_message.append(each_balloon)
 
         # while count < 4:
         #     count = count + 1
@@ -220,7 +254,7 @@ def gps_lambda_handler():
         
         # aws_message.append(balloonPaths[1:10])
         # print(balloonPaths[1:2])
-        print(aws_message)
+        # print(aws_message)
         response = k_client.put_record(
                 StreamName=stream_name,
                 Data=json.dumps(aws_message),
@@ -231,7 +265,7 @@ def gps_lambda_handler():
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         # print(json.dumps(aws_message))
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-
+        print("Publishing to AWS Kinesis Data ...")
         time.sleep(3)
         
 # def gps_lambda_handler():

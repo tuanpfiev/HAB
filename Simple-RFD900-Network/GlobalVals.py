@@ -32,6 +32,10 @@ IMU_LOGGER_SOCKET_TIMEOUT = 60
 EKF_GPS_LOGGER_SOCKET = 5051
 EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 
+TEMP_LOGGER_SOCKET = 5013
+TEMP_LOGGER_SOCKET_TIMEOUT = 60
+
+
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
@@ -62,6 +66,8 @@ AWS_GPS_DATA_BUFFER = []
 EKF_GPS_DATA_BUFFER = []
 EKF_GPS_ALL = np.array([GPS()])
 
+TEMP_DATA_BUFFER = []
+
 
 # Global Lists / Buffers Mutexes 
 PACKET_BUFFER_IN_MUTEX = Lock()
@@ -73,6 +79,8 @@ GPS_DATA_BUFFER_MUTEX = Lock()
 
 IMU_DATA_BUFFER_MUTEX = Lock()
 AWS_GPS_DATA_BUFFER_MUTEX = Lock()
+
+TEMP_DATA_BUFFER_MUTEX = Lock()
 
 
 # Global Flags 
@@ -98,6 +106,9 @@ BREAK_EKF_GPS_LOGGER_THREAD = False
 BREAK_AWS_GPS_THREAD = False
 RECIEVED_EKF_GPS_LOCAL_DATA = False
 
+BREAK_TEMP_LOGGER_THREAD = False
+
+
 # Global Flags Mutexes  
 SEND_PACKETS_MUTEX = Lock()
 RECIEVED_PACKETS_MUTEX = Lock()
@@ -121,6 +132,8 @@ BREAK_EKF_GPS_LOGGER_THREAD_MUTEX = Lock()
 
 EKF_GPS_DATA_BUFFER_MUTEX = Lock()
 RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX = Lock()
+
+BREAK_TEMP_LOGGER_THREAD_MUTEX = Lock()
 
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages

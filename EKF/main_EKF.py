@@ -16,7 +16,7 @@ import csv
 from common import *
 from common_class import *
 
-
+    
 def enu2lla(enu, gps_ref, latlon_unit='deg', alt_unit='m', model='wgs84'):
     ned = np.dot(GlobalVals.C_ENU_NED,enu)
     lla = ned2lla(ned,gps_ref.lat, gps_ref.lon, gps_ref.alt, latlon_unit, alt_unit, model)
@@ -38,6 +38,7 @@ def distance2D(args):
         distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
     
     return distance
+
 
 def rssi_update(new_data):
     GlobalVals.RSSI = new_data

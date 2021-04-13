@@ -25,7 +25,6 @@ class ImaginaryBalloon:
         self.trajectory = []
         
         with open(self.path) as csv_file:
-            
             self.reader = csv.reader(csv_file, delimiter=',')
             
             for row in self.reader:
