@@ -107,7 +107,7 @@ def dataTruncate(dataList,nData,nBalloon):
 balloonPaths = []
 baloonPathAll = [Path("Balloon_254.csv", 1), Path("Balloon_253.csv", 2)]
 baloonPathAllOriginal = baloonPathAll[:]
-nTruncate = 5
+nTruncate = 50
 fireLocation = GPS(None,-36.373326870216395, 142.36570090762967, 0);
 
 
@@ -126,6 +126,7 @@ for i in range(len(baloonPathAll)):
         balloonPaths.append(each_balloon)
 
 
+global GPS_Log, nRealBalloon, count_history,pathHistory,count_t
 nRealBalloon = 2
 # GPS_Log = np.array([GPS()]*nRealBalloon)
 GPS_Log = np.array([GPS(1), GPS(2),GPS(3), GPS(4)])
@@ -167,8 +168,6 @@ def gps_lambda_handler():
     init_lat = np.random.uniform(low=-36.78, high = -36.8,size=(len(GPS_Log),1))
     np.random.seed(1)
     init_lon = np.random.uniform(low=142.1, high = 142.9,size=(len(GPS_Log),1))
-    # print(init_lat)
-    # print(init_lon)
 
     vlat = np.array([0.01, 0.02,0.024, 0.03])*0.2
     while True:
@@ -202,9 +201,8 @@ def gps_lambda_handler():
                 'tar': str(targetOffset),
                 'tmp': str(temperatureOutside)
             }
-            # print(targetOffset)
             aws_message.append(each_balloon)
-            # print(each_balloon)
+
         path = []
         count = 0
         count_history = count_history + 1
@@ -226,35 +224,6 @@ def gps_lambda_handler():
         for i in pathHistory:
             aws_message.append(i)
 
-        # add current position to trajectories
-        # for i in range(len(GPS_Log)):
-        #     each_balloon = {
-        #         'idH': str(GPS_Log[i].sysID),
-        #         'tH': str(t0),
-        #         'latH': str(GPS_Log[i].lat),
-        #         'lonH': str(GPS_Log[i].lon),
-        #         'altH': str(random.uniform(200,300)),
-        #         'tmpH': str(temperatureOutside)
-        #     }
-        #     aws_message.append(each_balloon)
-
-        # while count < 4:
-        #     count = count + 1
-        #     for i in range(len(GPS_Log)):
-                
-        #         each_balloon = {
-        #             'idH': str(GPS_Log[i].sysID),
-        #             'tH': str(t0),
-        #             'latH': str(GPS_Log[i].lat + random.uniform(-36.72,-36.715) + count_t * 0.01),
-        #             'lonH': str(GPS_Log[i].lon + random.uniform(142.1,142.3) + count_t * 0.01),
-        #             'altH': str(GPS_Log[i].alt + random.uniform(200,300)),
-
-        #         }
-        #         aws_message.append(each_balloon)
-        
-        # aws_message.append(balloonPaths[1:10])
-        # print(balloonPaths[1:2])
-        # print(aws_message)
         response = k_client.put_record(
                 StreamName=stream_name,
                 Data=json.dumps(aws_message),
@@ -269,8 +238,9 @@ def gps_lambda_handler():
         time.sleep(3)
         
 # def gps_lambda_handler():
-#     global count_history, path_history, GPS_Log
-#     stream_name = 'RMIT_Balloon_DataStream'
+#     global count_t, count_history, pathHistory
+
+#     stream_name = 'RMITballoon_Data'
 #     k_client = boto3.client('kinesis', region_name='ap-southeast-2')
 
 #     while True:
@@ -283,51 +253,54 @@ def gps_lambda_handler():
 #             with EKF_LOG_LOCK:
 #                 GPS_Log_tmp = GPS_Log
 
-#         aws_message = []
+#         aws_message = balloonPaths[:]
 #         t0 = time.time()
+
 #         for i in range(len(GPS_Log_tmp)):
+#             if i < nRealBalloon:
+#                 predictedOffset = baloonPathAllOriginal[i].getDistance(GPS_Log_tmp[i])
+#                 targetOffset = baloonPathAllOriginal[i].getDistance(fireLocation)
+#             else:
+#                 positionENU_RelativeEKF = positionENU(GPS_Log_tmp[i],GPS_Log_tmp[i-nRealBalloon])
+#                 predictedOffset = math.sqrt(positionENU_RelativeEKF[0]**2+positionENU_RelativeEKF[1]**2)
+#                 targetOffset = 0
+
+#             temperatureOutside = random.uniform(50,60)
+
 #             each_balloon = {
-#                 'sysID': str(GPS_Log_tmp[i].sysID),
-#                 'timeStamp': str(t0),
-#                 'lat': str(GPS_Log_tmp[i].lat),
+#                 'id': str(GPS_Log_tmp[i].sysID),
+#                 't': str(t0),
+#                 'lat': str(GPS_Log_tmp[i].lat ),
 #                 'lon': str(GPS_Log_tmp[i].lon),
 #                 'alt': str(GPS_Log_tmp[i].alt),
-#                 'pressure': str(0),
-#                 'signal_strength': str(0)
+#                 'prs': str(0),
+#                 'ss': str(0),
+#                 'd': str(predictedOffset),
+#                 'tar': str(targetOffset),
+#                 'tmp': str(temperatureOutside)
 #             }
+#             # print(targetOffset)
 #             aws_message.append(each_balloon)
-
     
-#         count_history = count_history + 1
-#         if count_history % 5 == 1:
-#             for i in range(len(GPS_Log_tmp)):
-                
-#                 each_balloon = {
-#                     'sysID_h': str(GPS_Log_tmp[i].sysID),
-#                     'time_h': str(t0),
-#                     'lat_h': str(GPS_Log_tmp[i].lat),
-#                     'lon_h': str(GPS_Log_tmp[i].lon),
-#                     'alt_h': str(GPS_Log_tmp[i].alt)
-#                 }
+#         for i in range(len(GPS_Log_tmp)):
+#             each_balloon = {
+#                 'idH': str(GPS_Log_tmp[i].sysID),
+#                 'tH': str(t0),
+#                 'latH': str(GPS_Log_tmp[i].lat),
+#                 'lonH': str(GPS_Log_tmp[i].lon),
+#                 'altH': str(GPS_Log_tmp[i].alt),
+#                 'tmpH': str(temperatureOutside)
+#             }
+#             pathHistory.append(each_balloon)
 
-#                 # each_balloon = {
-#                 #     'sysID_h': str(GPS_Log[i].sysID),
-#                 #     'time_h': str(t0),
-#                 #     'lat_h': str(GPS_Log[i].lat + random.uniform(-36.72,-36.715)),
-#                 #     'lon_h': str(GPS_Log[i].lon + random.uniform(142.1,142.3)),
-#                 #     'alt_h': str(GPS_Log[i].alt + random.uniform(200,300)),
+#         pathHistory = dataTruncate(pathHistory,nTruncate,len(GPS_Log_tmp))
 
-#                 # }
-
-
-#                 path_history.append(each_balloon)
-        
-#         aws_message.append(path_history)
+#         for i in pathHistory:
+#             aws_message.append(i)
 
 #         response = k_client.put_record(
 #                 StreamName=stream_name,
 #                 Data=json.dumps(aws_message),
-#                 # Data = '[{"sysID": "0", "timeStamp": "1616664193158.4873", "lat": "5.206728581869298", "lon": "32.464139215264524", "alt": "200.19366866684368", "pressure": "1538.358674366736", "signal_strength": "-78.84911771441294"}, {"sysID": "1", "timeStamp": "1616664193.1584873", "lat": "5.308554001275203", "lon": "32.37461053504348", "alt": "227.88151976770965", "pressure": "1661.610419273367", "signal_strength": "-76.36356412110052"}, {"sysID": "2", "timeStamp": "1616664193.1584873", "lat": "8.123481650386552", "lon": "37.87815098798116", "alt": "278.68562668245113", "pressure": "1353.3783098051533", "signal_strength": "-89.91233630179218"}, {"sysID": "3", "timeStamp": "1616664193.1584873", "lat": "6.489141170725179", "lon": "33.53937285828535", "alt": "224.23065648851028", "pressure": "1538.9333055493116", "signal_strength": "-78.84729804332947"}, {"sysID": "4", "timeStamp": "1616664193.1584873", "lat": "1.2494047201518554", "lon": "39.538746616103836", "alt": "227.66821532645596", "pressure": "1757.8155350482111", "signal_strength": "-89.95481461416858"}, [{"sysID_h": "0", "time_h": "1616664193.1584873", "lat_h": "-36.71756565615016", "lon_h": "142.21421971321564", "alt_h": "297.2000452618081"}, {"sysID_h": "1", "time_h": "1616664193.1584873", "lat_h": "-36.71907273180851", "lon_h": "142.20937797351252", "alt_h": "243.4553806587891"}, {"sysID_h": "2", "time_h": "1616664193.1584873", "lat_h": "-36.71538691546569", "lon_h": "142.18636041981281", "alt_h": "210.70848360023982"}, {"sysID_h": "3", "time_h": "1616664193.1584873", "lat_h": "-36.715342802396464", "lon_h": "142.2777564240451", "alt_h": "280.72262902738765"}, {"sysID_h": "4", "time_h": "1616664193.1584873", "lat_h": "-36.718430732855374", "lon_h": "142.11824349751765", "alt_h": "270.1717911308283"}, {"sysID_h": "0", "time_h": "1616664193.1584873", "lat_h": "-36.71637743399295", "lon_h": "142.14831562184483", "alt_h": "213.859304696758"}, {"sysID_h": "1", "time_h": "1616664193.1584873", "lat_h": "-36.71980524861051", "lon_h": "142.12980132216143", "alt_h": "254.33563542394694"}, {"sysID_h": "2", "time_h": "1616664193.1584873", "lat_h": "-36.71934078447395", "lon_h": "142.219660100136", "alt_h": "239.80918393657032"}, {"sysID_h": "3", "time_h": "1616664193.1584873", "lat_h": "-36.7153725217811", "lon_h": "142.16116885498164", "alt_h": "284.34822781414795"}, {"sysID_h": "4", "time_h": "1616664193.1584873", "lat_h": "-36.7189435667627", "lon_h": "142.10132189614723", "alt_h": "296.39948010459364"}]]',
 #                 PartitionKey=str(random.randrange(10000))
 #         )
 #         #print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
@@ -373,8 +346,7 @@ def main():
                 if recievedPacket.MessageID == 2:
                     
                     # get the GPS data
-                    with CUSTMES_LOCK:
-                        GPSdata = CustMes.MESSAGE_GPS()                    
+                    GPSdata = CustMes.MESSAGE_GPS()                    
                     error = GPSdata.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
                         print ("Radio Network Main: GPS data error " + str(error) + ".\n")
@@ -421,8 +393,7 @@ def main():
                 if recievedPacket.MessageID == 5:
                     
                     # get the GPS 
-                    with CUSTMES_LOCK:
-                        GPSdata = CustMes.MESSAGE_GPS()                    
+                    GPSdata = CustMes.MESSAGE_GPS()                    
                     error = GPSdata.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
                         print ("Radio Network Main: GPS data error " + str(error) + ".\n")
@@ -441,12 +412,29 @@ def main():
                     print('Distance EKF: ',round(distance,2)," [m]")
                     print('------------------------------------------------')
                     # put data into the buffer
-                    with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
-                        GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
+                    # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
+                    #     GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
 
                     # set the flags for the buffer 
                     # with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
                     #     GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
+                    
+                    continue
+
+                # if the packet is an temperature data packet 
+                if recievedPacket.MessageID == 6:
+                    
+                    # get the temperature msg
+                    tempData = CustMes.MESSAGE_TEMP()                    
+                    error = tempData.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: Temperature data error " + str(error) + ".\n")
+                        continue
+                    print("=================================================")
+                    print("Temperature Data from " + str(recievedPacket.SystemID) + ":")
+                    print("Temperature:" + str(round(tempData.Temperature,1)) + ", Time:" + str(tempData.Epoch) + "\n")
+
+                    temperatureOutside = tempData.Temperature
                     
                     continue
 
@@ -467,18 +455,6 @@ def main():
 
                     # create message string 
                     logString = logString + str(GPSTime) + "," + str(SystemID) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n"
-
-                    # AWS msg
-                    # each_balloon = {
-                    #     'sysID': str(SystemID),
-                    #     'timeStamp': str(GPSData.GPSTime),
-                    #     'lat': str(Latitude),
-                    #     'lon': str(Longitude),
-                    #     'alt': str(Altitude)
-                    # }
-
-                    # with GlobalVals.AWS_GPS_DATA_BUFFER_MUTEX:
-                    #     GlobalVals.AWS_GPS_DATA_BUFFER.append(each_balloon)
 
             # write the log string to file  
             try:

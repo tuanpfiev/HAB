@@ -41,17 +41,11 @@ GPSTimestamp = []
 GPSAscentRate = 0.0
 GPSAscentRateVals = []
 
-GGA_QuectelBuffer = []
-
-
 # Global flags 
 EndGPSSerial = False
 EndGPSSocket = False
 NewGPSData = False
 NewGPSSocketData = False
-
-EndGPS_QuectelSerial = False
-NEWGPS_QuectelData = False
 
 # Mutexs 
 GGABufferMutex = Lock()
@@ -60,7 +54,3 @@ EndGPSSerial_Mutex = Lock()
 NewGPSData_Mutex = Lock()
 NewGPSSocketData_Mutex = Lock()
 EndGPSSocket_Mutex = Lock()
-
-GGA_QuectelBufferMutex = Lock()
-NEWGPS_QuectelDataMutex = Lock()
-EndGPS_QuectelSerialMutex = Lock()

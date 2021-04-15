@@ -94,7 +94,6 @@ def gps_callback(host,port):
         string_list = []
         string_list = extract_str_btw_curly_brackets(data_str)
 
-        
         if len(string_list) > 0:
             gps_list = []
             for string in string_list:
@@ -103,10 +102,11 @@ def gps_callback(host,port):
                     gps_list.append(gps_i)
             
             idx = 0
-            while idx < len(gps_list):
-                with GlobalVals.GPS_UPDATE:
+            
+            with GlobalVals.GPS_UPDATE_MUTEX:
+                while idx < len(gps_list):
                     gps_update(gps_list[idx])
-                idx += 1
+                    idx += 1
 
     s.close()
 
@@ -154,8 +154,8 @@ def imu_callback(host,port):
                     imu_list.append(imu_i)
             
             idx = 0
-            while idx < len(imu_list):
-                with GlobalVals.IMU_UPDATE:
+            with GlobalVals.IMU_UPDATE_MUTEX:
+                while idx < len(imu_list):
                     imu_update(imu_list[idx])
                 idx += 1
     s.close()
@@ -201,7 +201,6 @@ def distanceRSSI_callback(host,port):
         string_list = []
         string_list = extract_str_btw_curly_brackets(data_str)
 
-        
         if len(string_list) > 0:
             rssi_list = []
             for string in string_list:
@@ -210,8 +209,8 @@ def distanceRSSI_callback(host,port):
                     rssi_list.append(rssi_i)
             
             idx = 0
-            while idx < len(rssi_list):
-                with GlobalVals.RSSI_UPDATE:
+            with GlobalVals.RSSI_UPDATE_MUTEX:
+                while idx < len(rssi_list):
                     rssi_update(rssi_list[idx])
                     # print(rssi_list[idx].epoch, rssi_list[idx].rssi_filtered)
                 idx += 1
@@ -226,7 +225,6 @@ def LLA_EKF_Distributor():
     Distro_Socket.bind((GlobalVals.HOST, GlobalVals.EKF_GPS_DISTRO_SOCKET))
     Distro_Socket.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
     
-
     # Wait for connection on the distro socket 
     try:
         Distro_Socket.listen(1) 
@@ -259,8 +257,6 @@ def LLA_EKF_Distributor():
                 # print(messageStr_bytes)
                 # print("*******************************")
                 try:
-                    # Thread(target=Threaded_Client, args=([Distro_Connection,messageStr_bytes]))
-                    # start_new_thread(Threaded_Client,(Distro_Connection,messageStr_bytes))
                     Distro_Connection.sendall(messageStr_bytes)
                 except Exception as e:
                     print("Exception: " + str(e.__class__))
@@ -285,7 +281,6 @@ if __name__ == '__main__':
 
     RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
     RSSIThread.start()
-
 
     LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
     LLA_EKF_DistributorThread.start()
@@ -346,7 +341,7 @@ if __name__ == '__main__':
         output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
             'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt',\
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
-                    'magVec1','magVec2','magVec3'])
+                    'magVec1','magVec2','magVec3','rssi_distance'])
 
         gps_all_prev = GlobalVals.GPS_ALL
         gps_prev = GPS()
@@ -357,16 +352,16 @@ if __name__ == '__main__':
 
         while True:
             # print('1')
-            with GlobalVals.GPS_UPDATE:
+            with GlobalVals.GPS_UPDATE_MUTEX:
                 gps_all = GlobalVals.GPS_ALL
                 # print('1')
             gps = gps_all[sysID-1]
             # print('2')
-            with GlobalVals.IMU_UPDATE:
+            with GlobalVals.IMU_UPDATE_MUTEX:
                 imu = GlobalVals.IMU_ALL[sysID-1]
                 # print('2')
             # print('3')
-            with GlobalVals.RSSI_UPDATE:
+            with GlobalVals.RSSI_UPDATE_MUTEX:
                 rssi = GlobalVals.RSSI
                 # print('3')
             dt = (imu.epoch - imu_prev.epoch)/1000
@@ -445,7 +440,7 @@ if __name__ == '__main__':
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                     gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0]])
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi.distance])
 
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
@@ -463,9 +458,6 @@ if __name__ == '__main__':
                 flag_start = False
 
 
-            
-    # while True:
-    #     time.sleep(1)
 
     if GPSThread.is_alive():
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:

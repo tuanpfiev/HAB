@@ -17,140 +17,6 @@ from utils import get_port
 # Serial Thread
 #=====================================================
 
-def GPS_QuectelThread():
-    
-    # Initialise variables 
-    readBytes = bytearray()
-    connected = True
-    bufferRead = 1
-    synced = False
-
-    # Connect to the serial port 
-    try:
-        serial_port = serial.Serial(
-            port=GlobalVals.GPS_UART_PORT,
-            baudrate=GlobalVals.GPS_UART_BAUDRATE,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            timeout=GlobalVals.GPS_UART_TIMEOUT,
-        )
-        serial_port.reset_input_buffer()
-        serial_port.reset_output_buffer()
-    except Exception as e:
-        print("ERROR: unable to initiate serial port.")
-        print("PORT = ", GlobalVals.GPS_UART_PORT)
-        print("BAUDRATE = ", GlobalVals.GPS_UART_BAUDRATE)
-        print("TIMEOUT = ", GlobalVals.GPS_UART_TIMEOUT)
-        print("Exception: " + str(e.__class__))
-        connected = False
-    
-    # Wait a second to let the port initialize
-    time.sleep(1)
-
-    # begin the loop used for reading the serial port 
-    while connected and not GlobalVals.EndGPS_QuectelSerial:
-        
-        # reset values when not synced
-        if not synced:
-            readBytes.clear()
-            bufferRead = 1
-
-        # read some bytes out of the buffer 
-        try:
-            comOut = serial_port.read(size=bufferRead)
-            # print(comOut)
-        except (OSError, serial.SerialException) as e:
-            print("ERROR: Failed to read com port.")
-            print("Exception: " + str(e.__class__))
-            connected = False
-            continue
-        
-        # if buffer is empty read again (likely timeout)
-        if len(comOut) == 0:
-            continue 
-            
-        # find the start of the messages ($ = 0x24) to sync the input buffer with the start of the message
-        if not synced:
-            if comOut[0] == 0x24:
-                synced = True
-                readBytes.append(comOut[0])
-                bufferRead = 5  # message type is 5 bytes long
-                continue
-            else:
-                synced = False
-                continue 
-
-        # Read the message type (GPGGA is what we want)
-        if synced and bufferRead == 5:
-            
-            # check the message type is correct 
-            messageType = "GNGGA"
-            messageType_bytes = bytearray(messageType, 'utf-8')
-            correctMessage = True
-            for x in range(bufferRead):
-                if comOut[x] != messageType_bytes[x]:
-                    correctMessage = False
-                    break
-            
-            # if it is not correct loop back 
-            if not correctMessage:
-                synced = False
-                continue
-            
-            # add message type to readBytes 
-            for x in comOut:
-                readBytes.append(x)
-
-            bufferRead = 1
-            continue 
-            
-        # read the rest of the message (\r\n = 0x0D 0x0A is used to mark the end of a line)
-        if bufferRead == 1 and synced:
-            
-            # if the byte isn't a CR then continue to add the bytes to readBytes
-            if comOut[0] != 0x0D:
-                readBytes.append(comOut[0])
-                continue
-
-            # Decode message (if the serial data has garbage, it will be discarded here)
-            try:
-                GGAstring = readBytes.decode()
-            except Exception as e:
-                print("Exception: " + str(e.__class__))
-                print("Decoder broke, discarding packet and trying again.")
-                synced = False
-                continue
-            
-            # parse the GGA message 
-            GGamessage = pynmea2.parse(GGAstring)
-
-            # add message to buffer
-            with GlobalVals.GGA_QuectelBufferMutex:
-                while len(GlobalVals.GGA_QuectelBuffer) > GlobalVals.GPS_UART_BUFFER_SIZE:
-                    GlobalVals.GGA_QuectelBuffer.pop(0)
-                GlobalVals.GGA_QuectelBuffer.append(GGamessage)
-            
-            # Update flag 
-            with GlobalVals.NEWGPS_QuectelDataMutex:
-                GlobalVals.NEWGPS_QuectelData = True
-            
-            synced = False
-    
-    # close thread
-    if connected:
-        serial_port.close()
-    
-    with GlobalVals.EndGPS_QuectelSerialMutex:
-        GlobalVals.EndGPS_QuectelSerial = True
-
-    return
-
-
-#=====================================================
-# Serial Thread
-#=====================================================
-
 def GPSSerialThread():
     
     # Initialise variables 
@@ -181,7 +47,7 @@ def GPSSerialThread():
     
     # Wait a second to let the port initialize
     time.sleep(1)
-
+    print('here')
     # begin the loop used for reading the serial port 
     while connected and not GlobalVals.EndGPSSerial:
         
@@ -209,33 +75,34 @@ def GPSSerialThread():
             if comOut[0] == 0x24:
                 synced = True
                 readBytes.append(comOut[0])
-                bufferRead = 5  # message type is 5 bytes long
+                bufferRead = 14  # message type is 5 bytes long
                 continue
             else:
                 synced = False
                 continue 
 
         # Read the message type (GPGGA is what we want)
-        if synced and bufferRead == 5:
-            
+        if synced and bufferRead == 14:
+            print(comOut)
+    
             # check the message type is correct 
-            messageType = "GNGGA"
+            messageType = "GP"
             messageType_bytes = bytearray(messageType, 'utf-8')
             correctMessage = True
-            for x in range(bufferRead):
+            for x in range(2):
                 if comOut[x] != messageType_bytes[x]:
                     correctMessage = False
                     break
-            
+
             # if it is not correct loop back 
             if not correctMessage:
                 synced = False
                 continue
             
+
             # add message type to readBytes 
             for x in comOut:
                 readBytes.append(x)
-
             bufferRead = 1
             continue 
             
@@ -550,6 +417,8 @@ if __name__ == '__main__':
     # set Port
     GlobalVals.GPS_UART_PORT=get_port('GPS')
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
+    GlobalVals.GPS_UART_PORT="/dev/ttyUSB0"
+    GlobalVals.GPS_UART_BAUDRATE = 38400
 
     try:
         os.makedirs("../datalog")
@@ -570,32 +439,34 @@ if __name__ == '__main__':
         print("Error using error log file, ending error thread")
 
     # start the serial thread 
-    GPSThread = Thread(target=GPSSerialThread, args=())
-    GPSThread.start()
+    # GPSThread = Thread(target=GPSSerialThread, args=())
+    # GPSThread.start()
+
+    GPSSerialThread()
 
     # # start the socket logger thread 
-    SocketThread = Thread(target=LoggerSocket, args=())
-    SocketThread.start()
+    # SocketThread = Thread(target=LoggerSocket, args=())
+    # SocketThread.start()
     
     # start the main loop 
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('\nProgram ended.')
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print(e)
+    # try:
+    #     main()
+    # except KeyboardInterrupt:
+    #     print('\nProgram ended.')
+    # except Exception as e:
+    #     print("Exception: " + str(e.__class__))
+    #     print(e)
 
-    # safely end the GPS thread 
-    if GPSThread.is_alive():
-        with GlobalVals.EndGPSSerial_Mutex:
-            GlobalVals.EndGPSSerial = True
-        GPSThread.join()
+    # # safely end the GPS thread 
+    # if GPSThread.is_alive():
+    #     with GlobalVals.EndGPSSerial_Mutex:
+    #         GlobalVals.EndGPSSerial = True
+    #     GPSThread.join()
     
     # safely end the socket thread 
-    if SocketThread.is_alive():
-        with GlobalVals.EndGPSSocket_Mutex:
-            GlobalVals.EndGPSSocket = True
-        GPSThread.join()
+    # if SocketThread.is_alive():
+    #     with GlobalVals.EndGPSSocket_Mutex:
+    #         GlobalVals.EndGPSSocket = True
+    #     GPSThread.join()
         
 

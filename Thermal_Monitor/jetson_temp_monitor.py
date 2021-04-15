@@ -40,7 +40,6 @@ if __name__ == "__main__":
 
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-temperature.txt"
     
-    
     zone_paths = thermal_zone.get_thermal_zone_paths()
     zone_names = thermal_zone.get_thermal_zone_names(zone_paths)
     
@@ -55,8 +54,6 @@ if __name__ == "__main__":
         print("Temperature Log: Exception: " + str(e.__class__))
       
     print('Start logging temperature ...')
-    
-    
 
     while True:
         epoch = time.time()
