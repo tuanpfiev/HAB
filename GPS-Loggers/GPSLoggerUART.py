@@ -12,7 +12,9 @@ import subprocess
 import sys, os
 sys.path.insert(1,'../utils')
 from utils import get_port
-
+from common import *
+from common_class import *
+from commonGPS import *
 #=====================================================
 # Serial Thread
 #=====================================================
@@ -28,8 +30,8 @@ def GPS_QuectelThread():
     # Connect to the serial port 
     try:
         serial_port = serial.Serial(
-            port=GlobalVals.GPS_UART_PORT,
-            baudrate=GlobalVals.GPS_UART_BAUDRATE,
+            port=GlobalVals.GPS_QUECTEL_UART_PORT,
+            baudrate=GlobalVals.GPS_QUECTEL_UART_BAUDRATE,
             bytesize=serial.EIGHTBITS,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
@@ -39,9 +41,9 @@ def GPS_QuectelThread():
         serial_port.reset_output_buffer()
     except Exception as e:
         print("ERROR: unable to initiate serial port.")
-        print("PORT = ", GlobalVals.GPS_UART_PORT)
-        print("BAUDRATE = ", GlobalVals.GPS_UART_BAUDRATE)
-        print("TIMEOUT = ", GlobalVals.GPS_UART_TIMEOUT)
+        print("PORT = ", GlobalVals.GPS_QUECTEL_UART_PORT)
+        print("BAUDRATE = ", GlobalVals.GPS_QUECTEL_UART_BAUDRATE)
+        print("TIMEOUT = ", GlobalVals.GPS_QUECTEL_UART_TIMEOUT)
         print("Exception: " + str(e.__class__))
         connected = False
     
@@ -85,7 +87,7 @@ def GPS_QuectelThread():
         if synced and bufferRead == 5:
             
             # check the message type is correct 
-            messageType = "GNGGA"
+            messageType = "GPGGA"
             messageType_bytes = bytearray(messageType, 'utf-8')
             correctMessage = True
             for x in range(bufferRead):
@@ -124,13 +126,14 @@ def GPS_QuectelThread():
             
             # parse the GGA message 
             GGamessage = pynmea2.parse(GGAstring)
-
+            # print("QuecTel: ", GGamessage)
             # add message to buffer
             with GlobalVals.GGA_QuectelBufferMutex:
                 while len(GlobalVals.GGA_QuectelBuffer) > GlobalVals.GPS_UART_BUFFER_SIZE:
                     GlobalVals.GGA_QuectelBuffer.pop(0)
                 GlobalVals.GGA_QuectelBuffer.append(GGamessage)
-            
+                
+
             # Update flag 
             with GlobalVals.NEWGPS_QuectelDataMutex:
                 GlobalVals.NEWGPS_QuectelData = True
@@ -258,6 +261,7 @@ def GPSSerialThread():
             
             # parse the GGA message 
             GGamessage = pynmea2.parse(GGAstring)
+            # print(GGamessage)
 
             # add message to buffer
             with GlobalVals.GGABufferMutex:
@@ -393,19 +397,29 @@ def main():
     # setup time values 
     curTime = time.time()
     callTime = curTime + GlobalVals.PREDICTION_INTERVAL
+    firstRunUblox = True
+    statusUblox = True
 
     # loop only while the other threads are running 
     while not GlobalVals.EndGPSSerial and not GlobalVals.EndGPSSocket:
 
         # check to see if there is new data 
-        DataReady = False
+        dataUbloxReady = False
+        dataQuectelRead = False
+
         with GlobalVals.NewGPSData_Mutex:
             if GlobalVals.NewGPSData:
-                DataReady = True 
+                dataUbloxReady = True 
                 GlobalVals.NewGPSData = False
+
+        with GlobalVals.NEWGPS_QuectelDataMutex:
+            if GlobalVals.NEWGPS_QuectelData:
+                dataQuectelRead = True
+                GlobalVals.NEWGPS_QuectelData = False
+                        
         
         # if there is no new data sleep 
-        if not DataReady:
+        if not dataUbloxReady and not dataQuectelRead:
             time.sleep(0.1)
             continue 
 
@@ -413,133 +427,114 @@ def main():
             
             # loop through each value in buffer
             loopLength = len(GlobalVals.GGAbuffer)
-            while loopLength > 0:
-                
-                # Get GPS data from the value in buffer
-                GGAdata = GlobalVals.GGAbuffer.pop(0)
-                lon = GGAdata.longitude
-                lat = GGAdata.latitude
-                alt = 0.0
-                GPStime_hour = 0
-                GPStime_min = 0
-                GPStime_sec = 0
-                GPSepoch = 0.0
+            if loopLength > 0:
+                statusUblox = True
+                while loopLength > 0:
+                    
+                    # Get GPS data from the value in buffer
+                    GGAdata = GlobalVals.GGAbuffer.pop(0)
+                    GPS_Data = GGA_Convert(GGAdata)
+                    obtainedUbloxCheck = checkGPS(GPS_Data)
 
-                # if there is no data in the timestamp feild of the message then the timestamp has no type. 
-                if GGAdata.data[0] != '':
-                    
-                    # set the alt
-                    if GGAdata.altitude != None:
-                        alt = GGAdata.altitude
+                    with GlobalVals.GPSValuesMutex:
+        
+                        if obtainedUbloxCheck or firstRunUblox:
+                            firstRunUblox = False
+                        # if obtainedUbloxCheck:
+                            print('Using Ublox GPS')
+                            updateGlobalGPS_Data(GPS_Data)
+                        else:
+                            with GlobalVals.GGA_QuectelBufferMutex:
+                                # loop through each value in buffer
+                                loopLengthQuectel = len(GlobalVals.GGA_QuectelBuffer)
+                                while loopLengthQuectel > 0:                                    
+                                    # Get GPS data from the value in buffer
+                                    GGAdataQuectel = GlobalVals.GGA_QuectelBuffer.pop(0)
+                                    
+                                    GPS_Data = GGA_Convert(GGAdataQuectel)
+                                    obtainedQuectelCheck = checkGPS(GPS_Data)
+                                        
+                                    if obtainedQuectelCheck:
+                                        if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
+                                            print('Using QuecTel GPS')
+                                            updateGlobalGPS_Data(GPS_Data)
 
-                    # get the hours, minutes, and seconds from GPS
-                    GPStime_hour = GGAdata.timestamp.hour
-                    GPStime_min = GGAdata.timestamp.minute
-                    GPStime_sec = GGAdata.timestamp.second
+                                    loopLengthQuectel = loopLengthQuectel -1
 
-                    # from the GPS calculate the seconds in the day 
-                    DaySecs = (GPStime_hour * 3600) + (GPStime_min * 60) + GPStime_sec
-                    
-                    # get epoch time for UTC at the start of the day 
-                    UTCtime = datetime.datetime.utcnow()
-                    UTCtimeEpoch = int(calendar.timegm(UTCtime.timetuple()))
-                    UTCDaySecs = (UTCtime.hour * 3600) + (UTCtime.minute * 60) + UTCtime.second
-                    UTCDayStart = UTCtimeEpoch - UTCDaySecs
-                    
-                    # get GPS epoch
-                    GPSepoch = UTCDayStart + DaySecs
-                    
-                    # if the time is conversion happens over midnight (GPS = 23:59:59, time of conversion = 00:00:00)
-                    # then ajust the start of the day 
-                    UTCtimeEpoch = UTCtimeEpoch + 60    # seems that the time gps doesn't line up exactly so a 1 minute error range helps with this 
-                    if GPSepoch > UTCtimeEpoch:
-                        UTCDayStart = UTCDayStart - 86400
-                        GPSepoch = UTCDayStart + DaySecs
-                    
-                    GPSepoch = float(GPSepoch)
-                
-                # Load data into the buffer
+                    # set the flag for the socket code 
+                    with GlobalVals.NewGPSSocketData_Mutex:
+                        GlobalVals.NewGPSSocketData = True
+                            
+                    # Log the GPS data
+                    logData(GPS_Data)                                                                             
+                    loopLength = loopLength - 1
+
+            if time.time() - GPS_Data.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
+                statusUblox = False
+
+            if not statusUblox:
                 with GlobalVals.GPSValuesMutex:
-                    GlobalVals.GPSLongitude.append(lon)
-                    GlobalVals.GPSLatitude.append(lat)
-                    GlobalVals.GPSAltitude.append(alt)
-                    GlobalVals.GPSTimestamp.append(GPSepoch)
-                    GlobalVals.GPSAscentRateVals.append(alt)
-
-                    # calculate ascent rate if enough alt vals have been recorded 
-                    NumAscentVals = len(GlobalVals.GPSAscentRateVals)
-                    if NumAscentVals >= GlobalVals.GPS_LOGGER_ASCENT_RATE_LENGTH:
-                        
-                        ascentRate = 0 
-                        for x in range(NumAscentVals):
-                            if x == 0:
-                                continue
+                    with GlobalVals.GGA_QuectelBufferMutex:     
+                        # loop through each value in buffer
+                        loopLengthQuectel = len(GlobalVals.GGA_QuectelBuffer)
+                        while loopLengthQuectel > 0:
                             
-                            diff = GlobalVals.GPSAscentRateVals[x] - GlobalVals.GPSAscentRateVals[x-1]
-                            ascentRate = ascentRate + diff
-
-                        ascentRate = ascentRate / (NumAscentVals - 1)
-                        
-                        # store ascent rate and pop one value (running average)
-                        GlobalVals.GPSAscentRate = ascentRate
-                        GlobalVals.GPSAscentRateVals.pop(0)
-
-                # set the flag for the socket code 
-                with GlobalVals.NewGPSSocketData_Mutex:
-                    GlobalVals.NewGPSSocketData = True
-                
-                # Log the GPS data
-                logString = str(GPSepoch) + "," + str(lon) + "," + str(lat) + "," + str(alt) + "," + str(GlobalVals.GPSAscentRate) + "\n"
-                timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(GPSepoch))
-                try:
-                    fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
-                    fileObj.write(logString)
-                    fileObj.close()
-                except Exception as e:
-                    print("Exception: " + str(e.__class__))
-                    print("Error using error log file, ending error thread")
-                    return
-
-                # Debug Messages 
-                print("lon: " + str(round(lon,4)) + ", lat: " + str(round(lat,4)) + ", alt: " + str(round(alt,2)) + ", Time: ", timeLocal)
-
-                loopLength = loopLength - 1
-
-                # check if it is call time yet
-                curTime = time.time()
-                if curTime >= callTime:
-                    callTime = curTime + GlobalVals.PREDICTION_INTERVAL
-
-                    # if real GPS data is being used 
-                    if not GlobalVals.FAKE_GPS_FLAG:
-                        
-                        # check to see if useful data has been loaded 
-                        if lon != 0.0 and lat != 0.0 and alt != 0.0:
+                            # Get GPS data from the value in buffer
+                            GGAdataQuectel = GlobalVals.GGA_QuectelBuffer.pop(0)
                             
-                            # lat on alt ascent epoch
-                            # /home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 420 6.9 1612614684 .
-                            print("Calling Path Prediction.") 
-                            argStr = str(lat) + " " + str(lon) + " " + str(alt) + " " + str(GlobalVals.GPSAscentRate) + " " + str(int(GPSepoch)) 
-                            commandStr = "~/HAB/Prediction_Autologger/build/BallARENA-dev " + argStr
+                            GPS_Data = GGA_Convert(GGAdataQuectel)
+                            obtainedQuectelCheck = checkGPS(GPS_Data)
+                                
+                            if obtainedQuectelCheck:
+                                if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
+                                    print('Using QuecTel GPS 2')
+                                    updateGlobalGPS_Data(GPS_Data)
                             
-                            try:
-                                subprocess.Popen(commandStr, shell=True)
-                            except Exception as e:
-                                print("Exception: " + str(e.__class__))
-                                print(e)
-                                print("Error calling path prediction script. Will continue and call again later.")
-                        
-                    else:
+                            with GlobalVals.NewGPSSocketData_Mutex:
+                                GlobalVals.NewGPSSocketData = True
+                    
+                            # Log the GPS data
+                            logData(GPS_Data)
 
-                        # fake gps over launch site
+                            loopLengthQuectel = loopLengthQuectel -1
+
+                            # set the flag for the socket code 
+                            
+
+            # check if it is call time yet
+            curTime = time.time()
+            if curTime >= callTime:
+                callTime = curTime + GlobalVals.PREDICTION_INTERVAL
+
+                # if real GPS data is being used 
+                if not GlobalVals.FAKE_GPS_FLAG:
+                    
+                    # check to see if useful data has been loaded 
+                    if GPS_Data.lon != 0.0 and GPS_Data.lat != 0.0 and GPS_Data.alt != 0.0:
+                        
+                        # lat on alt ascent epoch
+                        # /home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 420 6.9 1612614684 .
                         print("Calling Path Prediction.") 
-
+                        argStr = str(GPS_Data.lat) + " " + str(GPS_Data.lon) + " " + str(GPS_Data.alt) + " " + str(GlobalVals.GPSAscentRate) + " " + str(int(GPS_Data.epoch)) 
+                        commandStr = "~/HAB/Prediction_Autologger/build/BallARENA-dev " + argStr
+                        
                         try:
-                            subprocess.Popen('~/HAB/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
+                            subprocess.Popen(commandStr, shell=True)
                         except Exception as e:
                             print("Exception: " + str(e.__class__))
                             print(e)
                             print("Error calling path prediction script. Will continue and call again later.")
+                
+                else:
+                    # fake gps over launch site
+                    print("Calling Path Prediction.") 
+
+                    try:
+                        subprocess.Popen('~/HAB/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
+                    except Exception as e:
+                        print("Exception: " + str(e.__class__))
+                        print(e)
+                        print("Error calling path prediction script. Will continue and call again later.")
 
 
 
@@ -550,7 +545,7 @@ if __name__ == '__main__':
     # set Port
     GlobalVals.GPS_UART_PORT=get_port('GPS')
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
-
+    # GlobalVals.GPS_UART_PORT= "/dev/ttyTHS1"
     try:
         os.makedirs("../datalog")
     except FileExistsError:
@@ -570,12 +565,17 @@ if __name__ == '__main__':
         print("Error using error log file, ending error thread")
 
     # start the serial thread 
-    GPSThread = Thread(target=GPSSerialThread, args=())
-    GPSThread.start()
+    GPS_UbloxThread = Thread(target=GPSSerialThread, args=())
+    GPS_UbloxThread.start()
+    # GPS_QuectelThread()
+    
+    # start the serial thread 
+    GPS_QuecTelThread = Thread(target=GPS_QuectelThread, args=())
+    GPS_QuecTelThread.start()
 
     # # start the socket logger thread 
-    SocketThread = Thread(target=LoggerSocket, args=())
-    SocketThread.start()
+    # SocketThread = Thread(target=LoggerSocket, args=())
+    # SocketThread.start()
     
     # start the main loop 
     try:
@@ -587,15 +587,21 @@ if __name__ == '__main__':
         print(e)
 
     # safely end the GPS thread 
-    if GPSThread.is_alive():
+    if GPS_UbloxThread.is_alive():
         with GlobalVals.EndGPSSerial_Mutex:
             GlobalVals.EndGPSSerial = True
-        GPSThread.join()
+        GPS_UbloxThread.join()
     
-    # safely end the socket thread 
-    if SocketThread.is_alive():
-        with GlobalVals.EndGPSSocket_Mutex:
-            GlobalVals.EndGPSSocket = True
-        GPSThread.join()
+    # safely end the GPS thread 
+    if GPS_QuecTelThread.is_alive():
+        with GlobalVals.EndGPS_QuectelSerialMutex:
+            GlobalVals.EndGPS_QuectelSerial = True
+        GPS_QuecTelThread.join()
+
+    # # safely end the socket thread 
+    # if SocketThread.is_alive():
+    #     with GlobalVals.EndGPSSocket_Mutex:
+    #         GlobalVals.EndGPSSocket = True
+    #     GPSThread.join()
         
 

@@ -11,16 +11,17 @@ GPS_UART_PORT = "/dev/ttyUSB7"  # Ubuntu USB UART
 GPS_UART_BAUDRATE = 38400
 GPS_UART_TIMEOUT = 1
 
-GPS_QUECTEL_UART_PORT = "/dev/ttyTHS1"
-GPS_QUECTEL_UART_BAUDRATE = 9600
-GPS_QUECTEL_UART_TIMEOUT = 1
 # Networking Settings
 HOST = '127.0.0.1'              # Local host address
-GPS_LOGGER_SOCKET = 5001        # Arbitrary non-privileged port for connecting to radio network
-GPS_LOGGER_SOCKET_TIMEOUT = 2220   # Timeout for socket connections  
+GPS_UBLOX_LOGGER_SOCKET = 5090        # Arbitrary non-privileged port for connecting to radio network
+GPS_UBLOX_LOGGER_SOCKET_TIMEOUT = 60   # Timeout for socket connections  
 
-UBLOX_SIGNAL_LOSS_TIME = 2
-GPS_MAX_BUFFER_LENGTH = 20
+GPS_QUECTEL_LOGGER_SOCKET = 5091
+GPS_QUECTEL_LOGGER_SOCKET_TIMEOUT = 60
+
+GPS_LOGGER_SOCKET = 5001
+GPS_LOGGER_SOCKET_TIMEOUT = 60
+
 # Buffer Settings 
 GPS_UART_BUFFER_SIZE = 50
 
@@ -46,8 +47,8 @@ GPSTimestamp = []
 GPSAscentRate = 0.0
 GPSAscentRateVals = []
 
-GGA_QuectelBuffer = []
-
+GPS_UBLOX_DATA_BUFFER = []
+GPS_QUECTEL_DATA_BUFFER= [] 
 
 # Global flags 
 EndGPSSerial = False
@@ -55,9 +56,8 @@ EndGPSSocket = False
 NewGPSData = False
 NewGPSSocketData = False
 
-EndGPS_QuectelSerial = False
-NEWGPS_QuectelData = False
-
+BREAK_GPS_LOGGER_UBLOX_THREAD = False
+BREAK_GPS_LOGGER_QUECTEL_THREAD = False
 # Mutexs 
 GGABufferMutex = Lock()
 GPSValuesMutex = Lock()
@@ -66,6 +66,8 @@ NewGPSData_Mutex = Lock()
 NewGPSSocketData_Mutex = Lock()
 EndGPSSocket_Mutex = Lock()
 
-GGA_QuectelBufferMutex = Lock()
-NEWGPS_QuectelDataMutex = Lock()
-EndGPS_QuectelSerialMutex = Lock()
+GPS_UBLOX_DATA_BUFFER_MUTEX = Lock()
+GPS_QUECTEL_DATA_BUFFER_MUTEX = Lock()
+
+BREAK_GPS_LOGGER_UBLOX_THREAD_MUTEX = Lock()
+BREAK_GPS_LOGGER_QUECTEL_THREAD_MUTEX = Lock()

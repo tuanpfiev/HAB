@@ -8,19 +8,15 @@ from threading import Lock
 #PORT = "/dev/ttyTHS1"  # Ubuntu GPIO UART
 GPS_UART_PORT = "/dev/ttyUSB7"  # Ubuntu USB UART
 #GPS_UART_PORT = "COM19" 
-GPS_UART_BAUDRATE = 38400
+GPS_UART_BAUDRATE = 9600
 GPS_UART_TIMEOUT = 1
 
-GPS_QUECTEL_UART_PORT = "/dev/ttyTHS1"
-GPS_QUECTEL_UART_BAUDRATE = 9600
-GPS_QUECTEL_UART_TIMEOUT = 1
+
 # Networking Settings
 HOST = '127.0.0.1'              # Local host address
-GPS_LOGGER_SOCKET = 5001        # Arbitrary non-privileged port for connecting to radio network
+GPS_LOGGER_SOCKET = 5091        # Arbitrary non-privileged port for connecting to radio network
 GPS_LOGGER_SOCKET_TIMEOUT = 2220   # Timeout for socket connections  
 
-UBLOX_SIGNAL_LOSS_TIME = 2
-GPS_MAX_BUFFER_LENGTH = 20
 # Buffer Settings 
 GPS_UART_BUFFER_SIZE = 50
 

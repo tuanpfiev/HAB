@@ -47,7 +47,7 @@ def GPSSerialThread():
     
     # Wait a second to let the port initialize
     time.sleep(1)
-    print('here')
+    # print('here')
     # begin the loop used for reading the serial port 
     while connected and not GlobalVals.EndGPSSerial:
         
@@ -75,21 +75,21 @@ def GPSSerialThread():
             if comOut[0] == 0x24:
                 synced = True
                 readBytes.append(comOut[0])
-                bufferRead = 14  # message type is 5 bytes long
+                bufferRead = 5  # message type is 5 bytes long
                 continue
             else:
                 synced = False
                 continue 
 
         # Read the message type (GPGGA is what we want)
-        if synced and bufferRead == 14:
-            print(comOut)
+        if synced and bufferRead == 5:
+            # print(comOut)
     
             # check the message type is correct 
-            messageType = "GP"
+            messageType = "GNGGA"
             messageType_bytes = bytearray(messageType, 'utf-8')
             correctMessage = True
-            for x in range(2):
+            for x in range(bufferRead):
                 if comOut[x] != messageType_bytes[x]:
                     correctMessage = False
                     break
@@ -354,7 +354,7 @@ def main():
                 # set the flag for the socket code 
                 with GlobalVals.NewGPSSocketData_Mutex:
                     GlobalVals.NewGPSSocketData = True
-                
+                print(GlobalVals.GPSTimestamp)
                 # Log the GPS data
                 logString = str(GPSepoch) + "," + str(lon) + "," + str(lat) + "," + str(alt) + "," + str(GlobalVals.GPSAscentRate) + "\n"
                 timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(GPSepoch))
@@ -372,41 +372,41 @@ def main():
 
                 loopLength = loopLength - 1
 
-                # check if it is call time yet
-                curTime = time.time()
-                if curTime >= callTime:
-                    callTime = curTime + GlobalVals.PREDICTION_INTERVAL
+                # # check if it is call time yet
+                # curTime = time.time()
+                # if curTime >= callTime:
+                #     callTime = curTime + GlobalVals.PREDICTION_INTERVAL
 
-                    # if real GPS data is being used 
-                    if not GlobalVals.FAKE_GPS_FLAG:
+                #     # if real GPS data is being used 
+                #     if not GlobalVals.FAKE_GPS_FLAG:
                         
-                        # check to see if useful data has been loaded 
-                        if lon != 0.0 and lat != 0.0 and alt != 0.0:
+                #         # check to see if useful data has been loaded 
+                #         if lon != 0.0 and lat != 0.0 and alt != 0.0:
                             
-                            # lat on alt ascent epoch
-                            # /home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 420 6.9 1612614684 .
-                            print("Calling Path Prediction.") 
-                            argStr = str(lat) + " " + str(lon) + " " + str(alt) + " " + str(GlobalVals.GPSAscentRate) + " " + str(int(GPSepoch)) 
-                            commandStr = "~/HAB/Prediction_Autologger/build/BallARENA-dev " + argStr
+                #             # lat on alt ascent epoch
+                #             # /home/pi/LuxCode/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 420 6.9 1612614684 .
+                #             print("Calling Path Prediction.") 
+                #             argStr = str(lat) + " " + str(lon) + " " + str(alt) + " " + str(GlobalVals.GPSAscentRate) + " " + str(int(GPSepoch)) 
+                #             commandStr = "~/HAB/Prediction_Autologger/build/BallARENA-dev " + argStr
                             
-                            try:
-                                subprocess.Popen(commandStr, shell=True)
-                            except Exception as e:
-                                print("Exception: " + str(e.__class__))
-                                print(e)
-                                print("Error calling path prediction script. Will continue and call again later.")
+                #             try:
+                #                 subprocess.Popen(commandStr, shell=True)
+                #             except Exception as e:
+                #                 print("Exception: " + str(e.__class__))
+                #                 print(e)
+                #                 print("Error calling path prediction script. Will continue and call again later.")
                         
-                    else:
+                #     else:
 
-                        # fake gps over launch site
-                        print("Calling Path Prediction.") 
+                #         # fake gps over launch site
+                #         print("Calling Path Prediction.") 
 
-                        try:
-                            subprocess.Popen('~/HAB/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
-                        except Exception as e:
-                            print("Exception: " + str(e.__class__))
-                            print(e)
-                            print("Error calling path prediction script. Will continue and call again later.")
+                #         try:
+                #             subprocess.Popen('~/HAB/Prediction_Autologger/build/BallARENA-dev -36.71131 142.19981 4200 6.9 1612614684', shell=True)
+                #         except Exception as e:
+                #             print("Exception: " + str(e.__class__))
+                #             print(e)
+                #             print("Error calling path prediction script. Will continue and call again later.")
 
 
 
@@ -425,7 +425,7 @@ if __name__ == '__main__':
     except FileExistsError:
         pass
 
-    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GPSLogger.csv"
+    file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GPSLoggerUblox.csv"
     GlobalVals.GPS_LOGGER_FILE = file_name
 
     logString = "epoch, lon, lat, alt, ascent_rate \n"
@@ -439,34 +439,33 @@ if __name__ == '__main__':
         print("Error using error log file, ending error thread")
 
     # start the serial thread 
-    # GPSThread = Thread(target=GPSSerialThread, args=())
-    # GPSThread.start()
+    GPSThread = Thread(target=GPSSerialThread, args=())
+    GPSThread.start()
 
-    GPSSerialThread()
 
-    # # start the socket logger thread 
-    # SocketThread = Thread(target=LoggerSocket, args=())
-    # SocketThread.start()
+    # start the socket logger thread 
+    SocketThread = Thread(target=LoggerSocket, args=())
+    SocketThread.start()
     
     # start the main loop 
-    # try:
-    #     main()
-    # except KeyboardInterrupt:
-    #     print('\nProgram ended.')
-    # except Exception as e:
-    #     print("Exception: " + str(e.__class__))
-    #     print(e)
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\nProgram ended.')
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print(e)
 
-    # # safely end the GPS thread 
-    # if GPSThread.is_alive():
-    #     with GlobalVals.EndGPSSerial_Mutex:
-    #         GlobalVals.EndGPSSerial = True
-    #     GPSThread.join()
+    # safely end the GPS thread 
+    if GPSThread.is_alive():
+        with GlobalVals.EndGPSSerial_Mutex:
+            GlobalVals.EndGPSSerial = True
+        GPSThread.join()
     
     # safely end the socket thread 
-    # if SocketThread.is_alive():
-    #     with GlobalVals.EndGPSSocket_Mutex:
-    #         GlobalVals.EndGPSSocket = True
-    #     GPSThread.join()
+    if SocketThread.is_alive():
+        with GlobalVals.EndGPSSocket_Mutex:
+            GlobalVals.EndGPSSocket = True
+        GPSThread.join()
         
 
