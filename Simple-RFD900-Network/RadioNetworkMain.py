@@ -213,8 +213,8 @@ if __name__ == '__main__':
     EKF_GPS_Thread = Thread(target=EKFHandler.EKFGPSLoggerSocket, args = ())
     EKF_GPS_Thread.start()
 
-    tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
-    tempThread.start()
+    # tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
+    # tempThread.start()
 
     try:
         main()
@@ -271,8 +271,8 @@ if __name__ == '__main__':
             GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
         EKF_GPS_Thread.join()
 
-    if tempThread.is_alive():
-        with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
-        tempThread.join()
+    # if tempThread.is_alive():
+    #     with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
+    #         GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
+    #     tempThread.join()
     

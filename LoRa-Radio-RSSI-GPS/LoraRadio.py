@@ -246,7 +246,7 @@ def Thread_RSSI_publish(host,port):
      
     Logger_Socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     Logger_Socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-    Logger_Socket2.bind((host, port+1))
+    Logger_Socket2.bind((host, 5022))
     Logger_Socket2.settimeout(GlobalVals.SOCKET_TIMEOUT)
 
     try: 
@@ -256,7 +256,7 @@ def Thread_RSSI_publish(host,port):
         print("Connected to: ",addr2)
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("Error in the logger socket2. Now closing thread.")
+        print("Error in the logger socket. Now closing thread.")
         with GlobalVals.EndRSSISocket_Mutex:
             GlobalVals.EndRSSISocket = True
         return 
@@ -353,14 +353,11 @@ if __name__ == '__main__':
     
     # use the third argument as the com port 
 
-    if numArgs >= 3:
+    if numArgs == 3:
         GlobalVals.PORT = sys.argv[2]
     else:
         GlobalVals.PORT = get_port('Lora')
-    
-    if numArgs == 4:
-        GlobalVals.PORT_RSSI = int(sys.argv[3])
-    print('PORT: '+ GlobalVals.PORT)
+        print('PORT: '+ GlobalVals.PORT)
     
     # create log file string 
     try:

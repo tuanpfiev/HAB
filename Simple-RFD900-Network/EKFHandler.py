@@ -39,7 +39,7 @@ def EKFGPSLoggerSocket():
                 continue
             else:
                 print("Exception: " + str(e.__class__))
-                print("There was an error starting the logger socket. This thread will now stop.")
+                print("There was an error starting the EKFGPSlogger socket. This thread will now stop.")
                 with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
                     GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
                 return 

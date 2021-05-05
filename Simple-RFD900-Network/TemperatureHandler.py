@@ -22,7 +22,7 @@ def TemperatureLoggerSocket():
         socket_logger.settimeout(GlobalVals.TEMP_LOGGER_SOCKET_TIMEOUT)
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("There was an error starting the logger socket. This thread will now stop.")
+        print("There was an error starting the TemperatureLoggerSocket logger socket. This thread will now stop.")
         with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
         return 

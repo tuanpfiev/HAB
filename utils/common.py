@@ -55,6 +55,18 @@ def checkAllGPS(gps_list):
             return False
     return True
 
+def checkRSSI(rssi):
+    if rssi.epoch == 0.0:
+        return False
+    else:
+        return True
+
+def checkAllRSSI(rssi_list):
+    for i in range(len(rssi_list)):
+        if not checkGPS(rssi_list[i]):
+            return False
+    return True    
+
 def positionENU(gps,gps_ref):
 
     C_NED_ENU = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) # correcting acc
@@ -141,9 +153,9 @@ def stringToRSSI(raw_data):
 
     try:
         rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
-        rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
+        # rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
-
+        rssi_i.distance = 0
         return True, rssi_i
 
     except ValueError:

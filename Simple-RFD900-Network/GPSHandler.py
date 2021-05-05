@@ -22,7 +22,7 @@ def GPSLoggerSocket():
         socket_logger.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("There was an error starting the logger socket. This thread will now stop.")
+        print("There was an error starting the GPSLoggerSocket logger socket. This thread will now stop.")
         with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_LOGGER_THREAD = True
         return 
@@ -154,7 +154,7 @@ def GPSDistributor():
         print("Logger Connected to ", addr)                                            
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("Error in the logger socket. Now closing thread.")
+        print("Error in the GPSDistributor logger socket. Now closing thread.")
         with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_DISTRO_THREAD = True
         return
@@ -175,7 +175,7 @@ def GPSDistributor():
         print("Logger Connected to ", addr)                                            
     except Exception as e:
         print("Exception: " + str(e.__class__))
-        print("Error in the logger socket. Now closing thread.")
+        print("Error in the GPSDistributor2 logger socket. Now closing thread.")
         with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_DISTRO_THREAD = True
         return       
