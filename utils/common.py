@@ -63,7 +63,7 @@ def checkRSSI(rssi):
 
 def checkAllRSSI(rssi_list):
     for i in range(len(rssi_list)):
-        if not checkGPS(rssi_list[i]):
+        if not checkRSSI(rssi_list[i]):
             return False
     return True    
 

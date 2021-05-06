@@ -244,22 +244,22 @@ def main(StartState):
 
 def Thread_RSSI_publish(host,port):
      
-    Logger_Socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-    Logger_Socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-    Logger_Socket2.bind((host, port+1))
-    Logger_Socket2.settimeout(GlobalVals.SOCKET_TIMEOUT)
+    # Logger_Socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    # Logger_Socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+    # Logger_Socket2.bind((host, port+1))
+    # Logger_Socket2.settimeout(GlobalVals.SOCKET_TIMEOUT)
 
-    try: 
-        Logger_Socket2.listen(1)
-        Logger_Connection2, addr2 = Logger_Socket2.accept()  
-        Logger_Connection2.settimeout(GlobalVals.SOCKET_TIMEOUT) 
-        print("Connected to: ",addr2)
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print("Error in the logger socket2. Now closing thread.")
-        with GlobalVals.EndRSSISocket_Mutex:
-            GlobalVals.EndRSSISocket = True
-        return 
+    # try: 
+    #     Logger_Socket2.listen(1)
+    #     Logger_Connection2, addr2 = Logger_Socket2.accept()  
+    #     Logger_Connection2.settimeout(GlobalVals.SOCKET_TIMEOUT) 
+    #     print("Connected to: ",addr2)
+    # except Exception as e:
+    #     print("Exception: " + str(e.__class__))
+    #     print("Error in the logger socket2. Now closing thread.")
+    #     with GlobalVals.EndRSSISocket_Mutex:
+    #         GlobalVals.EndRSSISocket = True
+    #     return 
     
     
     Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
@@ -307,9 +307,9 @@ def Thread_RSSI_publish(host,port):
                     socketPayload = "{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
                 
                     socketPayload = socketPayload.encode("utf-8")
-                
+                    print(socketPayload)
                     try:
-                        Logger_Connection2.sendall(socketPayload)
+                        # Logger_Connection2.sendall(socketPayload)
                         Logger_Connection.sendall(socketPayload)
                     except Exception as e:
                         print("Exception: " + str(e.__class__))
@@ -325,7 +325,7 @@ def Thread_RSSI_publish(host,port):
             GlobalVals.EndRSSISocket = True
     
     # close connection before ending thread 
-    Logger_Connection2.close()
+    # Logger_Connection2.close()
     Logger_Connection.close()
 
 

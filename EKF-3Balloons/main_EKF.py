@@ -11,7 +11,7 @@ import math
 
 
 sys.path.insert(1,'../utils/')
-from navpy import lla2ned, ned2lla
+from navpy import lla2ned, ned2lla, lla2ecef
 import csv
 from common import *
 from common_class import *
@@ -163,7 +163,7 @@ def imu_callback(host,port):
             with GlobalVals.IMU_UPDATE_MUTEX:
                 while idx < len(imu_list):
                     imu_update(imu_list[idx])
-                idx += 1
+                    idx += 1
     s.close()
 
 
@@ -198,6 +198,8 @@ def distanceRSSI_callback(host,port,balloon_id):
             print("Exception: " + str(e.__class__))
             print("There was an error starting the RSSI receiver socket. This thread will now stop.")
             break
+        
+        # print("ID",balloon_id,"Received RSSI: ",data_bytes)
 
         if len(data_bytes) == 0:
             continue
@@ -219,15 +221,15 @@ def distanceRSSI_callback(host,port,balloon_id):
                 while idx < len(rssi_list):
                     rssi_update(rssi_list[idx],balloon_id)
                     # print(rssi_list[idx].epoch, rssi_list[idx].rssi_filtered)
-                idx += 1
+                    idx += 1
             # print('----------------------------')
     s.close()
 
 def RSSI_ToDistance(rssi,params):
-    n = params[0]
-    A = params[1]
+    n = params[0][0]
+    A = params[0][1]
     
-    rssi.distance = 10**(-(rssi.filtered_RSSI-A)/(n*10))
+    rssi.distance = 10**(-(rssi.rssi_filtered-A)/(n*10))
 
     return rssi
 
@@ -239,30 +241,40 @@ def distanceCalculation(gps1, gps2):
 
 def RSSI_Calibration(rssi,gpsAll,sysID,index):
 
-    if len(GlobalVals.X[index])< GlobalVals.RSSI_CALIBRATION_SIZE:
-        return np.ones([1,2]), False
+
 
     for i in range(len(GlobalVals.REAL_BALLOON)):
         if GlobalVals.REAL_BALLOON[i] == sysID:
-            neighborRealBalloons = np.delete(GlobalVals.REAL_BALLOON,i,None])
+            neighborRealBalloons = np.delete(GlobalVals.REAL_BALLOON,i,None)
             break
 
     targetBalloon  = neighborRealBalloons[index]
     
-    distance = distanceCalculation(gpsAll[sysID-1],gpsAll(targetBalloon-1))
+    distance = distanceCalculation(gpsAll[sysID-1],gpsAll[targetBalloon-1])
 
     GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[rssi.rssi_filtered,1]])),axis=0)
-    GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([np.log10(distance)])),axis=0)
+    GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(distance)]])),axis=0)
+    
+    if len(GlobalVals.X[index])< GlobalVals.RSSI_CALIBRATION_SIZE:
+        print("Calibrating RSSI sys ID: ",index,"(",len(GlobalVals.X[index]),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
+        return np.ones([1,2]), False
 
     if len(GlobalVals.X[index]) > GlobalVals.RSSI_CALIBRATION_SIZE:
-        GlobalVals.X[index].pop(0)
-        GlobalVals.Y[index].pop(0)
+        GlobalVals.X[index] = np.delete(GlobalVals.X[index],0,0)
+        GlobalVals.Y[index] = np.delete(GlobalVals.Y[index],0,0)
 
-    w = np.linalg.multi_dot([np.linalg.inv(np.matmul(GlobalVals.X[index].transpose(),GlobalVals.X[index])),GlobalVals.X[index].transpose(),GlobalVals.Y[index])
-    n = -1/(10*w[0])
-    A = 10*n*w[1]
 
-    return np.array([n,A]), True
+    a = np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])
+    b = np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index]))
+    c = GlobalVals.X[index].transpose()
+    d = GlobalVals.Y[index]
+
+
+    w = np.linalg.multi_dot([np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])),GlobalVals.X[index].transpose(),GlobalVals.Y[index]])
+    n = -1/(10*w[0][0])
+    A = 10*n*w[1][0]
+
+    return np.array([[n,A]]), True
 
 
 
@@ -327,21 +339,24 @@ if __name__ == '__main__':
     IMUThread = Thread(target=imu_callback, args = (GlobalVals.HOST,GlobalVals.PORT_IMU))
     IMUThread.start()
 
-    RSSIThread = []
+    RSSIThread = [0,0]
 
     for i in range(GlobalVals.N_REAL_BALLOON-1):
-        RSSIThread[i] = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI,i))
+    
+        RSSIThread[i] = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI[i],i))
         RSSIThread[i].start()
 
     # RSSIThread_1 = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI,1))
     # RSSIThread_1.start()
 
-    LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
-    LLA_EKF_DistributorThread.start()
+    # LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
+    # LLA_EKF_DistributorThread.start()
 
     sysID = GlobalVals.SYSID
 
     print("WAITING for the GPS & RSSI data. Calculation has NOT started yet...")
+
+ 
     while True:
         print("All GPS ready ?: ", checkAllGPS(GlobalVals.GPS_ALL))
         print("RSSI ready ?:    ", checkAllRSSI(GlobalVals.RSSI))
@@ -403,7 +418,7 @@ if __name__ == '__main__':
         rssi_prev = np.array([RSSI()]*(GlobalVals.N_REAL_BALLOON-1))
         epoch_prev = 0
         flag_start = True
-        rssi = []
+        rssi = [0,0]
 
         flagRSSI_Calibration = True
 
@@ -423,14 +438,15 @@ if __name__ == '__main__':
                     rssi[i] = GlobalVals.RSSI[i]
                     # print('3')
                 if rssi[i].epoch != rssi_prev[i].epoch:
-                    GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i] = RSSI_Calibration(rssi[i],gpsAll,sysID,i)
+                    GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i] = RSSI_Calibration(rssi[i],gps_all,sysID,i)
                     rssi[i] = RSSI_ToDistance(rssi[i],GlobalVals.RSSI_PARAMS[i])
             
             if not checkRSSI_Calibration():
+                rssi_prev = rssi[:]
                 continue
 
             dt = (imu.epoch - imu_prev.epoch)/1000
-            # print(dt)
+            print(dt)
 
             if dt > 0 or flag_start:
                 print('dt: ',dt)
@@ -517,11 +533,11 @@ if __name__ == '__main__':
                 with GlobalVals.LLA_EKF_BUFFER_MUTEX:
                     GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
 
-                gps_all_prev = gps_all
-                gps_prev = gps
-                imu_prev = imu
-                rssi_prev = rssi
-                epoch_prev = epoch
+                gps_all_prev = gps_all[:]
+                gps_prev = gps[:]
+                imu_prev = imu[:]
+                rssi_prev = rssi[:]
+                epoch_prev = epoch[:]
                 flag_start = False
 
 
@@ -536,19 +552,19 @@ if __name__ == '__main__':
             GlobalVals.BREAK_IMU_THREAD = True
         IMUThread.join()
 
-    # if RSSIThread_0.is_alive():
-    #     with GlobalVals.BREAK_RSSI_THREAD_MUTEX[0]:
-    #         GlobalVals.BREAK_RSSI_THREAD[0] = True
-    #     RSSIThread_0.join()
+    if RSSIThread_0.is_alive():
+        with GlobalVals.BREAK_RSSI_THREAD_MUTEX[0]:
+            GlobalVals.BREAK_RSSI_THREAD[0] = True
+        RSSIThread_0.join()
 
     for i in range(GlobalVals.N_REAL_BALLOON-1):
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX[i]:
             GlobalVals.BREAK_RSSI_THREAD[i] = True
         RSSIThread[i].join()
 
-    if LLA_EKF_DistributorThread.is_alive():
-        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
-        LLA_EKF_DistributorThread.join()
+    # if LLA_EKF_DistributorThread.is_alive():
+    #     with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
+    #         GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
+    #     LLA_EKF_DistributorThread.join()
 
 

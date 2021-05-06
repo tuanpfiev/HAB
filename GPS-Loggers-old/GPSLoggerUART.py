@@ -449,5 +449,3 @@ if __name__ == '__main__':
         with GlobalVals.EndGPSSocket_Mutex:
             GlobalVals.EndGPSSocket = True
         GPSThread.join()
-        
-
