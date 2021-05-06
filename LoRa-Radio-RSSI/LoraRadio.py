@@ -5,9 +5,11 @@ import GlobalVals
 import numpy as np
 import socket
 from threading import Thread
+import math
 
 sys.path.insert(1,'../utils')
 from utils import get_port
+
 
 class RSSI_Tracker:
     def __init__(self,x):
@@ -33,6 +35,11 @@ x = Tracker.x
 P = Tracker.P
 prev_handshakeTime = 0
 filtered_RSSI = 0
+
+def inRangeCheck(val,valRange):
+    if val < valRange[0] or val > valRange[1]:
+        return False
+    return True
 
 def RSSI_to_distance(rssi):
     n = 1.7
@@ -170,24 +177,31 @@ def main(StartState):
 
         # if not waiting (Therefore sending the handshake)
         if not waiting: 
+            timeCheck = time.time()
 
+            if GlobalVals.TIMECHECK == 1:
+                GlobalVals.TIMESEND = [0,0.25]
+            elif GlobalVals.TIMECHECK == 2:
+                GlobalVals.TIMESEND = [0.5,0.75]
+
+            if inRangeCheck(timeCheck-math.floor(timeCheck),GlobalVals.TIMESEND):
             # send handshake 
-            try:
-                serial_port.write(GlobalVals.HANDSHAKE_BYTES)
-            except Exception as e:
-                print("LoRa Radio: Unable to write to serial port. Now breaking thread.")
-                print("LoRa Radio: Exception: " + str(e.__class__))
-                break
-            
-            print("Sent Handshake.")
+                try:
+                    serial_port.write(GlobalVals.HANDSHAKE_BYTES)
+                except Exception as e:
+                    print("LoRa Radio: Unable to write to serial port. Now breaking thread.")
+                    print("LoRa Radio: Exception: " + str(e.__class__))
+                    break
+                
+                print("Sent Handshake.")
 
-            # set waiting flag and witing time 
-            waiting = True
-            curTime = time.time()
-            waitLimit = curTime + GlobalVals.WAITING_TIMEOUT
-            time.sleep(0.5)
-            continue
-        
+                # set waiting flag and witing time 
+                waiting = True
+                curTime = time.time()
+                waitLimit = curTime + GlobalVals.WAITING_TIMEOUT
+                time.sleep(0.1)
+                continue
+            
         # if it is waiting 
         else:
 
@@ -358,9 +372,14 @@ if __name__ == '__main__':
     else:
         GlobalVals.PORT = get_port('Lora')
     
-    if numArgs == 4:
+    if numArgs >= 4:
         GlobalVals.PORT_RSSI = int(sys.argv[3])
     print('PORT: '+ GlobalVals.PORT)
+
+    if numArgs >=5:
+        GlobalVals.TIMECHECK = int(sys.argv[4])
+    
+    print('Time Check: ', GlobalVals.TIMECHECK)
     
     # create log file string 
     try:

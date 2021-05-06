@@ -19,6 +19,9 @@ RSSI_filtered = []
 distance = []
 RSSI_time = []
 
+TIMECHECK = 1
+TIMESEND = [0,1]
+
 
 SOCKET_TIMEOUT = 60
 
