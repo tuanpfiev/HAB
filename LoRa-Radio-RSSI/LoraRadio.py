@@ -93,88 +93,6 @@ def main(StartState):
         # if not DataReady:
         #     time.sleep(0.1)
         #     continue
-
-
-        # When a handshake is recieved record the rssi
-        if handshake:
-            
-            handshakeTime = int(time.time())
-
-            # send RSSI command  
-            try:
-                serial_port.write(GlobalVals.RSSI_COMMAND)
-            except Exception as e:
-                print("LoRa Radio: Unable to write to serial port. Now breaking thread.")
-                print("LoRa Radio: Exception: " + str(e.__class__))
-                connected = False
-                break
-
-            # read line from serial port (the response has line return at the end) 
-            try:
-                dataOut = serial_port.readline()
-            except Exception as e:
-                print("LoRa Radio: Unable to read serial port. Now breaking thread.")
-                print("LoRa Radio: Exception: " + str(e.__class__))
-                connected = False
-                break
-            
-            # print response 
-            print(dataOut)
-
-            # check if the dataout varibel is big enough to check 
-            if (len(dataOut) < 2):
-                print ("LoRa Radio: Recieved data is too small. Discarding current line.")
-
-            # check if the data recieved is aligned
-            if (len(dataOut) >= 2): 
-                if dataOut[0] != 0xAF or dataOut[1] != 0xAF:
-                    print ("LoRa Radio: Packet is not aligned. Discarding current line.")
-            
-                # otherwise 
-                elif not silent:
-                    
-                    # get rssi
-                    rssi = int(dataOut[8]) - 164
-                    print("RSSI = " + str(rssi))
-
-                    # Kalman filter for RSSI
-                    
-                    if prev_handshakeTime == 0:
-                        dt = 1
-                    else:
-                        dt = handshakeTime - prev_handshakeTime
-                        prev_handshakeTime = handshakeTime
-
-                    x, P = Tracker.update(x, P, rssi, dt)
-                    filtered_RSSI = x[0,0]
-                    distance = RSSI_to_distance(filtered_RSSI)
-
-                    with GlobalVals.RSSIValues_Mutex:
-                        GlobalVals.RSSI_filtered.append(filtered_RSSI)
-                        GlobalVals.distance.append(distance)
-                        GlobalVals.RSSI_time.append(handshakeTime)
-
-                    with GlobalVals.NewRSSISocketData_Mutex:
-                        GlobalVals.NewRSSISocketData = True
-
-                    # format log string 
-                    logString = str(handshakeTime) + "," + str(rssi) + "," + str(filtered_RSSI) + "," + str(distance) + "\n"
-
-                    # write log string to file  
-                    try:
-                        fileObj = open(GlobalVals.RSSI_LOG_FILE, "a")
-                        fileObj.write(logString)
-                        fileObj.close()
-                    except Exception as e:
-                        print("LoRa Radio: Error writting to file. Breaking thread.")
-                        print("LoRa Radio: Exception: " + str(e.__class__))
-                        break
-                
-                elif silent:
-                    silent = False
-
-            handshake = False
-            
         timeCheck = time.time()
 
         if GlobalVals.TIMECHECK == 1:
@@ -182,7 +100,88 @@ def main(StartState):
         elif GlobalVals.TIMECHECK == 2:
             GlobalVals.TIMESEND = [0.5,0.75]
 
-        if inRangeCheck(timeCheck-math.floor(timeCheck),GlobalVals.TIMESEND):
+        # if inRangeCheck(timeCheck-math.floor(timeCheck),GlobalVals.TIMESEND):
+        if math.floor(timeCheck) % 3 == GlobalVals.TIMECHECK:
+            # When a handshake is recieved record the rssi
+            if handshake:
+                handshakeTime = int(time.time())
+
+                # send RSSI command  
+                try:
+                    serial_port.write(GlobalVals.RSSI_COMMAND)
+                except Exception as e:
+                    print("LoRa Radio: Unable to write to serial port. Now breaking thread.")
+                    print("LoRa Radio: Exception: " + str(e.__class__))
+                    connected = False
+                    break
+
+                # read line from serial port (the response has line return at the end) 
+                try:
+                    dataOut = serial_port.readline()
+                except Exception as e:
+                    print("LoRa Radio: Unable to read serial port. Now breaking thread.")
+                    print("LoRa Radio: Exception: " + str(e.__class__))
+                    connected = False
+                    break
+                
+                # print response 
+                print(dataOut)
+
+                # check if the dataout varibel is big enough to check 
+                if (len(dataOut) < 2):
+                    print ("LoRa Radio: Recieved data is too small. Discarding current line.")
+
+                # check if the data recieved is aligned
+                if (len(dataOut) >= 2): 
+                    if dataOut[0] != 0xAF or dataOut[1] != 0xAF:
+                        print ("LoRa Radio: Packet is not aligned. Discarding current line.")
+                
+                    # otherwise 
+                    elif not silent:
+                        
+                        # get rssi
+                        rssi = int(dataOut[8]) - 164
+                        print("RSSI = " + str(rssi))
+
+                        # Kalman filter for RSSI
+                        
+                        if prev_handshakeTime == 0:
+                            dt = 1
+                        else:
+                            dt = handshakeTime - prev_handshakeTime
+                            prev_handshakeTime = handshakeTime
+
+                        x, P = Tracker.update(x, P, rssi, dt)
+                        filtered_RSSI = x[0,0]
+                        distance = RSSI_to_distance(filtered_RSSI)
+
+                        with GlobalVals.RSSIValues_Mutex:
+                            GlobalVals.RSSI_filtered.append(filtered_RSSI)
+                            GlobalVals.distance.append(distance)
+                            GlobalVals.RSSI_time.append(handshakeTime)
+
+                        with GlobalVals.NewRSSISocketData_Mutex:
+                            GlobalVals.NewRSSISocketData = True
+
+                        # format log string 
+                        logString = str(handshakeTime) + "," + str(rssi) + "," + str(filtered_RSSI) + "," + str(distance) + "\n"
+
+                        # write log string to file  
+                        try:
+                            fileObj = open(GlobalVals.RSSI_LOG_FILE, "a")
+                            fileObj.write(logString)
+                            fileObj.close()
+                        except Exception as e:
+                            print("LoRa Radio: Error writting to file. Breaking thread.")
+                            print("LoRa Radio: Exception: " + str(e.__class__))
+                            break
+                    
+                    elif silent:
+                        silent = False
+
+                handshake = False
+                
+            
             # if not waiting (Therefore sending the handshake)
             if not waiting: 
                 
