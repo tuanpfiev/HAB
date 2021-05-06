@@ -174,17 +174,18 @@ def main(StartState):
                     silent = False
 
             handshake = False
+            
+        timeCheck = time.time()
 
-        # if not waiting (Therefore sending the handshake)
-        if not waiting: 
-            timeCheck = time.time()
+        if GlobalVals.TIMECHECK == 1:
+            GlobalVals.TIMESEND = [0,0.25]
+        elif GlobalVals.TIMECHECK == 2:
+            GlobalVals.TIMESEND = [0.5,0.75]
 
-            if GlobalVals.TIMECHECK == 1:
-                GlobalVals.TIMESEND = [0,0.25]
-            elif GlobalVals.TIMECHECK == 2:
-                GlobalVals.TIMESEND = [0.5,0.75]
-
-            if inRangeCheck(timeCheck-math.floor(timeCheck),GlobalVals.TIMESEND):
+        if inRangeCheck(timeCheck-math.floor(timeCheck),GlobalVals.TIMESEND):
+            # if not waiting (Therefore sending the handshake)
+            if not waiting: 
+                
             # send handshake 
                 try:
                     serial_port.write(GlobalVals.HANDSHAKE_BYTES)
@@ -202,59 +203,59 @@ def main(StartState):
                 time.sleep(0.1)
                 continue
             
-        # if it is waiting 
-        else:
+            # if it is waiting 
+            else:
 
-            # read incoming data 
-            try:
-                dataOut = serial_port.read(size=1)
-            except Exception as e:
-                print("LoRa Radio: Unable to read serial port. Now breaking thread.")
-                print("LoRa Radio: Exception: " + str(e.__class__))
-                connected = False
-                break
-            
-            # if there is something in the output 
-            if len(dataOut) != 0:
+                # read incoming data 
+                try:
+                    dataOut = serial_port.read(size=1)
+                except Exception as e:
+                    print("LoRa Radio: Unable to read serial port. Now breaking thread.")
+                    print("LoRa Radio: Exception: " + str(e.__class__))
+                    connected = False
+                    break
+                
+                # if there is something in the output 
+                if len(dataOut) != 0:
 
-                print(dataOut)
-                # find handshake 
-                if not handshake:
-                    if dataOut[0] == GlobalVals.HANDSHAKE_BYTES[0] and not syncA:
-                        syncA = True
-                        continue
-                    elif dataOut[0] == GlobalVals.HANDSHAKE_BYTES[1] and not syncB:
-                        syncB = True
-                        continue
-                    elif dataOut[0] == GlobalVals.HANDSHAKE_BYTES[2] and not syncC:
-                        syncC = True
-                    else:
-                        syncA = False
-                        syncB = False
-                        syncC = False
+                    print(dataOut)
+                    # find handshake 
+                    if not handshake:
+                        if dataOut[0] == GlobalVals.HANDSHAKE_BYTES[0] and not syncA:
+                            syncA = True
+                            continue
+                        elif dataOut[0] == GlobalVals.HANDSHAKE_BYTES[1] and not syncB:
+                            syncB = True
+                            continue
+                        elif dataOut[0] == GlobalVals.HANDSHAKE_BYTES[2] and not syncC:
+                            syncC = True
+                        else:
+                            syncA = False
+                            syncB = False
+                            syncC = False
+                        
+                        # if all parts have been found set hand shake to true
+                        if syncA and syncB and syncC:
+                            handshake = True 
+                            syncA = False
+                            syncB = False
+                            syncC = False
+                            waiting = False
+                            print ("Recieved Handshake.")
+
+                
+                # if there is nothing in the output (likely a timeout)
+                else:
                     
-                    # if all parts have been found set hand shake to true
-                    if syncA and syncB and syncC:
+                    # if the script has waited more then the wiat time for a response send a new handshake 
+                    curTime = time.time()
+                    if curTime >= waitLimit:
                         handshake = True 
                         syncA = False
                         syncB = False
                         syncC = False
                         waiting = False
-                        print ("Recieved Handshake.")
-
-            
-            # if there is nothing in the output (likely a timeout)
-            else:
-                
-                # if the script has waited more then the wiat time for a response send a new handshake 
-                curTime = time.time()
-                if curTime >= waitLimit:
-                    handshake = True 
-                    syncA = False
-                    syncB = False
-                    syncC = False
-                    waiting = False
-                    silent = True
+                        silent = True
 
 def Thread_RSSI_publish(host,port):
      
