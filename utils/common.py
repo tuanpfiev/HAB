@@ -4,19 +4,37 @@ sys.path.insert(1,'../utils/')
 from navpy import lla2ned
 from common_class import *
 
+# def sysID_to_index(sysID):
+#     if sysID == 1:
+#         return 1
+#     elif sysID == 2:
+#         return 2
+#     elif sysID == 253:
+#         return 3
+#     elif sysID == 254:
+#         return 4
+#     elif sysID == 255:
+#         return 5
+#     else:
+#         print('SysID should be in the range 1-5')
+#         os._exit(1)
+#         return 0
+
 def sysID_to_index(sysID):
     if sysID == 1:
         return 1
     elif sysID == 2:
         return 2
-    elif sysID == 253:
+    elif sysID == 3:
         return 3
-    elif sysID == 254:
+    elif sysID == 253:
         return 4
-    elif sysID == 255:
+    elif sysID == 254:
         return 5
+    elif sysID == 255:
+        return 6
     else:
-        print('SysID should be in the range 1-5')
+        print('SysID should be in the range 1-6')
         os._exit(1)
         return 0
 

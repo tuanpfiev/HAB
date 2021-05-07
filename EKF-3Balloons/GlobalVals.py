@@ -21,10 +21,10 @@ EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 C_NED_ENU = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) 
 C_ENU_NED = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) 
 
-N_BALLOON = 4
-N_REAL_BALLOON = 2
-dt = 0.02
-RSSI_CALIBRATION_SIZE = 200
+N_BALLOON = 5
+N_REAL_BALLOON = 3
+LOOPTIME = 0.02
+RSSI_CALIBRATION_SIZE = 10
 RSSI_DISTANCE_ARRAY = np.zeros([1,N_REAL_BALLOON-1])
 GPS_DISTANCE_ARRAY = np.zeros([1,N_REAL_BALLOON-1])
 Y = [np.zeros([1,1]), np.zeros([1,1])]
@@ -36,8 +36,8 @@ LAT_REF = -36.7189
 LON_REF = 142.1962
 ALT_REF = 0
 
-ANCHOR = np.array([1,2,3,4])
-REAL_BALLOON = np.array([1,2])
+ANCHOR = np.array([1,2,3,4,5])
+REAL_BALLOON = np.array([1,2,3])
 
 GPS_TIMEOUT = 60
 IMU_TIMEOUT = 60

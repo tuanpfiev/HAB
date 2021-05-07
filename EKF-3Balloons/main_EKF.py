@@ -8,6 +8,7 @@ import socket, time, os, sys
 from threading import Thread
 import GlobalVals
 import math
+import copy
 
 
 sys.path.insert(1,'../utils/')
@@ -20,8 +21,14 @@ def checkRSSI_Calibration():
     for i in range(len(GlobalVals.RSSI_CALIBRATION_FINISHED)):
         if not GlobalVals.RSSI_CALIBRATION_FINISHED[i]:
             return False
-    
     return True
+
+def checkRSSI_Update(rssi,rssi_prev):
+    for i in range(len(rssi)):
+        if rssi[i].epoch - rssi_prev[i].epoch == 0:
+            return False
+    return True
+
     
 def enu2lla(enu, gps_ref, latlon_unit='deg', alt_unit='m', model='wgs84'):
     ned = np.dot(GlobalVals.C_ENU_NED,enu)
@@ -257,24 +264,23 @@ def RSSI_Calibration(rssi,gpsAll,sysID,index):
     
     if len(GlobalVals.X[index])< GlobalVals.RSSI_CALIBRATION_SIZE:
         print("Calibrating RSSI sys ID: ",index,"(",len(GlobalVals.X[index]),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
-        return np.ones([1,2]), False
+        return np.ones([1,2]), False, rssi
 
     if len(GlobalVals.X[index]) > GlobalVals.RSSI_CALIBRATION_SIZE:
         GlobalVals.X[index] = np.delete(GlobalVals.X[index],0,0)
         GlobalVals.Y[index] = np.delete(GlobalVals.Y[index],0,0)
 
 
-    a = np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])
-    b = np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index]))
-    c = GlobalVals.X[index].transpose()
-    d = GlobalVals.Y[index]
-
-
     w = np.linalg.multi_dot([np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])),GlobalVals.X[index].transpose(),GlobalVals.Y[index]])
     n = -1/(10*w[0][0])
     A = 10*n*w[1][0]
+    params = np.array([[n,A]])
 
-    return np.array([[n,A]]), True
+    rssi = RSSI_ToDistance(rssi,params)
+
+    print("Calibrated RSSI sys ID: ",index,", RSSI Distance Error: ", rssi.distance, ", Params (n,A): ",np.array([[n,A]]), )
+
+    return params, True, rssi
 
 
 
@@ -382,7 +388,7 @@ if __name__ == '__main__':
     node = node(mag0,acc0,pos0_enu)
 
     settings = settings()
-    dt = GlobalVals.dt ## The sampling time is based on IMU
+    dt = GlobalVals.LOOPTIME ## The sampling time is based on IMU
     imu_prev_time = 0
     Q_Xsens = True  #If Q_Xsens = False, EKF will solve the Euler angle; 
                 #if Q_Xsens = True, EKF will not solve the Euler angle and the angle from sensor output will be used. 
@@ -412,7 +418,7 @@ if __name__ == '__main__':
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
                     'magVec1','magVec2','magVec3','rssi_distance'])
 
-        gps_all_prev = GlobalVals.GPS_ALL
+        # gps_all_prev = GlobalVals.GPS_ALL
         gps_prev = GPS()
         imu_prev = IMU()
         rssi_prev = np.array([RSSI()]*(GlobalVals.N_REAL_BALLOON-1))
@@ -423,6 +429,7 @@ if __name__ == '__main__':
         flagRSSI_Calibration = True
 
         while True:
+            timeLoopStart = time.time()
             # print('1')
             with GlobalVals.GPS_UPDATE_MUTEX:
                 gps_all = GlobalVals.GPS_ALL
@@ -438,15 +445,16 @@ if __name__ == '__main__':
                     rssi[i] = GlobalVals.RSSI[i]
                     # print('3')
                 if rssi[i].epoch != rssi_prev[i].epoch:
-                    GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i] = RSSI_Calibration(rssi[i],gps_all,sysID,i)
-                    rssi[i] = RSSI_ToDistance(rssi[i],GlobalVals.RSSI_PARAMS[i])
+                    GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i],rssi[i] = RSSI_Calibration(rssi[i],gps_all,sysID,i)
+                    # rssi[i] = RSSI_ToDistance(rssi[i],GlobalVals.RSSI_PARAMS[i])
+                    # dis = distanceCalculation(gps_all[sysID-1],gps_all[i])
+                    # print("RSSI Distance Err :", rssi[i].distance-dis)
             
             if not checkRSSI_Calibration():
-                rssi_prev = rssi[:]
+                rssi_prev = copy.deepcopy(rssi)
                 continue
 
             dt = (imu.epoch - imu_prev.epoch)/1000
-            print(dt)
 
             if dt > 0 or flag_start:
                 print('dt: ',dt)
@@ -479,13 +487,14 @@ if __name__ == '__main__':
                 # print(rssi.epoch)
                 if checkGPS(gps) and gps.epoch - gps_prev.epoch> 0:
                     GPS_data = positionENU(gps,gps_ref)
+                    gps_prev = copy.deepcopy(gps)
                     # print('update GPS')
                     # print(GPS_data)
 
                 if GPS_data.size != 0:
                     if flag == 0:
                         v = np.zeros((3,1))
-                        print(GPS_data)
+                        # print(GPS_data)
                         GPS_data_vel = np.concatenate((GPS_data,v))  
                         GPS_data_vel_pre = GPS_data_vel
                         GPS_time_pre = gps.epoch
@@ -501,7 +510,7 @@ if __name__ == '__main__':
                         GPS_time_pre = gps.epoch
 
                 anchor_distance = np.array([])
-                if checkAllGPS(gps_all) and rssi.epoch - rssi_prev.epoch > 0:
+                if checkAllGPS(gps_all) and checkRSSI_Update(rssi,rssi_prev):
                     # print('update rssi')
                     anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
                     for i in range(len(GlobalVals.ANCHOR)):
@@ -510,8 +519,11 @@ if __name__ == '__main__':
                             anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1]])
                             
                         else:
-                            temp = distance2D([gps, gps_all[i-1],rssi.distance])
-                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],rssi.distance])
+                            temp = distance2D([gps, gps_all[i-1],rssi[i].distance])
+                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],rssi[i].distance])
+                    
+                    rssi_prev = copy.deepcopy(rssi)
+
                     # print(anchor_distance)
                     # print("===============")
 
@@ -523,7 +535,7 @@ if __name__ == '__main__':
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                     gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi.distance])
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance])
 
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
@@ -533,12 +545,16 @@ if __name__ == '__main__':
                 with GlobalVals.LLA_EKF_BUFFER_MUTEX:
                     GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
 
-                gps_all_prev = gps_all[:]
-                gps_prev = gps[:]
-                imu_prev = imu[:]
-                rssi_prev = rssi[:]
-                epoch_prev = epoch[:]
+                # gps_all_prev = copy.deepcopy(gps_all)
+                
+                imu_prev = copy.deepcopy(imu)
+                epoch_prev = copy.deepcopy(epoch)
                 flag_start = False
+            
+            # Sleep
+            elapsed = time.time()-timeLoopStart
+            if GlobalVals.LOOPTIME - elapsed >= 0:
+                time.sleep(GlobalVals.LOOPTIME - elapsed)
 
 
 

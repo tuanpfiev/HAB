@@ -10,10 +10,10 @@ echo "Running SYSTEM" $1
 	sleep 4; xterm -geometry 90x30+1400+450 -title "Lora1" -hold -e "cd ~/HAB/LoRa-Radio-RSSI; python3 LoraRadio.py start /dev/ttyUSB0 5100 1" &
 	sleep 4.1; xterm -geometry 90x30+1400+450 -title "Lora2" -hold -e "cd ~/HAB/LoRa-Radio-RSSI; python3 LoraRadio.py wait /dev/ttyUSB1 5110 2"& 
 	sleep 5; xterm -geometry 90x30+800+0 -title "GPS Logger" -hold -e "cd ~/HAB/GPS-Loggers-old; python3 GPSLoggerUART.py /dev/ttyUSB2" &
-	sleep 6; xterm -geometry 90x30+1400+0 -title "Network" -hold -e "cd ~/HAB/Simple-RFD900-Network; python3 RadioNetworkMain.py $1"&
+	sleep 6; xterm -geometry 90x30+1400+0 -title "Network" -hold -e "cd ~/HAB/Simple-RFD900-Network; python3 RadioNetworkMain.py $1"
 	#sleep 8; xterm -geometry 90x30+800+450 -title "Localisation" -hold -e "cd ~/HAB/localisation-RSSI; python3 localisation_main.py"
 #&			
-	sleep 8.9; xterm -title "EKF" -hold -e "cd ~/HAB/EKF-3Balloons; python3 main_EKF.py $1"
+	#sleep 8.9; xterm -title "EKF" -hold -e "cd ~/HAB/EKF-3Balloons; python3 main_EKF.py $1"
 #fi
 	
 
