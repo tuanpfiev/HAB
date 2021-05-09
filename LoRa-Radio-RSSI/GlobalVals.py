@@ -47,7 +47,8 @@ PORT_GPS = [5200, 5210, 5290]
 # PORT_RSSI = np.array([  [5100, 5110],   # EKF
 #                         [5101,5111]])   # LC1
 
-PORT_RSSI = np.array([  [5100, 5110]])   # LC1                        
+PORT_RSSI = np.array([  [5100, 5110],
+                        [5190, 5190]])   # LC1                        
 N_BALLOON = 5
 N_REAL_BALLOON = 3
 TARGET_BALLOON = 1

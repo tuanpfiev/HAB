@@ -476,8 +476,8 @@ class MESSAGE_IMU:
         self.Gyroscope_k = Gyroscope_kTuple[0]
 
         return 0
+# Temp Payload - Message ID = 0x05
 
-# IMU Payload - Message ID = 0x04
 @dataclass
 class MESSAGE_TEMP:
     Epoch: float = 0   
@@ -523,4 +523,62 @@ class MESSAGE_TEMP:
         self.Epoch = EpochTuple[0] 
         self.Temperature = TemperatureTuple[0] 
         
+        return 0
+
+# RSSI Payload - Message ID = 0x06
+
+@dataclass
+class MESSAGE_RSSI:
+    FilteredRSSI: float = 0   
+    Epoch: float = 0 
+    Distance: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setFilteredRSSI(self,filteredRSSI):
+        self.FilteredRSSI = filteredRSSI
+
+    def setDistance(self,distance):
+        self.Distance = distance
+        
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        Distance_ints = struct.pack('!d',self.Distance)
+        FilteredRSSI_ints = struct.pack('!d',self.FilteredRSSI)
+
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Distance_ints:
+            payloadBytes.append(x)
+
+        for x in FilteredRSSI_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 24:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
+        FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Distance = DistanceTuple[0] 
+        self.FilteredRSSI = FilteredRSSITuple[0]
+
         return 0

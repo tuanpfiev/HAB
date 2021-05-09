@@ -213,6 +213,11 @@ if __name__ == '__main__':
     EKF_GPS_Thread = Thread(target=EKFHandler.EKFGPSLoggerSocket, args = ())
     EKF_GPS_Thread.start()
 
+    # start RSSI logger
+    RSSI_Thread = Thread(target=RSSI_Handler.RSSI_LOGGER_SOCKET, args = ())
+    RSSI_Thread.start()
+
+
     # tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
     # tempThread.start()
 
@@ -270,6 +275,11 @@ if __name__ == '__main__':
         with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
         EKF_GPS_Thread.join()
+
+    if RSSI_Thread.is_alive():
+        with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_RSSI_LOGGER_THREAD = True
+        RSSI_Thread.join()
 
     # if tempThread.is_alive():
     #     with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
