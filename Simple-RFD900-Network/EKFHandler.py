@@ -68,18 +68,11 @@ def EKFGPSLoggerSocket():
 
         data_str = data_bytes.decode('utf-8')
         
-        string_list = []
-        iterator = data_str.find('{')
-        while data_str.find('}', iterator) != -1:
-            substring_end = data_str.find('}', iterator)
-            string_list.append(data_str[iterator:substring_end + 1])
-            iterator = substring_end + 1
+        string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
             gps_list = []
-            message_buffer = []
-            # print("============================")
-            # print(string_list)
+
             for string in string_list:
                 received, gps_i = stringToGPS(string)
                 if received:

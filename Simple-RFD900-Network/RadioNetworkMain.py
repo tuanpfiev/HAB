@@ -12,6 +12,7 @@ import PingLogger
 import ImaginaryBalloons
 import IMU_Handler
 import EKFHandler
+# import RSSI_Handler
 import TemperatureHandler
 import sys, os
 
@@ -155,6 +156,31 @@ def main():
                     
                     continue
 
+                # RSSI
+                if recievedPacket.MessageID == 7:
+                    
+                    # get the RSSI data
+                    RSSI_Data = CustMes.MESSAGE_RSSI()                    
+                    error = RSSI_Data.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: IMU data error " + str(error) + ".\n")
+                        continue
+                    
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":")
+                    print("RSSI Distance:" + str(RSSI_Data.Distance) + "\n")
+
+                    # set the system id for the GPS data
+                    RSSI_Data.SystemID = recievedPacket.SystemID
+
+                    # put data into the buffer
+                    with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
+                        GlobalVals.RSSI_DATA_BUFFER.append(RSSI_Data)
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_RSSI_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_IMU_RADIO_DATA = True
+                    
+                    continue
 
 #=====================================================
 # Thread starter 
@@ -214,12 +240,12 @@ if __name__ == '__main__':
     EKF_GPS_Thread.start()
 
     # start RSSI logger
-    RSSI_Thread = Thread(target=RSSI_Handler.RSSI_LOGGER_SOCKET, args = ())
-    RSSI_Thread.start()
+    # RSSI_Thread = Thread(target=RSSI_Handler.RSSI_LoggerSocket, args = ())
+    # RSSI_Thread.start()
 
 
-    # tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
-    # tempThread.start()
+    tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
+    tempThread.start()
 
     try:
         main()
@@ -276,13 +302,13 @@ if __name__ == '__main__':
             GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
         EKF_GPS_Thread.join()
 
-    if RSSI_Thread.is_alive():
-        with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_RSSI_LOGGER_THREAD = True
-        RSSI_Thread.join()
+    # if RSSI_Thread.is_alive():
+    #     with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX:
+    #         GlobalVals.BREAK_RSSI_LOGGER_THREAD = True
+    #     RSSI_Thread.join()
 
-    # if tempThread.is_alive():
-    #     with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
-    #         GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
-    #     tempThread.join()
+    if tempThread.is_alive():
+        with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
+        tempThread.join()
     

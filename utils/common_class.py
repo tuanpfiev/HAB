@@ -34,4 +34,10 @@ class POS_XYZ:
         self.y = y if y is not None else 0.0
         self.z = z if z is not None else 0.0
 
+class TEMPERATURE:
+    def __init__(self, sysID = None, temperature = None, epoch = None):
+        self.sysID = sysID if sysID is not None else 0
+        self.temperature = temperature if temperature is not None else 0.0
+        self.epoch = epoch if epoch is not None else 0.0
+
 

@@ -358,11 +358,10 @@ if __name__ == '__main__':
         RSSIThread[i] = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI[i],i))
         RSSIThread[i].start()
 
-    # RSSIThread_1 = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI,1))
-    # RSSIThread_1.start()
 
-    # LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
-    # LLA_EKF_DistributorThread.start()
+
+    LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
+    LLA_EKF_DistributorThread.start()
 
     sysID = GlobalVals.SYSID
 
@@ -418,20 +417,28 @@ if __name__ == '__main__':
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ekf.csv"
 
     time.sleep(2)
+
+    # logString = "sysID,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,roll,pitch,yaw,gps0_lat,gps0_lon,gps0_alt,gps1_lat,gps1_lon,gps1_alt,gps2_lat,gps2_lon,gps2_alt,gps3_lat,gps3_lon,gps3_alt,gyro_x,gyro_y,gyro_z,accel_x,accel_y,accel_z,qt1,qt2,qt3,qt4,epoch,magVec1,magVec2,magVec3,rssi_distance 1,rssi_distance 2,node_P\n"
     with open(file_name,'w') as file:
         output = csv.writer(file)
         output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
-            'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt',\
+            'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt','gps4_lat','gps4_lon','gps4_alt',\
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
-                    'magVec1','magVec2','magVec3','rssi_distance 1','rssi_distance 2','node_P'])
-
+                    'magVec1','magVec2','magVec3','rssi_distance 1','rssi_distance 2'])
+        # try:
+        #     fileObj = open(file_name, "a")
+        #     fileObj.write(logString)
+        #     fileObj.close()
+        # except Exception as e:
+        #     print("EKF: Error writting to file. Breaking thread.")
+        #     print("EKF: Exception: " + str(e.__class__))
         # gps_all_prev = GlobalVals.GPS_ALL
         gps_prev = GPS()
         imu_prev = IMU()
         rssi_prev = np.array([RSSI()]*(GlobalVals.N_REAL_BALLOON-1))
         epoch_prev = 0
         flag_start = True
-        rssi = [0,0]
+        rssi = [None]*(GlobalVals.N_REAL_BALLOON-1)
 
         flagRSSI_Calibration = True
 
@@ -556,10 +563,17 @@ if __name__ == '__main__':
                 # print('EKF Time: ',time.time()-timeCheck2)
                 x_h = np.array([node.x_h[:,-1]]).T
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
-                    gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
+                    gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt, gps_all[4].lat, gps_all[4].lon, gps_all[4].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance,node.P.tolist()])
-
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance])
+                # logString = list_to_str([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance,node.P.tolist()])
+                # try:
+                #     fileObj = open(file_name, "a")
+                #     fileObj.write(logString)
+                #     fileObj.close()
+                # except Exception as e:
+                #     print("EKF: Error writting to file. Breaking thread.")
+                #     print("EKF: Exception: " + str(e.__class__))
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
                 llaEKF = enu2lla(posENU_EKF, gps_ref)
@@ -602,9 +616,9 @@ if __name__ == '__main__':
             GlobalVals.BREAK_RSSI_THREAD[i] = True
         RSSIThread[i].join()
 
-    # if LLA_EKF_DistributorThread.is_alive():
-    #     with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
-    #         GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
-    #     LLA_EKF_DistributorThread.join()
+    if LLA_EKF_DistributorThread.is_alive():
+        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
+        LLA_EKF_DistributorThread.join()
 
 

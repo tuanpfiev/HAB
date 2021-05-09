@@ -44,7 +44,7 @@ def main():
         with GlobalVals.newTempDataMutex:
             GlobalVals.newTempData = True
         
-        logString = str(tempTime) + ',' + str(tempVal) + '\n'
+        logString = str(GlobalVals.sysID) + str(tempTime) + ',' + str(tempVal) + '\n'
         print(logString)
         try:
             fileObj = open(GlobalVals.fileName, "a")
@@ -63,7 +63,7 @@ def main():
 def threadTemperatureSocket():
     Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     Logger_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-    Logger_Socket.bind((GlobalVals.host, GlobalVals.port))
+    Logger_Socket.bind((GlobalVals.HOST, GlobalVals.PORT_TEMPERATURE))
     Logger_Socket.settimeout(GlobalVals.socketTimeout)
 
     try: 
@@ -95,10 +95,10 @@ def threadTemperatureSocket():
         if newData:
             with GlobalVals.appendTempDataMutex:
                 while len(GlobalVals.tempDataBuffer)>0:
-                    tempData = GlobalVals.tempDataBuffer.pop(0)
+                    tempVal = GlobalVals.tempDataBuffer.pop(0)
                     tempTime = GlobalVals.timeDataBuffer.pop(0)
 
-                    socketPayload = "{'epoch': " + str(tempTime) + "; 'temp': " + str(tempVal) + ';}'
+                    socketPayload = "{'system': " + str(GlobalVals.sysID) + "; 'epoch': " + str(tempTime) + "; 'temp': " + str(tempVal) + ';}'
                     socketPayload = socketPayload.encode("utf-8")
 
                     try:
@@ -118,6 +118,11 @@ def threadTemperatureSocket():
     Logger_Connection.close()
 
 if __name__ == '__main__':
+    numArgs = len(sys.argv)
+
+    if numArgs >= 2:
+        GlobalVals.sysID = sys.argv[1]
+    print('sysID: '+ GlobalVals.sysID)
 
     # create log file string 
     try:
@@ -127,7 +132,7 @@ if __name__ == '__main__':
 
     GlobalVals.fileName = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-TemperatureYoctopuce.txt"
 
-    logString = "epoch, temperature\n"
+    logString = "sysID, epoch, temperature\n"
 
     try:
         fileObj = open(GlobalVals.fileName, "a")

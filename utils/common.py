@@ -180,6 +180,31 @@ def stringToRSSI(raw_data):
 
         return False, RSSI()
 
+def stringToTemperature(raw_data):
+                        # socketPayload = "{'epoch': " + str(tempTime) + "; 'temp': " + str(tempVal) + ';}'
+
+    try:
+        raw_data.index("'system':")
+        raw_data.index("'epoch':")
+        raw_data.index("'temp':")
+
+    except ValueError:
+        
+        return False, GPS()
+
+    temp_i = TEMPERATURE()
+
+    try:
+        temp_i.sysID = int(extract_string_data("'system': ",";",raw_data))
+        temp_i.temperature = float(extract_string_data("'temp': ",";",raw_data))
+        temp_i.epoch = float(extract_string_data("'epoch': ",";",raw_data))
+        
+        return True, temp_i
+
+    except ValueError:
+
+        return False, TEMPERATURE()        
+
 def extract_str_btw_curly_brackets(data_str):
     string_list = []
     iterator = data_str.find('{')

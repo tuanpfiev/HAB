@@ -8,7 +8,14 @@ import GlobalVals
 import CustMes 
 import NetworkManager
 
-IMU_DistroThreadLock = threading.Lock()
+import sys
+sys.path.insert(1,'../utils')
+from common import *
+from common_class import *
+
+
+def temperatureUpdate(new_data):
+    GlobalVals.TEMPERATURE_ALL = new_data
 
 
 #=====================================================
@@ -29,7 +36,7 @@ def TemperatureLoggerSocket():
     
     bufferRead = 1024
     while True:
-        
+        print("TEMPERATURE SOCKET")
         # if flag is set break the thread 
         with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
             if GlobalVals.BREAK_TEMP_LOGGER_THREAD:
@@ -46,46 +53,50 @@ def TemperatureLoggerSocket():
         if len(data_bytes) == 0:
             continue
         
-        raw_data = data_bytes.decode('utf-8')
+        data_str = data_bytes.decode('utf-8')
+        
+        string_list = extract_str_btw_curly_brackets(data_str)
+        
+        if len(string_list) > 0:
+            temperature_list = []
 
-        if raw_data.find("{")==-1 or raw_data.find("}")==-1:
-            continue
-        else:
-            raw_data = extract_string_data("{","}",raw_data)
+            for string in string_list:
+                received, temp_i = stringToTemperature(string)
+                if received:
+                    temperature_list.append(temp_i)
 
-        # once it is scyned read the rest of the data 
-        if synced:
-            # store converted values 
-            epoch = float(extract_string_data("'epoch': ",";",raw_data)) 
-            temperature = float(extract_string_data("'temp': ",";",raw_data)) 
+            idx = 0
+            while idx < len(temperature_list):
+                temperatureUpdate(temperature_list[idx])
+                idx += 1
+            
+            temp_i = GlobalVals.TEMPERATURE_ALL
+        
+            TempData = CustMes.MESSAGE_TEMP()
+            TempData.Temperature = temp_i.temperature
+            TempData.Epoch = temp_i.epoch
 
-            # print(Euler321_phi)
-            # print("============================")
-
-            # Debug message 
-            #print(str(GPSTime) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n")  
-
-            # use GPS message payload to store value 
-            tempData = CustMes.MESSAGE_TEMP()
-            tempData.Epoch = epoch
-            tempData.Temperature = temperature
-            tempData.SystemID = GlobalVals.SYSTEM_ID
+            TempData.SystemID = temp_i.sysID
 
             # add data to the gps buffer 
-            with GlobalVals.TEMP_DATA_BUFFER_MUTEX:
-                GlobalVals.TEMP_DATA_BUFFER.append(tempData)
-            
-            # send Temp data to other balloons 
-            tempPacket = CustMes.MESSAGE_FRAME()
-            tempPacket.SystemID = GlobalVals.SYSTEM_ID
-            tempPacket.MessageID = 6
-            tempPacket.TargetID = 0
-            tempPacket.Payload = tempData.data_to_bytes()
-            NetworkManager.sendPacket(tempPacket)
+            # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
+        
+            # set the flag for the data 
+            # with GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX:
+            #     GlobalVals.RECIEVED_EKF_GPS_LOCAL_DATA = True
 
+            # send GPS data to other balloons 
+            TempPacket = CustMes.MESSAGE_FRAME()
+            TempPacket.SystemID = GlobalVals.SYSTEM_ID
+            TempPacket.MessageID = 6
+            TempPacket.TargetID = 0
+            TempPacket.Payload = TempData.data_to_bytes()
+            NetworkManager.sendPacket(TempPacket)
+            print(TempData)
+            print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
-        time.sleep(0.01)  
+        time.sleep(1)  
 
     socket_logger.close()
     return 
