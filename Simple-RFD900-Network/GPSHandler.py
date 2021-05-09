@@ -139,25 +139,28 @@ def Threaded_Client(connection, msg):
 
 def GPSDistributor():
 
-    # start socket 
-    Distro_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-    Distro_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
-    Distro_Socket.bind((GlobalVals.HOST, GlobalVals.GPS_DISTRO_SOCKET))
-    Distro_Socket.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
-    
+    Distro_Socket = [None]*GlobalVals.N_NODE_PUBLISH
+    Distro_Connection = [None]*GlobalVals.N_NODE_PUBLISH
+    for i in range(GlobalVals.N_NODE_PUBLISH):
+        # start socket 
+        Distro_Socket[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+        Distro_Socket[i].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
+        Distro_Socket[i].bind((GlobalVals.HOST, GlobalVals.GPS_DISTRO_SOCKET[i]))
+        Distro_Socket[i].settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT)
+        
 
-    # Wait for connection on the distro socket 
-    try:
-        Distro_Socket.listen(1) 
-        Distro_Connection, addr = Distro_Socket.accept()  
-        Distro_Connection.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT) 
-        print("Logger Connected to ", addr)                                            
-    except Exception as e:
-        print("Exception: " + str(e.__class__))
-        print("Error in the GPSDistributor logger socket. Now closing thread.")
-        with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
-            GlobalVals.BREAK_GPS_DISTRO_THREAD = True
-        return
+        # Wait for connection on the distro socket 
+        try:
+            Distro_Socket[i].listen(1) 
+            Distro_Connection[i], addr = Distro_Socket[i].accept()  
+            Distro_Connection[i].settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT) 
+            print("Logger[",i,"] Connected to ", addr)                                            
+        except Exception as e:
+            print("Exception: " + str(e.__class__))
+            print("Error in the GPSDistributor[",i,"] logger socket. Now closing thread.")
+            # with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
+                # GlobalVals.BREAK_GPS_DISTRO_THREAD = True
+            return 0
 
 
     #  # start socket 
@@ -230,16 +233,18 @@ def GPSDistributor():
                 messageStr_bytes = messageStr.encode('utf-8')
 
                 # send the message 
-                try:
-                    # Thread(target=Threaded_Client, args=([Distro_Connection,messageStr_bytes]))
-                    # start_new_thread(Threaded_Client,(Distro_Connection,messageStr_bytes))
-                    Distro_Connection.sendall(messageStr_bytes)
-                    # Distro_Connection2.sendall(messageStr_bytes)
-                except Exception as e:
-                    print("Exception: " + str(e.__class__))
-                    print("Error in the logger socket. Now closing thread.")
-                    breakThread = True
-                    break
+                for i in range(GlobalVals.N_NODE_PUBLISH):
+                    try:
+                        # Thread(target=Threaded_Client, args=([Distro_Connection,messageStr_bytes]))
+                        # start_new_thread(Threaded_Client,(Distro_Connection,messageStr_bytes))
+                        Distro_Connection[i].sendall(messageStr_bytes)
+                        # Distro_Connection2.sendall(messageStr_bytes)
+                    except Exception as e:
+                        print("Exception: " + str(e.__class__))
+                        print("Error when sending to Distro_Connection[",i,"]. Now closing thread.")
+                        breakThread = True
+                        break
                 
-    Distro_Connection.close()
+    for i in range(GlobalVals.N_NODE_PUBLISH):
+        Distro_Connection[i].close()
     # Distro_Connection2.close()

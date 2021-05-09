@@ -17,15 +17,15 @@ import csv
 from common import *
 from common_class import *
 
-# def checkRSSI_Calibration():
-#     for i in range(len(GlobalVals.RSSI_CALIBRATION_FINISHED)):
-#         if not GlobalVals.RSSI_CALIBRATION_FINISHED[i]:
-#             return False
-#     return True
+def checkRSSI_Calibration():
+    for i in range(len(GlobalVals.RSSI_CALIBRATION_FINISHED)):
+        if not GlobalVals.RSSI_CALIBRATION_FINISHED[i]:
+            return False
+    return True
 
 def checkRSSI_Update(rssi,rssi_prev):
     for i in range(len(rssi)):
-        if rssi[i].epoch - rssi_prev[i].epoch == 0 or rssi[i].distance == 0.:
+        if rssi[i].epoch - rssi_prev[i].epoch == 0:
             return False
     return True
 
@@ -215,7 +215,7 @@ def distanceRSSI_callback(host,port,balloon_id):
         # print('data RSSI: ',data_str)
         string_list = []
         string_list = extract_str_btw_curly_brackets(data_str)
-        # print(data_str)
+
         if len(string_list) > 0:
             rssi_list = []
             for string in string_list:
@@ -226,68 +226,66 @@ def distanceRSSI_callback(host,port,balloon_id):
             idx = 0
             with GlobalVals.RSSI_UPDATE_MUTEX[balloon_id]:
                 while idx < len(rssi_list):
-                    # print('updating RSSI')
-                    # print(rssi_list[idx].distance)
                     rssi_update(rssi_list[idx],balloon_id)
                     # print(rssi_list[idx].epoch, rssi_list[idx].rssi_filtered)
                     idx += 1
             # print('----------------------------')
     s.close()
 
-# def RSSI_ToDistance(rssi,params):
-#     n = params[0][0]
-#     A = params[0][1]
+def RSSI_ToDistance(rssi,params):
+    n = params[0][0]
+    A = params[0][1]
     
-#     rssi.distance = 10**(-(rssi.rssi_filtered-A)/(n*10))
+    rssi.distance = 10**(-(rssi.rssi_filtered-A)/(n*10))
 
-#     return rssi
+    return rssi
 
-# def distanceCalculation(gps1, gps2):
-#     p1 = lla2ecef(gps1.lat,gps1.lon,gps1.alt)
-#     p2 = lla2ecef(gps2.lat,gps2.lon,gps2.alt)
-#     return np.linalg.norm(p1-p2)
+def distanceCalculation(gps1, gps2):
+    p1 = lla2ecef(gps1.lat,gps1.lon,gps1.alt)
+    p2 = lla2ecef(gps2.lat,gps2.lon,gps2.alt)
+    return np.linalg.norm(p1-p2)
 
 
-# def RSSI_Calibration(rssi,gpsAll,sysID,index):
+def RSSI_Calibration(rssi,gpsAll,sysID,index):
 
-#     for i in range(len(GlobalVals.REAL_BALLOON)):
-#         if GlobalVals.REAL_BALLOON[i] == sysID:
-#             neighborRealBalloons = np.delete(GlobalVals.REAL_BALLOON,i,None)
-#             break
+    for i in range(len(GlobalVals.REAL_BALLOON)):
+        if GlobalVals.REAL_BALLOON[i] == sysID:
+            neighborRealBalloons = np.delete(GlobalVals.REAL_BALLOON,i,None)
+            break
 
-#     targetBalloon  = neighborRealBalloons[index]
+    targetBalloon  = neighborRealBalloons[index]
     
-#     distance = distanceCalculation(gpsAll[sysID-1],gpsAll[targetBalloon-1])
+    distance = distanceCalculation(gpsAll[sysID-1],gpsAll[targetBalloon-1])
 
-#     GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[rssi.rssi_filtered,1]])),axis=0)
-#     GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(distance)]])),axis=0)
+    GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[rssi.rssi_filtered,1]])),axis=0)
+    GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(distance)]])),axis=0)
     
-#     if len(GlobalVals.X[index])< GlobalVals.RSSI_CALIBRATION_SIZE:
-#         print("Calibrating RSSI sys ID: ",index,"(",len(GlobalVals.X[index]),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
-#         return np.ones([1,2]), False, rssi
+    if len(GlobalVals.X[index])< GlobalVals.RSSI_CALIBRATION_SIZE:
+        print("Calibrating RSSI sys ID: ",index,"(",len(GlobalVals.X[index]),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
+        return np.ones([1,2]), False, rssi
 
-#     if len(GlobalVals.X[index]) > GlobalVals.RSSI_CALIBRATION_SIZE:
-#         GlobalVals.X[index] = np.delete(GlobalVals.X[index],0,0)
-#         GlobalVals.Y[index] = np.delete(GlobalVals.Y[index],0,0)
+    if len(GlobalVals.X[index]) > GlobalVals.RSSI_CALIBRATION_SIZE:
+        GlobalVals.X[index] = np.delete(GlobalVals.X[index],0,0)
+        GlobalVals.Y[index] = np.delete(GlobalVals.Y[index],0,0)
 
-#     # add 2 data point to avoid bifurcation
-#     GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[-10,1]])),axis=0)
-#     GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(1)]])),axis=0)    # distance = 1m, rssi = -1
+    # add 2 data point to avoid bifurcation
+    GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[-10,1]])),axis=0)
+    GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(1)]])),axis=0)    # distance = 1m, rssi = -1
 
-#     GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[-130,1]])),axis=0)
-#     GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(20000)]])),axis=0)    # distance = 20000m, rssi = -130
+    GlobalVals.X[index] = np.concatenate((GlobalVals.X[index],np.array([[-130,1]])),axis=0)
+    GlobalVals.Y[index] = np.concatenate((GlobalVals.Y[index],np.array([[np.log10(20000)]])),axis=0)    # distance = 20000m, rssi = -130
 
-#     w = np.linalg.multi_dot([np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])),GlobalVals.X[index].transpose(),GlobalVals.Y[index]])
-#     n = -1/(10*w[0][0])
-#     A = 10*n*w[1][0]
-#     params = np.array([[n,A]])
+    w = np.linalg.multi_dot([np.linalg.inv(np.dot(GlobalVals.X[index].transpose(),GlobalVals.X[index])),GlobalVals.X[index].transpose(),GlobalVals.Y[index]])
+    n = -1/(10*w[0][0])
+    A = 10*n*w[1][0]
+    params = np.array([[n,A]])
 
-#     rssi = RSSI_ToDistance(rssi,params)
-#     if rssi.distance >10e10:
-#         xx = rssi.distance
-#     print("Calibrated RSSI sys ID: ",index,", RSSI Distance Error: ", rssi.distance-distance, ", Params (n,A): ",np.array([[n,A]]), )
+    rssi = RSSI_ToDistance(rssi,params)
+    if rssi.distance >10e10:
+        xx = rssi.distance
+    print("Calibrated RSSI sys ID: ",index,", RSSI Distance Error: ", rssi.distance-distance, ", Params (n,A): ",np.array([[n,A]]), )
 
-#     return params, True, rssi
+    return params, True, rssi
 
 
 
@@ -423,7 +421,7 @@ if __name__ == '__main__':
         output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
             'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt',\
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
-                    'magVec1','magVec2','magVec3','rssi_distance 1','rssi_distance 2','node_P'])
+                    'magVec1','magVec2','magVec3','rssi_distance'])
 
         # gps_all_prev = GlobalVals.GPS_ALL
         gps_prev = GPS()
@@ -452,17 +450,17 @@ if __name__ == '__main__':
                 with GlobalVals.RSSI_UPDATE_MUTEX[i]:
                     rssi[i] = copy.deepcopy(GlobalVals.RSSI[i])
                     # print('3')
-                # if rssi[i].epoch != rssi_prev[i].epoch:
-                #     GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i],rssi[i] = RSSI_Calibration(rssi[i],gps_all,sysID,i)
+                if rssi[i].epoch != rssi_prev[i].epoch:
+                    GlobalVals.RSSI_PARAMS[i], GlobalVals.RSSI_CALIBRATION_FINISHED[i],rssi[i] = RSSI_Calibration(rssi[i],gps_all,sysID,i)
                     # rssi[i] = RSSI_ToDistance(rssi[i],GlobalVals.RSSI_PARAMS[i])
                     # dis = distanceCalculation(gps_all[sysID-1],gps_all[i])
                     # print("RSSI Distance Err :", rssi[i].distance-dis)
             
             # print('Time RSSI Calib: ',time.time()-timeCheck3)
 
-            # if not checkRSSI_Calibration():
-            #     rssi_prev = copy.deepcopy(rssi)
-            #     continue
+            if not checkRSSI_Calibration():
+                rssi_prev = copy.deepcopy(rssi)
+                continue
             
             if flag_start:
                 dt = GlobalVals.LOOPTIME
@@ -526,8 +524,6 @@ if __name__ == '__main__':
                         print(dt_GPS)
 
                 anchor_distance = np.array([])
-                # print("RSSI update: ",checkRSSI_Update(rssi,rssi_prev))
-                # print(rssi[0].distance)
                 if checkAllGPS(gps_all) and checkRSSI_Update(rssi,rssi_prev):
                     # print('update rssi')
                     anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
@@ -558,12 +554,12 @@ if __name__ == '__main__':
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                     gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance,node.P.tolist()])
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance])
 
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
                 llaEKF = enu2lla(posENU_EKF, gps_ref)
-                print('Lon: ',round(llaEKF[1],2), ', Lat: ', round(llaEKF[0],2), ', Alt: ', round(llaEKF[2],1), 'Time: ',timeLocal)
+                print('Lon: ',llaEKF[1], ', Lat: ', llaEKF[0], ', Alt: ', llaEKF[2], 'Time: ',timeLocal, '\n')
 
                 with GlobalVals.LLA_EKF_BUFFER_MUTEX:
                     GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))

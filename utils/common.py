@@ -74,7 +74,7 @@ def checkAllGPS(gps_list):
     return True
 
 def checkRSSI(rssi):
-    if rssi.epoch == 0.0:
+    if rssi.epoch == 0.0 or rssi.distance == 0.0:
         return False
     else:
         return True
@@ -171,9 +171,9 @@ def stringToRSSI(raw_data):
 
     try:
         rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
-        # rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
+        rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
-        rssi_i.distance = 0
+        # rssi_i.distance = 0
         return True, rssi_i
 
     except ValueError:

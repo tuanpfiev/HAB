@@ -10,7 +10,7 @@ from common_class import *
 #=====================================================
 # Global Constants 
 #=====================================================
-N_BALLOON = 4
+N_BALLOON = 5
 # serial settings 
 TIMEOUT = 0.5                       # Serial port time out 
 PORT = "COM8"                       # Windows COM por
@@ -20,8 +20,9 @@ BAUDRATE = 57600                    # the baud for the serial port connection
 # Socket settings 
 HOST = '127.0.0.1'
 GPS_LOGGER_SOCKET = 5001
-GPS_DISTRO_SOCKET = 5002
-GPS_DISTRO_SOCKET2 = 5012
+GPS_DISTRO_SOCKET =[5200,5210,5290]
+N_NODE_PUBLISH = 3
+
 GPS_LOGGER_SOCKET_TIMEOUT = 60
 
 
@@ -34,6 +35,7 @@ EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 
 TEMP_LOGGER_SOCKET = 5013
 TEMP_LOGGER_SOCKET_TIMEOUT = 60
+
 
 
 # other settings 
