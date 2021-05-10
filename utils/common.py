@@ -3,6 +3,7 @@ import numpy as np
 sys.path.insert(1,'../utils/')
 from navpy import lla2ned
 from common_class import *
+import math
 
 # def sysID_to_index(sysID):
 #     if sysID == 1:
@@ -93,6 +94,24 @@ def positionENU(gps,gps_ref):
     return pos_enu
 
 
+def distance2D(args):
+    gps1 = args[0]
+    gps2 = args[1]
+    gps_ref = args[2]
+    
+    pos1_enu = positionENU(gps1,gps_ref)
+    pos2_enu = positionENU(gps2,gps_ref)
+
+    distance = np.array([math.sqrt((pos1_enu[0]-pos2_enu[0])**2+(pos1_enu[1]-pos2_enu[1])**2)])
+    if distance == 0:
+        return distance
+    else:
+        if len(args)==4:
+            distance_rssi = args[3]
+            distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
+    
+    return distance
+
 def list_to_str(list_args):
     list_str = ""
     for i in range(len(list_args)):
@@ -162,6 +181,8 @@ def stringToRSSI(raw_data):
         raw_data.index("RSSI_filter:")
         raw_data.index("distance:")
         raw_data.index("time:")
+        raw_data.index("targetPayloadID:")
+        raw_data.index("sysID:")
 
     except ValueError:
         
@@ -173,6 +194,9 @@ def stringToRSSI(raw_data):
         rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
         rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
+        rssi_i.targetPayloadID = int(extract_string_data("targetPayloadID: ",";",raw_data))
+        rssi_i.sysID = int(extract_string_data("sysID: ",";",raw_data))
+
         # rssi_i.distance = 0
         return True, rssi_i
 

@@ -9,6 +9,13 @@ from scipy import random
 from  Ambi_Resolve_A import Ambi_resolve
 import GlobalVals
 
+import sys
+sys.path.insert(1,'../utils/')
+from navpy import lla2ned, ned2lla, lla2ecef
+import csv
+from common import *
+from common_class import *
+
 
 def KLD1(x,mu_r,sigma_r):
     if abs(sigma_r)<1e-6:
@@ -126,7 +133,7 @@ def localization(balloon,dis,Sigma,Leader):
             sigma[i] = balloon[i].Sigma
     return p,sigma,iter_all
 
-def get_distance(n,balloon,offset,Leader,var_measurement,distanceRSSI):
+def get_distance(n,balloon,offset,Leader,var_measurement,rssiAll,gps,gpsAll):
     distance_matrix = np.zeros((n,n))
     sigma = np.zeros((n,n))
 
@@ -139,8 +146,8 @@ def get_distance(n,balloon,offset,Leader,var_measurement,distanceRSSI):
         for jj in np.arange(start=i,stop=n,step=1):
             
             Y = np.array([balloon[jj].X,balloon[jj].Y])
-            if i == 0 and jj == 1:
-                distance_matrix[i,jj]= distanceRSSI
+            if i in GlobalVals.REAL_BALLOON_LIST and jj in GlobalVals.REAL_BALLOON_LIST:
+                distance_matrix[i,jj]= distance2D([gps, gpsAll[i-1],GlobalVals.GPS_REF,rssiAll[i][jj].distance])
                 sigma[i,jj] = var_measurement
                 sigma[jj,i] = var_measurement
             else:
@@ -155,7 +162,7 @@ def get_distance(n,balloon,offset,Leader,var_measurement,distanceRSSI):
 class balloon_class:
     pass
 
-def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,distance):
+def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,rssiAll,gps,gpsAll):
     n = GlobalVals.N_BALLOON
     balloon = [0] * n
     loc = np.zeros((n,2))
@@ -182,7 +189,7 @@ def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,dist
             balloon[i].convergen = False
 
     offset = [0,0]
-    dis,sigma_range_measurement = get_distance(n,balloon,offset,Leader,sigma_range_measurement_val,distance)    # noise sigma   
+    dis,sigma_range_measurement = get_distance(n,balloon,offset,Leader,sigma_range_measurement_val,rssiAll,gps,gpsAll)    # noise sigma   
     p1,sigma1,iteration = localization(balloon,dis,sigma_range_measurement,Leader) # sigma of estimation
 
 

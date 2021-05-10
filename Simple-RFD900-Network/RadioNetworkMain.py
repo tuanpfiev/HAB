@@ -12,7 +12,7 @@ import PingLogger
 import ImaginaryBalloons
 import IMU_Handler
 import EKFHandler
-# import RSSI_Handler
+import RSSI_Handler
 import TemperatureHandler
 import sys, os
 
@@ -88,8 +88,8 @@ def main():
                         print ("Radio Network Main: GPS data error " + str(error) + ".\n")
                         continue
                     
-                    print("GPS Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+                    # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
+                    # print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
                     GPSdata.SystemID = recievedPacket.SystemID
@@ -178,8 +178,8 @@ def main():
 
                     # set the flags for the buffer 
                     with GlobalVals.RECIEVED_RSSI_RADIO_DATA_MUTEX:
-                        GlobalVals.RECIEVED_IMU_RADIO_DATA = True
-                    
+                        GlobalVals.RECIEVED_RSSI_RADIO_DATA = True
+                
                     continue
 
 #=====================================================
@@ -240,9 +240,13 @@ if __name__ == '__main__':
     EKF_GPS_Thread.start()
 
     # start RSSI logger
-    # RSSI_Thread = Thread(target=RSSI_Handler.RSSI_LoggerSocket, args = ())
-    # RSSI_Thread.start()
+    RSSI_Thread = [None]*(GlobalVals.N_REAL_BALLOON-1)
+    for i in range(GlobalVals.N_REAL_BALLOON-1):
+        RSSI_Thread[i] = Thread(target=RSSI_Handler.RSSI_LoggerSocket, args = (GlobalVals.HOST,GlobalVals.RSSI_LOGGER_SOCKET[i],i))
+        RSSI_Thread[i].start()
 
+    RSSI_DistroThread = Thread(target=RSSI_Handler.RSSI_Distributor,args = ())
+    RSSI_DistroThread.start()
 
     tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
     tempThread.start()
@@ -302,10 +306,15 @@ if __name__ == '__main__':
             GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
         EKF_GPS_Thread.join()
 
-    # if RSSI_Thread.is_alive():
-    #     with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX:
-    #         GlobalVals.BREAK_RSSI_LOGGER_THREAD = True
-    #     RSSI_Thread.join()
+    for i in range(GlobalVals.N_REAL_BALLOON-1):
+        if RSSI_Thread[i].is_alive():
+            with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX[i]:
+                GlobalVals.BREAK_RSSI_LOGGER_THREAD[i] = True
+            RSSI_Thread[i].join()
+
+    if RSSI_DistroThread.is_alive():
+        with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_RSSI_DISTRO_THREAD = True
 
     if tempThread.is_alive():
         with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:

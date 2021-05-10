@@ -418,7 +418,7 @@ def Thread_RSSI_publish():
             Logger_Socket[i].listen(1)
             Logger_Connection[i], addr = Logger_Socket[i].accept()  
             Logger_Connection[i].settimeout(GlobalVals.SOCKET_TIMEOUT) 
-            print("Connected to: ",addr)
+            print("Connected to: ",addr,"Port: ",GlobalVals.PORT_RSSI[i][findIndexPort()])
         except Exception as e:
             print("Exception: " + str(e.__class__))
             print("Error in the logger socket. Now closing thread.")
@@ -451,7 +451,7 @@ def Thread_RSSI_publish():
                     distance = GlobalVals.distance.pop(0)
                     RSSI_time = GlobalVals.RSSI_time.pop(0)
 
-                    socketPayload = "{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
+                    socketPayload = "{sysID: "+ str(GlobalVals.SYSID) + "; targetPayloadID: "+ str(GlobalVals.TARGET_BALLOON) + "; RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
                 
                     socketPayload = socketPayload.encode("utf-8")
                     # print(socketPayload)
@@ -460,7 +460,7 @@ def Thread_RSSI_publish():
                             Logger_Connection[i].sendall(socketPayload)
                         except Exception as e:
                             print("Exception: " + str(e.__class__))
-                            print("Error in the logger socket. Now closing thread.")
+                            print("Error in the logger socket(sending [",i,"]). Now closing thread.")
                             breakThread = True
                             break
         else:

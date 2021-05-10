@@ -532,6 +532,7 @@ class MESSAGE_RSSI:
     FilteredRSSI: float = 0   
     Epoch: float = 0 
     Distance: float = 0
+    TargetPayloadID: int = 0
     SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
     
     def setFilteredRSSI(self,filteredRSSI):
@@ -539,7 +540,9 @@ class MESSAGE_RSSI:
 
     def setDistance(self,distance):
         self.Distance = distance
-        
+
+    def setTargetPayloadID(self,payloadID):
+        self.TargetPayloadID = payloadID        
 
     def data_to_bytes(self):
 
@@ -550,7 +553,7 @@ class MESSAGE_RSSI:
         Epoch_ints = struct.pack('!d',self.Epoch)
         Distance_ints = struct.pack('!d',self.Distance)
         FilteredRSSI_ints = struct.pack('!d',self.FilteredRSSI)
-
+        TargetPayloadID_ints = struct.pack('!d',self.TargetPayloadID)
         # append the values to the byte array for the payload 
         for x in Epoch_ints:
             payloadBytes.append(x)
@@ -561,6 +564,9 @@ class MESSAGE_RSSI:
         for x in FilteredRSSI_ints:
             payloadBytes.append(x)
 
+        for x in TargetPayloadID_ints:
+            payloadBytes.append(x)
+
         # return the payload byte array 
         return payloadBytes
 
@@ -568,17 +574,17 @@ class MESSAGE_RSSI:
 
         # check length of payload 
         payloadLen = len(payloadBytes)
-        if payloadLen != 24:
+        if payloadLen != 32:
             return -1
         
         # convert payload values back to double
         EpochTuple = struct.unpack('!d',payloadBytes[0:8])
         DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
         FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
-
+        TargetPayloadIDTuple = struct.unpack('!d',payloadBytes[24:32])
         # store converted values 
         self.Epoch = EpochTuple[0] 
         self.Distance = DistanceTuple[0] 
         self.FilteredRSSI = FilteredRSSITuple[0]
-
+        self.TargetPayloadID = TargetPayloadIDTuple[0]
         return 0

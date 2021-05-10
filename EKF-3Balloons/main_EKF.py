@@ -36,21 +36,6 @@ def enu2lla(enu, gps_ref, latlon_unit='deg', alt_unit='m', model='wgs84'):
     return lla
 
 
-def distance2D(args):
-    gps1 = args[0]
-    gps2 = args[1]
-    gps_ref = GlobalVals.GPS_REF
-    
-    pos1_enu = positionENU(gps1,gps_ref)
-    pos2_enu = positionENU(gps2,gps_ref)
-
-    distance = np.array([math.sqrt((pos1_enu[0]-pos2_enu[0])**2+(pos1_enu[1]-pos2_enu[1])**2)])
-
-    if len(args)==3:
-        distance_rssi = args[2]
-        distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
-    
-    return distance
 
 
 def rssi_update(new_data,balloon_id):
@@ -213,13 +198,14 @@ def distanceRSSI_callback(host,port,balloon_id):
         
         data_str = data_bytes.decode('utf-8')
         # print('data RSSI: ',data_str)
-        string_list = []
         string_list = extract_str_btw_curly_brackets(data_str)
         # print(data_str)
+        # print("RSSI string:", string_list)
         if len(string_list) > 0:
             rssi_list = []
             for string in string_list:
                 received, rssi_i = stringToRSSI(string)
+                
                 if received:
                     rssi_list.append(rssi_i)
             
@@ -508,7 +494,7 @@ if __name__ == '__main__':
                 # print(rssi.epoch)
                 if checkGPS(gps) and gps.epoch - gps_prev.epoch> 0:
                     GPS_data = positionENU(gps,gps_ref)
-                    GPS_data[2] = -5460.8
+                    # GPS_data[2] = -5460.8                           ########## WHYYYYYY
                     gps_prev = copy.deepcopy(gps)
                     # print('update GPS')
                     # print(GPS_data)
@@ -530,7 +516,7 @@ if __name__ == '__main__':
                         GPS_data_vel = np.concatenate((GPS_data,v))  
                         GPS_data_vel_pre = GPS_data_vel
                         GPS_time_pre = gps.epoch
-                        print(dt_GPS)
+                        # print(dt_GPS)
 
                 anchor_distance = np.array([])
                 # print("RSSI update: ",checkRSSI_Update(rssi,rssi_prev))
@@ -540,12 +526,12 @@ if __name__ == '__main__':
                     anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
                     for i in range(len(GlobalVals.ANCHOR)):
                         if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
-                            temp = distance2D([gps, gps_all[i-1]])
+                            temp = distance2D([gps, gps_all[i-1]],GlobalVals.GPS_REF)
                             anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1]])
                             
                         else:
                             temp = distance2D([gps, gps_all[i-1],rssi[i].distance])
-                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],rssi[i].distance])
+                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],GlobalVals.GPS_REF,rssi[i].distance])
                     
                     rssi_prev = copy.deepcopy(rssi)
 

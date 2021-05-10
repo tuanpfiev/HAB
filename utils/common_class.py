@@ -23,10 +23,12 @@ class GPS:
         self.epoch = epoch if epoch is not None else 0.0
 
 class RSSI:
-    def __init__(self, rssi_filtered = None, distance = None, epoch = None):
+    def __init__(self, rssi_filtered = None, distance = None, epoch = None,targetPayloadID = None,sysID = None):
         self.rssi_filtered = rssi_filtered if rssi_filtered is not None else 0.
         self.distance = distance if distance is not None else 0.
         self.epoch = epoch if epoch is not None else 0.0
+        self.targetPayloadID = targetPayloadID if targetPayloadID is not None else 0
+        self.sysID = sysID if sysID is not None else 0
         
 class POS_XYZ:
     def __init__(self, x = None, y = None, z = None):
