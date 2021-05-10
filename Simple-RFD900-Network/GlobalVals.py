@@ -6,13 +6,14 @@ import numpy as np
 import sys
 sys.path.insert(1,'../utils/')
 from common_class import *
+import GlobalVariables
 
 #=====================================================
 # Global Constants 
 #=====================================================
-N_BALLOON = 5
-N_REAL_BALLOON = 3
-REAL_BALLOON = [1,2,3]
+N_BALLOON = GlobalVariables.N_BALLOON
+N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
+REAL_BALLOON = GlobalVariables.REAL_BALLOON
 # serial settings 
 TIMEOUT = 0.5                       # Serial port time out 
 PORT = "COM8"                       # Windows COM por
@@ -21,27 +22,27 @@ BAUDRATE = 57600                    # the baud for the serial port connection
 
 # Socket settings 
 HOST = '127.0.0.1'
-GPS_LOGGER_SOCKET = 5001
-GPS_DISTRO_SOCKET =[5200,5210,5290,5280]
-N_NODE_PUBLISH = 4
+GPS_LOGGER_SOCKET = GlobalVariables.GPS_READER_SOCKET
+GPS_DISTRO_SOCKET =GlobalVariables.GPS_ALL_DISTRO
+N_NODE_PUBLISH = len(GPS_DISTRO_SOCKET)
 
 GPS_LOGGER_SOCKET_TIMEOUT = 60
 
 
-IMU_LOGGER_SOCKET = 5003
-IMU_DISTRO_SOCKET = 5004
+IMU_LOGGER_SOCKET = GlobalVariables.IMU_READER_SOCKET
+IMU_DISTRO_SOCKET = GlobalVariables.IMU_DISTRO_SOCKET
 IMU_LOGGER_SOCKET_TIMEOUT = 60
 
-EKF_GPS_LOGGER_SOCKET = 5055
+EKF_GPS_LOGGER_SOCKET = GlobalVariables.EKF_GPS_LOGGER_SOCKET
 EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 
-TEMP_LOGGER_SOCKET = 5600
+TEMP_LOGGER_SOCKET = GlobalVariables.TEMP_LOGGER_SOCKET
 TEMP_LOGGER_SOCKET_TIMEOUT = 60
 
-RSSI_LOGGER_SOCKET = [5190, 5191]
+RSSI_LOGGER_SOCKET = GlobalVariables.RSSI_LOGGER_SOCKET
 RSSI_LOGGER_SOCKET_TIMEOUT = 60
 
-RSSI_DISTRO_SOCKET = [5120] 
+RSSI_DISTRO_SOCKET = GlobalVariables.RSSI_DISTRO_SOCKET
 N_RSSI_NODE_PUBLISH = len(RSSI_DISTRO_SOCKET)
 
 

@@ -28,7 +28,7 @@ neighborBalloon=(${allBalloon[@]/$currentBalloon})
 	sleep 4; xterm  -title "Lora1" -hold -e "cd ~/HAB/LoRa-Radio-RSSI; python3 LoraRadio.py start /dev/ttyUSB0 ${neighborBalloon[0]} $1" &
 	sleep 4.1; xterm  -title "Lora2" -hold -e "cd ~/HAB/LoRa-Radio-RSSI; python3 LoraRadio.py wait /dev/ttyUSB1 ${neighborBalloon[1]} $1" &
 	
-	sleep 7; xterm -title "Localisation" -hold -e "cd ~/HAB/localisation-RSSI; python3 localisation_main.py" &
+	sleep 7; xterm -title "Localisation" -hold -e "cd ~/HAB/localisation-RSSI; python3 localisation_main.py" $1&
 #&			
 	sleep 6; xterm -title "EKF" -hold -e "cd ~/HAB/EKF-3Balloons; python3 main_EKF.py $1"
 

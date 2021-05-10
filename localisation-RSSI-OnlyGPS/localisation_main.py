@@ -22,7 +22,6 @@ from common_class import *
 import copy
 
 
-global gps_all, imu_all, gps_ref, positionXY, distance
 
 def rssi_update(new_data):
     sysID = new_data.sysID
@@ -162,7 +161,6 @@ if __name__ == "__main__":
     
     print("Localisation node started ...")
 
-
     numArgs = len(sys.argv)
 
     if numArgs == 2:
@@ -171,8 +169,8 @@ if __name__ == "__main__":
     GPS_Thread = Thread(target=gps_callback,args=(GlobalVals.HOST,GlobalVals.PORT_GPS))
     GPS_Thread.start()
 
-    RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
-    RSSIThread.start()
+    # RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
+    # RSSIThread.start()
     
 
     leader = 5 #any anchor                      
@@ -213,7 +211,6 @@ if __name__ == "__main__":
     print("Algorithm started ....")
 
     sysID = GlobalVals.SYSID
-
     while True:
         with GlobalVals.GPS_UPDATE_MUTEX:
             posXYZ_tmp = copy.deepcopy(GlobalVals.POS_XYZ)
@@ -222,10 +219,9 @@ if __name__ == "__main__":
         with GlobalVals.RSSI_UPDATE_MUTEX:
             rssiAll = copy.deepcopy(GlobalVals.RSSI_MATRIX)
 
-
         # Main loop
         start_time = time.time()
-        location,_,iteration = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,rssiAll,gps_tmp[sysID-1],gps_tmp)
+        location,_,iteration = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val)
         execution_time = time.time()-start_time
         
         pos_error = np.zeros([GlobalVals.N_BALLOON,2])
@@ -239,7 +235,7 @@ if __name__ == "__main__":
 
         print("localisation error: \n", pos_error)
         logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, posXYZ_tmp[4].x, posXYZ_tmp[4].y,location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon, gps_tmp[4].lat, gps_tmp[4].lon,rssiAll[0][1].distance,rssiAll[0][2].distance,rssiAll[1][0].distance,rssiAll[1][2].distance,rssiAll[2][0].distance,rssiAll[2][1].distance])
-
+        
         try:
             fileObj = open(file_name, "a")
             fileObj.write(logString)
@@ -255,8 +251,8 @@ if __name__ == "__main__":
             GlobalVals.BREAK_GPS_THREAD = True
         GPS_Thread.join()
 
-    if RSSIThread.is_alive():
-        with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
-            GlobalVals.BREAK_RSSI_THREAD = True
-        RSSIThread.join()
+    # if RSSIThread.is_alive():
+    #     with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
+    #         GlobalVals.BREAK_RSSI_THREAD = True
+    #     RSSIThread.join()
 
