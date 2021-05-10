@@ -541,11 +541,16 @@ def main():
 
 # the main file code starts here 
 if __name__ == '__main__':
+    numArgs = len(sys.argv)
 
     # set Port
-    GlobalVals.GPS_UART_PORT=get_port('GPS')
+    if numArgs >= 2:
+        GlobalVals.GPS_UART_PORT = sys.argv[1]
+    else:
+        GlobalVals.GPS_UART_PORT=get_port('GPS')
+    
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
-    # GlobalVals.GPS_UART_PORT= "/dev/ttyTHS1"
+
     try:
         os.makedirs("../datalog")
     except FileExistsError:
