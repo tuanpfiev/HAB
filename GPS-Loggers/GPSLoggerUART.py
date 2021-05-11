@@ -302,7 +302,7 @@ def LoggerSocket():
         Logger_Socket.listen(1) 
         Logger_Connection, addr = Logger_Socket.accept()  
         Logger_Connection.settimeout(GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT) 
-        print("Logger Connected to ", addr)                                            
+        print("Network Logger Connected to ", addr)                                            
     except Exception as e:
         print("Exception: " + str(e.__class__))
         print("Error in the logger socket. Now closing thread.")
@@ -313,7 +313,6 @@ def LoggerSocket():
     # local flags
     newData = False
     breakThread = False
-
     # forever while loop (until it is flagged to stop and break the thread)
     while not breakThread:
 
@@ -336,12 +335,13 @@ def LoggerSocket():
             # go through all the new GPS data and append to one byte array
             with GlobalVals.GPSValuesMutex:
                 while len(GlobalVals.GPSAltitude) > 0:
-                    
+
                     # get the GPS values 
                     Longitude = GlobalVals.GPSLongitude.pop(0)
                     Latitude = GlobalVals.GPSLatitude.pop(0)
                     Altitude = GlobalVals.GPSAltitude.pop(0)
                     GPSTime = GlobalVals.GPSTimestamp.pop(0)
+                    print(Longitude,Latitude,Altitude,GPSTime)
 
                     Longitude_ints = struct.pack('!d',Longitude)
                     Latitude_ints = struct.pack('!d',Latitude)
@@ -364,17 +364,17 @@ def LoggerSocket():
 
                     for x in GPSTime_ints:
                         SocketPayload.append(x)
-            
+                    
             # send data over socket
             SocketPayload = bytes(SocketPayload)
             try:
                 Logger_Connection.sendall(SocketPayload)
+                # print(SocketPayload)
             except Exception as e:
                 print("Exception: " + str(e.__class__))
                 print("Error in the logger socket. Now closing thread.")
                 breakThread = True
                 break
-
         # if there is no new data sleep for 0.5 seconds      
         else:
             time.sleep(0.5)
@@ -453,11 +453,15 @@ def main():
                                     
                                     GPS_Data = GGA_Convert(GGAdataQuectel)
                                     obtainedQuectelCheck = checkGPS(GPS_Data)
-                                        
-                                    if obtainedQuectelCheck:
-                                        if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                            print('Using QuecTel GPS')
-                                            updateGlobalGPS_Data(GPS_Data)
+                                    
+                                    if not GlobalVals.GPSTimestamp:
+                                        print('Using QuecTel GPS')
+                                        updateGlobalGPS_Data(GPS_Data)
+                                    else:
+                                        if obtainedQuectelCheck:
+                                            if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
+                                                print('Using QuecTel GPS')
+                                                updateGlobalGPS_Data(GPS_Data)
 
                                     loopLengthQuectel = loopLengthQuectel -1
 
@@ -486,9 +490,13 @@ def main():
                             obtainedQuectelCheck = checkGPS(GPS_Data)
                                 
                             if obtainedQuectelCheck:
-                                if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                    print('Using QuecTel GPS 2')
+                                if not GlobalVals.GPSTimestamp:
+                                    print('Using QuecTel GPS')
                                     updateGlobalGPS_Data(GPS_Data)
+                                else:
+                                    if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
+                                        print('Using QuecTel GPS')
+                                        updateGlobalGPS_Data(GPS_Data)
                             
                             with GlobalVals.NewGPSSocketData_Mutex:
                                 GlobalVals.NewGPSSocketData = True
@@ -607,6 +615,6 @@ if __name__ == '__main__':
     if SocketThread.is_alive():
         with GlobalVals.EndGPSSocket_Mutex:
             GlobalVals.EndGPSSocket = True
-        GPSThread.join()
+        SocketThread.join()
         
 

@@ -420,6 +420,8 @@ if __name__ == '__main__':
     
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
 
+    GlobalVals.GPS_UART_PORT = "/dev/ttyTHS1"
+    GlobalVals.GPS_UART_BAUDRATE = 9600
     
     # start the serial thread 
     GPSThread = Thread(target=GPSSerialThread, args=())
