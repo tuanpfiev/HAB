@@ -143,7 +143,7 @@ def imu_callback(host,port):
         string_list = []
         string_list = extract_str_btw_curly_brackets(data_str)
 
-        
+        print("CHECK IMU:",string_list)
         if len(string_list) > 0:
             imu_list = []
             for string in string_list:
@@ -526,11 +526,11 @@ if __name__ == '__main__':
                     anchor_distance = np.zeros([len(GlobalVals.ANCHOR),1])           
                     for i in range(len(GlobalVals.ANCHOR)):
                         if GlobalVals.ANCHOR[i] not in GlobalVals.REAL_BALLOON:
-                            temp = distance2D([gps, gps_all[i-1]],GlobalVals.GPS_REF)
-                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1]])
+                            temp = distance2D([gps, gps_all[i-1],GlobalVals.GPS_REF])
+                            anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],GlobalVals.GPS_REF])
                             
                         else:
-                            temp = distance2D([gps, gps_all[i-1],rssi[i].distance])
+                            temp = distance2D([gps, gps_all[i-1],GlobalVals.GPS_REF,rssi[i].distance])
                             anchor_distance[i,:] = distance2D([gps, gps_all[GlobalVals.ANCHOR[i]-1],GlobalVals.GPS_REF,rssi[i].distance])
                     
                     rssi_prev = copy.deepcopy(rssi)

@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     if numArgs >= 2:
         GlobalVals.sysID = sys.argv[1]
-    print('sysID: '+ GlobalVals.sysID)
+    print('sysID: ',GlobalVals.sysID)
 
     # create log file string 
     try:
