@@ -23,6 +23,8 @@ def GPSLoggerSocket():
     except Exception as e:
         print("Exception: " + str(e.__class__))
         print("There was an error starting the GPSLoggerSocket logger socket. This thread will now stop.")
+        print("GPS_PORT: ",GlobalVals.GPS_LOGGER_SOCKET)
+        print("GPS_TIMEOUT: ",GlobalVals.GPS_LOGGER_SOCKET_TIMEOUT )
         with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_LOGGER_THREAD = True
         return 

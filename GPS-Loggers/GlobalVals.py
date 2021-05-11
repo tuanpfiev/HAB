@@ -17,7 +17,7 @@ GPS_QUECTEL_UART_TIMEOUT = 1
 # Networking Settings
 HOST = '127.0.0.1'              # Local host address
 GPS_LOGGER_SOCKET = 5001        # Arbitrary non-privileged port for connecting to radio network
-GPS_LOGGER_SOCKET_TIMEOUT = 2220   # Timeout for socket connections  
+GPS_LOGGER_SOCKET_TIMEOUT = 60   # Timeout for socket connections  
 
 UBLOX_SIGNAL_LOSS_TIME = 2
 GPS_MAX_BUFFER_LENGTH = 20

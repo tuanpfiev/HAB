@@ -579,8 +579,8 @@ if __name__ == '__main__':
     GPS_QuecTelThread.start()
 
     # # start the socket logger thread 
-    # SocketThread = Thread(target=LoggerSocket, args=())
-    # SocketThread.start()
+    SocketThread = Thread(target=LoggerSocket, args=())
+    SocketThread.start()
     
     # start the main loop 
     try:
@@ -604,9 +604,9 @@ if __name__ == '__main__':
         GPS_QuecTelThread.join()
 
     # # safely end the socket thread 
-    # if SocketThread.is_alive():
-    #     with GlobalVals.EndGPSSocket_Mutex:
-    #         GlobalVals.EndGPSSocket = True
-    #     GPSThread.join()
+    if SocketThread.is_alive():
+        with GlobalVals.EndGPSSocket_Mutex:
+            GlobalVals.EndGPSSocket = True
+        GPSThread.join()
         
 
