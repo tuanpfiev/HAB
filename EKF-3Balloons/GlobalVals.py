@@ -5,26 +5,28 @@ import numpy as np
 import sys
 sys.path.insert(1,'../utils/')
 from common_class import *
+import GlobalVariables
 
 
 HOST = '127.0.0.1'
 GPS_BUFFER = 1024
 IMU_BUFFER = 1024
 RSSI_BUFFER = 1024
-PORT_GPS = 5290
-PORT_IMU = 5003
-PORT_RSSI = [5100, 5110]
+PORT_GPS = GlobalVariables.EKF_GPS_RECEIVE_SOCKET
+PORT_IMU = GlobalVariables.EKF_IMU_RECEIVE_SOCKET
+PORT_RSSI = GlobalVariables.EKF_RSSI_RECEIVE_SOCKET
 SYSID = 1
-EKF_GPS_DISTRO_SOCKET = 5055
+EKF_GPS_DISTRO_SOCKET = GlobalVariables.EKF_GPS_DISTRO_SOCKEt
 EKF_GPS_LOGGER_SOCKET_TIMEOUT = 60
 
 C_NED_ENU = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) 
 C_ENU_NED = np.array([[0,1, 0],[1,0,0],[0,0,-1]]) 
 
-N_BALLOON = 5
-N_REAL_BALLOON = 3
-LOOPTIME = 0.02
-RSSI_CALIBRATION_SIZE = 10
+N_BALLOON = GlobalVariables.N_BALLOON
+N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
+LOOPTIME = GlobalVariables.EKF_LOOPTIME
+
+RSSI_CALIBRATION_SIZE = GlobalVariables.EKF_RSSI_CALIBRATION_SIZE
 RSSI_DISTANCE_ARRAY = np.zeros([1,N_REAL_BALLOON-1])
 GPS_DISTANCE_ARRAY = np.zeros([1,N_REAL_BALLOON-1])
 Y = [np.zeros([1,1]), np.zeros([1,1])]
@@ -32,12 +34,12 @@ X = [np.zeros([1,2]), np.zeros([1,2])]
 RSSI_PARAMS = [np.ones([1,2]), np.ones([1,2])]
 RSSI_CALIBRATION_FINISHED = [False]*(N_REAL_BALLOON-1)
 
-LAT_REF = -36.7189
-LON_REF = 142.1962
-ALT_REF = 0
+LAT_REF = GlobalVariables.LAT_REF
+LON_REF = GlobalVariables.LON_REF
+ALT_REF = GlobalVariables.ALT_REF
 
-ANCHOR = np.array([1,2,3,4,5])
-REAL_BALLOON = np.array([1,2,3])
+ANCHOR = GlobalVariables.EKF_ANCHOR
+REAL_BALLOON = GlobalVariables.REAL_BALLOON
 
 GPS_TIMEOUT = 60
 IMU_TIMEOUT = 60

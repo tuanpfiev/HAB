@@ -173,11 +173,10 @@ if __name__ == "__main__":
     # RSSIThread.start()
     
 
-    leader = 5 #any anchor                      
-    sigma_range_measurement_val = 200     # this depends on the real data
+    leader = GlobalVals.LEADER #any anchor                      
+    sigma_range_measurement_val = GlobalVals.SIGMA_RSSI_RANGE     # this depends on the real data
 
-    rateHz = 0.05                       # rate to run the localisation algorithm
-    rate = 1/rateHz                     
+    loopTime = GlobalVals.LOOP_TIME                 
 
     try:
         os.makedirs("../datalog")
@@ -186,7 +185,7 @@ if __name__ == "__main__":
 
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
 
-    logString = "px1, py1, px2, py2, px3, py3, px4, py4, px5, py5, lx1, ly1,lx2, ly2, lx3, ly3, lx4, ly4, lx5,ly5, iteration, execution time, epoch,  gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon,gps5lat,gps5lon,rssi12, rssi13, rssi21, rssi23, rssi31, rssi32 \n"
+    logString = "px1, py1, px2, py2, px3, py3, px4, py4, px5, py5, lx1, ly1,lx2, ly2, lx3, ly3, lx4, ly4, lx5,ly5, iteration, execution time, epoch,  gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon,gps5lat,gps5lon,rssi12, rssi13, rssi21, rssi23, rssi31, rssi32 ,distanceMatrix01,distanceMatrix02,distanceMatrix10,distanceMatrix12,distanceMatrix20,distanceMatrix21\n"
     
     try:
         fileObj = open(file_name, "a")
@@ -212,6 +211,8 @@ if __name__ == "__main__":
 
     sysID = GlobalVals.SYSID
     while True:
+        timeLoopStart = time.time()
+
         with GlobalVals.GPS_UPDATE_MUTEX:
             posXYZ_tmp = copy.deepcopy(GlobalVals.POS_XYZ)
             gps_tmp = copy.deepcopy(GlobalVals.GPS_ALL)
@@ -234,17 +235,22 @@ if __name__ == "__main__":
         print("Balloon 2: lat", round(gps_tmp[1].lat,4), "lon: ", round(gps_tmp[1].lon,4))
 
         print("localisation error: \n", pos_error)
-        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, posXYZ_tmp[4].x, posXYZ_tmp[4].y,location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon, gps_tmp[4].lat, gps_tmp[4].lon,rssiAll[0][1].distance,rssiAll[0][2].distance,rssiAll[1][0].distance,rssiAll[1][2].distance,rssiAll[2][0].distance,rssiAll[2][1].distance])
+        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, posXYZ_tmp[4].x, posXYZ_tmp[4].y,location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon, gps_tmp[4].lat, gps_tmp[4].lon,rssiAll[0][1].distance,rssiAll[0][2].distance,rssiAll[1][0].distance,rssiAll[1][2].distance,rssiAll[2][0].distance,rssiAll[2][1].distance,distanceMatrix[0][1],distanceMatrix[0][2],distanceMatrix[1][0],distanceMatrix[1][2],distanceMatrix[2][0],distanceMatrix[2][1]])
         
         try:
             fileObj = open(file_name, "a")
             fileObj.write(logString)
             fileObj.close()
         except Exception as e:
-            print("LoRa Radio: Error writting to file. Breaking thread.")
-            print("LoRa Radio: Exception: " + str(e.__class__))
+            print("Localisation-RSSI: Error writting to file. Breaking thread.")
+            print("Localisation-RSSI: Exception: " + str(e.__class__))
             break
-        time.sleep(rate)
+        
+        elapsed = time.time()-timeLoopStart
+        if elapsed > loopTime:
+            continue
+        else:
+            time.sleep(loopTime-elapsed)
 
     if GPS_Thread.is_alive():
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:

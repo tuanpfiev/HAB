@@ -4,25 +4,26 @@ import numpy as np
 import sys
 sys.path.insert(1,'../utils/')
 from common_class import *
+import GlobalVariables
 
 HOST = "127.0.0.1"
 BUFFER = 1024
-PORT_GPS = 5270
-
-RSSI_BUFFER = 1024
-PORT_RSSI = 5120
+PORT_GPS = GlobalVariables.LA_G_GPS_RECEIVE_SOCKET
+LEADER = GlobalVariables.LA_LEADER-1
+SIGMA_RSSI_RANGE = GlobalVariables.SIGMA_RSSI_RANGE
 SYSID = 1
+LOOP_TIME = GlobalVariables.LA_LOOP_TIME
 
-N_BALLOON = 5
-N_REAL_BALLOON = 3
+N_BALLOON = GlobalVariables.N_BALLOON
+N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 
-ITERATION = 50
-ANCHOR_LIST = np.array([2,3,4])
-REAL_BALLOON_LIST = np.array([0,1,2])
+ITERATION = GlobalVariables.LA_ITERATION
+ANCHOR_LIST = GlobalVariables.LA_ANCHOR
+REAL_BALLOON_LIST = GlobalVariables.REAL_BALLOON-1
 
-LAT_REF = -36.7189
-LON_REF = 142.1962
-ALT_REF = 0
+LAT_REF = GlobalVariables.LAT_REF
+LON_REF = GlobalVariables.LON_REF
+ALT_REF = GlobalVariables.ALT_REF
 
 GPS_BUFFER = 2048
 GPS_TIMEOUT = 60

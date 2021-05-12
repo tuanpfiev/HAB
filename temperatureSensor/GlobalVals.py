@@ -1,7 +1,10 @@
 from threading import Lock
+import sys
+sys.path.insert(1,'../utils/')
+import GlobalVariables
 
 HOST = '127.0.0.1'
-PORT_TEMPERATURE = 5600
+PORT_TEMPERATURE = GlobalVariables.TS_TEMPT_DISTRO_SOCKET
 socketTimeout = 60
 
 fileName = 'TemperatureYoctopuce.txt'

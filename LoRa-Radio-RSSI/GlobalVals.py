@@ -3,6 +3,7 @@ import numpy as np
 import sys
 sys.path.insert(1,'../utils/')
 from common_class import *
+import GlobalVariables
 #=====================================================
 # Global Constants 
 #=====================================================
@@ -39,7 +40,7 @@ RSSIValues_Mutex = Lock()
 BREAK_GPS_THREAD_MUTEX = Lock()
 GPS_UPDATE_MUTEX = Lock()
 
-PORT_GPS = [5200, 5210, 5290]
+PORT_GPS = GlobalVariables.LORA_GPS_RECEIVE_SOCKET
 # PORT_RSSI = np.array([  [5100, 5110],   # EKF
 #                         [5101,5111],    # LC1
 #                         [5102,5112],    # LC2
@@ -47,16 +48,15 @@ PORT_GPS = [5200, 5210, 5290]
 # PORT_RSSI = np.array([  [5100, 5110],   # EKF
 #                         [5101,5111]])   # LC1
 
-PORT_RSSI = np.array([  [5100, 5110],       # EKF
-                        [5190, 5191]])      # RFD900 Network
+PORT_RSSI = GlobalVariables.LORA_RSSI_DISTRO_SOCKET
 
-N_BALLOON = 5
-N_REAL_BALLOON = 3
+N_BALLOON = GlobalVariables.N_BALLOON
+N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 TARGET_BALLOON = 1
-RSSI_CALIBRATION_SIZE = 10
+RSSI_CALIBRATION_SIZE = GlobalVariables.LORA_RSSI_CALIBRATION_SIZE
 
-ALL_BALLOON = np.array([1,2,3,4,5])
-REAL_BALLOON = np.array([1,2,3])
+ALL_BALLOON = GlobalVariables.ALL_BALLOON
+REAL_BALLOON = GlobalVariables.REAL_BALLOON
 
 
 GPS_ALL = np.array([GPS()]*N_BALLOON)

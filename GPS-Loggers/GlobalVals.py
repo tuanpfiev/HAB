@@ -1,5 +1,8 @@
 from threading import Lock
-
+import sys
+sys.path.insert(1,'../utils/')
+from common_class import *
+import GlobalVariables
 #=====================================================
 # Global Constants  
 #=====================================================
@@ -16,7 +19,7 @@ GPS_QUECTEL_UART_BAUDRATE = 9600
 GPS_QUECTEL_UART_TIMEOUT = 1
 # Networking Settings
 HOST = '127.0.0.1'              # Local host address
-GPS_LOGGER_SOCKET = 5001        # Arbitrary non-privileged port for connecting to radio network
+GPS_LOGGER_SOCKET = GlobalVariables.GPS_READER_SOCKET        # Arbitrary non-privileged port for connecting to radio network
 GPS_LOGGER_SOCKET_TIMEOUT = 60   # Timeout for socket connections  
 
 UBLOX_SIGNAL_LOSS_TIME = 2
