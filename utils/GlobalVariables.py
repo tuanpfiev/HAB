@@ -1,3 +1,5 @@
+import numpy as np
+
 N_BALLOON = 5
 N_REAL_BALLOON = 3
 REAL_BALLOON = np.array([1,2,3])
