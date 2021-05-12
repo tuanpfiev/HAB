@@ -417,7 +417,7 @@ def main():
                 dataQuectelRead = True
                 GlobalVals.NEWGPS_QuectelData = False
                         
-        
+        GPS_Data = GPS()
         # if there is no new data sleep 
         if not dataUbloxReady and not dataQuectelRead:
             time.sleep(0.1)
@@ -441,7 +441,7 @@ def main():
                         if obtainedUbloxCheck or firstRunUblox:
                             firstRunUblox = False
                         # if obtainedUbloxCheck:
-                            print('Using Ublox GPS')
+                            print('Using Ublox GPS:')
                             updateGlobalGPS_Data(GPS_Data)
                         else:
                             with GlobalVals.GGA_QuectelBufferMutex:
@@ -455,12 +455,12 @@ def main():
                                     obtainedQuectelCheck = checkGPS(GPS_Data)
                                     
                                     if not GlobalVals.GPSTimestamp:
-                                        print('Using QuecTel GPS')
+                                        print('Using QuecTel GPS:')
                                         updateGlobalGPS_Data(GPS_Data)
                                     else:
                                         if obtainedQuectelCheck:
                                             if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                                print('Using QuecTel GPS')
+                                                print('Using QuecTel GPS:')
                                                 updateGlobalGPS_Data(GPS_Data)
 
                                     loopLengthQuectel = loopLengthQuectel -1
@@ -472,6 +472,8 @@ def main():
                     # Log the GPS data
                     logData(GPS_Data)                                                                             
                     loopLength = loopLength - 1
+
+
 
             if time.time() - GPS_Data.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
                 statusUblox = False
@@ -491,11 +493,11 @@ def main():
                                 
                             if obtainedQuectelCheck:
                                 if not GlobalVals.GPSTimestamp:
-                                    print('Using QuecTel GPS')
+                                    print('Using QuecTel GPS:')
                                     updateGlobalGPS_Data(GPS_Data)
                                 else:
                                     if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                        print('Using QuecTel GPS')
+                                        print('Using QuecTel GPS:')
                                         updateGlobalGPS_Data(GPS_Data)
                             
                             with GlobalVals.NewGPSSocketData_Mutex:
