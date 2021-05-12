@@ -92,7 +92,7 @@ def RSSI_LoggerSocket(host,port,index):
             
             # with GlobalVals.RSSI_UPDATE_MUTEX[index]:
                 rssi_i = copy.deepcopy(GlobalVals.RSSI_ALL)
-                print(rssi_i)
+                # print(rssi_i)
         
             RSSI_Data = CustMes.MESSAGE_RSSI()
             RSSI_Data.FilteredRSSI = rssi_i.rssi_filtered
@@ -116,8 +116,8 @@ def RSSI_LoggerSocket(host,port,index):
             RSSI_Packet.TargetID = 0
             RSSI_Packet.Payload = RSSI_Data.data_to_bytes()
             NetworkManager.sendPacket(RSSI_Packet)
-            print(RSSI_Data)
-            print("***************************")
+            # print(RSSI_Data)
+            # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
@@ -208,7 +208,7 @@ def RSSI_Distributor():
                 for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
                     try:
                         Distro_Connection[i].sendall(messageStr_bytes)
-                        print("Sending RSSI:",messageStr)
+                        # print("Sending RSSI:",messageStr)
                     except Exception as e:
                         print("Exception: " + str(e.__class__))
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")

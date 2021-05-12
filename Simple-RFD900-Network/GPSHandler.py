@@ -50,7 +50,7 @@ def GPSLoggerSocket():
         try:
             data_bytes = socket_logger.recv(bufferRead)
         except:
-            print("Connection error.")
+            print("GPSLoggerSocket: Receive Connection error.")
             break
         
         # if there is nothing in the socket then it has timed out 

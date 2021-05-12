@@ -15,6 +15,7 @@ from utils import get_port
 from common import *
 from common_class import *
 from commonGPS import *
+import copy
 #=====================================================
 # Serial Thread
 #=====================================================
@@ -341,7 +342,7 @@ def LoggerSocket():
                     Latitude = GlobalVals.GPSLatitude.pop(0)
                     Altitude = GlobalVals.GPSAltitude.pop(0)
                     GPSTime = GlobalVals.GPSTimestamp.pop(0)
-                    print(Longitude,Latitude,Altitude,GPSTime)
+                    # print(Longitude,Latitude,Altitude,GPSTime)
 
                     Longitude_ints = struct.pack('!d',Longitude)
                     Latitude_ints = struct.pack('!d',Latitude)
@@ -399,7 +400,8 @@ def main():
     callTime = curTime + GlobalVals.PREDICTION_INTERVAL
     firstRunUblox = True
     statusUblox = True
-
+    GPS_Data = GPS()
+    GPS_DataPrev = GPS()
     # loop only while the other threads are running 
     while not GlobalVals.EndGPSSerial and not GlobalVals.EndGPSSocket:
 
@@ -417,7 +419,7 @@ def main():
                 dataQuectelRead = True
                 GlobalVals.NEWGPS_QuectelData = False
                         
-        GPS_Data = GPS()
+
         # if there is no new data sleep 
         if not dataUbloxReady and not dataQuectelRead:
             time.sleep(0.1)
@@ -465,17 +467,18 @@ def main():
 
                                     loopLengthQuectel = loopLengthQuectel -1
 
-                    # set the flag for the socket code 
-                    with GlobalVals.NewGPSSocketData_Mutex:
-                        GlobalVals.NewGPSSocketData = True
-                            
-                    # Log the GPS data
-                    logData(GPS_Data)                                                                             
-                    loopLength = loopLength - 1
+                        # set the flag for the socket code 
+                        with GlobalVals.NewGPSSocketData_Mutex:
+                            GlobalVals.NewGPSSocketData = True
+                                
+                        # Log the GPS data
+                        logData(GPS_Data)
+                        GPS_DataPrev = copy.deepcopy(GPS_Data)                                                                            
+                        loopLength = loopLength - 1
 
 
-
-            if time.time() - GPS_Data.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
+            if time.time() - GPS_DataPrev.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
+                test = time.time() - GPS_DataPrev.epoch
                 statusUblox = False
 
             if not statusUblox:
@@ -502,13 +505,15 @@ def main():
                             
                             with GlobalVals.NewGPSSocketData_Mutex:
                                 GlobalVals.NewGPSSocketData = True
-                    
+                            print("here")
                             # Log the GPS data
                             logData(GPS_Data)
-
+                            GPS_DataPrev = copy.deepcopy(GPS_Data) 
                             loopLengthQuectel = loopLengthQuectel -1
 
                             # set the flag for the socket code 
+
+                      
                             
 
             # check if it is call time yet
@@ -558,7 +563,7 @@ if __name__ == '__main__':
         GlobalVals.GPS_UART_PORT = sys.argv[1]
     else:
         GlobalVals.GPS_UART_PORT=get_port('GPS')
-    
+    GlobalVals.GPS_UART_PORT = "/dev/ttyUSB2"
     print('PORT: '+ GlobalVals.GPS_UART_PORT)
 
     try:

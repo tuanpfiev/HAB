@@ -72,7 +72,7 @@ def IMULoggerSocket():
             data_bytes, server = socket_logger.recvfrom(bufferRead)
             # print(data_bytes)
         except:
-            print("Connection error.")
+            print("IMULoggerSocket(): Receive Connection error.")
             break
         
         # if there is nothing in the socket then it has timed out 

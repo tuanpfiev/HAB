@@ -51,15 +51,15 @@ def EKFGPSLoggerSocket():
     while True:
         
         # if flag is set break the thread 
-        # with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
-        #     if GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD:
-        #         break
+        with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
+            if GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD:
+                break
 
         # read the socket 
         try:
             data_bytes = socket_logger.recv(bufferRead)
         except:
-            print("Connection error.")
+            print("EKFGPSLoggerSocket(): Receive Connection error.")
             break
         
         # if there is nothing in the socket then it has timed out 

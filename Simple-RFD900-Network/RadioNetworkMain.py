@@ -88,7 +88,7 @@ def main():
                         print ("Radio Network Main: GPS data error " + str(error) + ".\n")
                         continue
                     
-                    # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
+                    print("GPS Data from " + str(recievedPacket.SystemID) + ":" +"Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,1)) + ", Time:" + str(round(GPSdata.GPSTime,1)))
                     # print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
@@ -166,8 +166,8 @@ def main():
                         print ("Radio Network Main: IMU data error " + str(error) + ".\n")
                         continue
                     
-                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":")
-                    print("RSSI Distance:" + str(RSSI_Data.Distance) + "\n")
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance))
+                    
 
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID

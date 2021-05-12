@@ -102,6 +102,6 @@ def logData(gpsData):
 
 
     # Debug Messages 
-    print("                       lon: " + str(round(gpsData.lon,4)) + ", lat: " + str(round(gpsData.lat,4)) + ", alt: " + str(round(gpsData.alt,2)) + ", Time: ", timeLocal)
+    print("lon: " + str(round(gpsData.lon,4)) + ", lat: " + str(round(gpsData.lat,4)) + ", alt: " + str(round(gpsData.alt,2)) + ", Time: ", timeLocal)
 
             
