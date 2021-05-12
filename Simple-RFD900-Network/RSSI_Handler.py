@@ -99,7 +99,7 @@ def RSSI_LoggerSocket(host,port,index):
             RSSI_Data.Distance = rssi_i.distance
             RSSI_Data.Epoch = rssi_i.epoch
             RSSI_Data.SystemID = GlobalVals.SYSTEM_ID
-            RSSI_Data.TargetPayloadID = findTargetPayloadID(index)
+            RSSI_Data.TargetPayloadID = int(findTargetPayloadID(index))
 
             # add data to the gps buffer 
             with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
@@ -208,7 +208,7 @@ def RSSI_Distributor():
                 for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
                     try:
                         Distro_Connection[i].sendall(messageStr_bytes)
-                        print("Sending RSSI:",messageStr)
+                        # print("Sending RSSI:",messageStr)
                     except Exception as e:
                         print("Exception: " + str(e.__class__))
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")
