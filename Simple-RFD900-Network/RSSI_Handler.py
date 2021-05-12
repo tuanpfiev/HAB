@@ -208,7 +208,7 @@ def RSSI_Distributor():
                 for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
                     try:
                         Distro_Connection[i].sendall(messageStr_bytes)
-                        # print("Sending RSSI:",messageStr)
+                        print("Sending RSSI:",messageStr)
                     except Exception as e:
                         print("Exception: " + str(e.__class__))
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")

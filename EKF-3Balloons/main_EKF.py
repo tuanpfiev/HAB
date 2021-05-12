@@ -408,7 +408,7 @@ if __name__ == '__main__':
         output.writerow(['sysID','x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','roll','pitch','yaw',\
             'gps0_lat','gps0_lon','gps0_alt','gps1_lat','gps1_lon','gps1_alt','gps2_lat','gps2_lon','gps2_alt','gps3_lat','gps3_lon','gps3_alt','gps4_lat','gps4_lon','gps4_alt',\
                 'gyro_x','gyro_y','gyro_z','accel_x','accel_y','accel_z','qt1','qt2','qt3','qt4','epoch',\
-                    'magVec1','magVec2','magVec3','rssi_distance 1','rssi_distance 2','anchor_distance0','anchor_distance1','anchor_distance2','P00','P01','P02','P10','P11','P12','P20','P21','P22'])
+                    'magVec1','magVec2','magVec3','rssi_distance 1','rssi_distance 2','anchor_distance0','anchor_distance1','anchor_distance2'])
         # try:
         #     fileObj = open(file_name, "a")
         #     fileObj.write(logString)
@@ -544,10 +544,14 @@ if __name__ == '__main__':
                 node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data_vel,anchor_distance,Q_Xsens,q_sensor) # EKF
                 # print('EKF Time: ',time.time()-timeCheck2)
                 x_h = np.array([node.x_h[:,-1]]).T
+
+
+                # just for plotting
+                anchor_distance = -np.ones([len(GlobalVals.ANCHOR),1])           
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                     gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt, gps_all[4].lat, gps_all[4].lon, gps_all[4].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
-                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance, anchor_distance[0], anchor_distance[1], anchor_distance[2],node.P[0][0],node.P[0][1],node.P[0][2],node.P[1][0],node.P[1][1],node.P[1][2],node.P[2][0],node.P[2][1],node.P[2][2]])
+                            imu.mag_vector[0][0],imu.mag_vector[1][0],imu.mag_vector[2][0],rssi[0].distance,rssi[1].distance, anchor_distance[0][0], anchor_distance[1][0], anchor_distance[2][0]])
 
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
