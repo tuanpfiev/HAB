@@ -96,7 +96,11 @@ def sub_fuc_loc(balloon,i,dis,Sigma,iter_all):
 def localization(balloon,dis,Sigma,Leader):
     n = balloon.__len__() 
     for i in np.arange(start = 0, stop = n, step = 1):
-        balloon[i].mu = np.array([balloon[i].X + np.random.randint(-10, 10), balloon[i].Y + np.random.randint(-10, 10)])
+        if i in GlobalVals.ANCHOR_LIST:
+            balloon[i].mu = np.array([balloon[i].X , balloon[i].Y])
+        else:
+            balloon[i].mu = np.array([balloon[i].X + np.random.randint(-10, 10), balloon[i].Y + np.random.randint(-10, 10)])
+        
         balloon[i].mu_x = np.zeros(GlobalVals.ITERATION)
         balloon[i].mu_y = np.zeros(GlobalVals.ITERATION)
         balloon[i].Sigma = 1
@@ -179,7 +183,7 @@ def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,rssi
         balloon[i].mu_x = np.zeros(GlobalVals.ITERATION)
         balloon[i].mu_y = np.zeros(GlobalVals.ITERATION)
 
-        if i == Leader:
+        if i == Leader or i in anchor_list:
             balloon[i].A = True
         else:
             balloon[i].A = False
@@ -193,37 +197,4 @@ def balloon_main(Leader,anchor_list,positionXYZ,sigma_range_measurement_val,rssi
     p1,sigma1,iteration = localization(balloon,dis,sigma_range_measurement,Leader) # sigma of estimation
 
 
-    # offset = [0,1]
-    # dis,Sigma = get_distance(balloon,offset,Leader) 
-    # p2,sigma2 = localization(balloon,dis,Sigma,Leader)
-
-    # offset = [1,0]
-    # dis,Sigma = get_distance(balloon,offset,Leader) 
-    # p3,sigma3 = localization(balloon,dis,Sigma,Leader)
-    # offset = [0,0]
-    # p1,sigma1 = localization.localization(balloon,0,offset)
-    # offset = [0,1]
-    # p2,sigma2 = localization.localization(balloon,0,offset)
-    # offset = [1,0]
-    # p3,sigma3 = localization.localization(balloon,0,offset)
-    # offset = np.array([[ 0, 1],[ 1, 0]])
-    # temp = Ambi_resolve(p1,p2,p3,offset)+np.array([balloon[0].X,balloon[0].Y])
-    # offset = np.array([[ 0, 1],[ 1, 0]])
-    # temp = Ambi_resolve.Ambi_resolve(p1,p2,p3,offset)+np.array([balloon[0].X,balloon[0].Y])
-
-    # print(loc)
-    # print(p1)
-    # error1 = np.array(([p1[0,0]-loc[0,0],p1[0,1]-loc[0,1]],[p1[1,0]-loc[1,0],p1[1,1]-loc[1,1]],[p1[2,0]-loc[2,0],p1[2,1]-loc[2,1]],[p1[3,0]-loc[3,0],p1[3,1]-loc[3,1]],[p1[4,0]-loc[4,0],p1[4,1]-loc[4,1]]))
-    # error2 = np.array([[p2[0,0]-loc[0,0],p2[0,1]-loc[0,1]],[p2[1,0]-loc[1,0],p2[1,1]-loc[1,1]],[p2[2,0]-loc[2,0],p2[2,1]-loc[2,1]],[p2[3,0]-loc[3,0],p2[3,1]-loc[3,1]],[p2[4,0]-loc[4,0],p1[4,1]-loc[4,1]]])
-    # error3 = np.array([[p3[0,0]-loc[0,0],p3[0,1]-loc[0,1]],[p3[1,0]-loc[1,0],p3[1,1]-loc[1,1]],[p3[2,0]-loc[2,0],p3[2,1]-loc[2,1]],[p3[3,0]-loc[3,0],p3[3,1]-loc[3,1]],[p3[4,0]-loc[4,0],p1[4,1]-loc[4,1]]])
-    # print('error 1 .....')
-    # print(loc-p1)
-    # print('error 2 .....')
-    # print(error2)
-    # print('error 3 .....')
-    # print(error3)        
-    # print('3 anchors.....')
-    # print(temp-loc)
-
-
-    return p1,sigma1,iteration
+    return p1,sigma1,iteration,dis

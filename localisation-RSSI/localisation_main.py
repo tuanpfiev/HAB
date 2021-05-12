@@ -175,10 +175,10 @@ if __name__ == "__main__":
     RSSIThread.start()
     
 
-    leader = 5 #any anchor                      
-    sigma_range_measurement_val = 200     # this depends on the real data
+    leader = 4 #any anchor                      
+    sigma_range_measurement_val = 50     # this depends on the real data
 
-    rateHz = 0.05                       # rate to run the localisation algorithm
+    rateHz = 0.02                       # rate to run the localisation algorithm
     rate = 1/rateHz                     
 
     try:
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
         # Main loop
         start_time = time.time()
-        location,_,iteration = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,rssiAll,gps_tmp[sysID-1],gps_tmp)
+        location,_,iteration,distanceMatrix = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,rssiAll,gps_tmp[sysID-1],gps_tmp)
         execution_time = time.time()-start_time
         
         pos_error = np.zeros([GlobalVals.N_BALLOON,2])

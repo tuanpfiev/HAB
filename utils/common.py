@@ -108,7 +108,10 @@ def distance2D(args):
     else:
         if len(args)==4:
             distance_rssi = args[3]
-            distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
+            if distance_rssi == 0:
+                return distance
+            else:
+                distance = distance_rssi/np.linalg.norm(pos1_enu-pos2_enu) * distance
     
     return distance
 
