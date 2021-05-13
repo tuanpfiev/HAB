@@ -174,6 +174,7 @@ def main():
                     print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
                     print(RSSI_Data.SystemID)
                     print(RSSI_Data.TargetPayloadID)
+                    print(GlobalVals.RSSI_ALLOCATION)
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][RSSI_Data.TargetPayloadID-1] = True

@@ -250,30 +250,32 @@ def pairNumberStart_callback(host,port):
             print("There was an error starting the Lora Allocation receiver socket. This thread will now stop.")
             break
         
-
         if len(data_bytes) == 0:
             continue
         
         data_str = data_bytes.decode('utf-8')
         string_list = extract_str_btw_curly_brackets(data_str)
-
+        # print("stringList: ",string_list)
         if len(string_list) > 0:
             loraAllocation_list = []
-            for string in loraAllocation_list:
+            for string in string_list:
                 received, node_i = stringToLoraAllocation(string)
                 
                 if received:
                     loraAllocation_list.append(node_i)
+                # print("NODE: ",node_i)
             
             idx = 0
             with GlobalVals.LORA_ALLOCATION_UPDATE_MUTEX:
                 while idx < len(loraAllocation_list):
                     loraAllocation_update(loraAllocation_list[idx])
                     idx += 1
+        # print("LOOPING")
     s.close()
 
-def loraAllocation_update(new_data,balloon_id):
+def loraAllocation_update(new_data):
     GlobalVals.LORA_ALLOCATION = new_data
+    # print("=====:",GlobalVals.LORA_ALLOCATION)
 
 
 def main(StartState):
@@ -299,7 +301,7 @@ def main(StartState):
         print("LoRa Radio: Exception: " + str(e.__class__))
         connected = False
     
-    time.sleep(1)
+    time.sleep(0.1)
 
     #intiallise Variables 
     waiting = StartState
@@ -313,8 +315,8 @@ def main(StartState):
 
     # Handshake loop
     while connected:
-        print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
-        print("getLoraPairNumber(): ",getLoraPairNumber())
+        # print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
+        # print("getLoraPairNumber(): ",getLoraPairNumber())
         if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
             time.sleep(1)
             print("Skipping")
@@ -554,7 +556,7 @@ def Thread_RSSI_publish():
                             breakThread = True
                             break
         else:
-            time.sleep(0.1)
+            time.sleep(1)
 
     # if the thread is broken set the global flag 
     if breakThread:
@@ -583,7 +585,7 @@ if __name__ == '__main__':
     starter = False
     numArgs = len(sys.argv)
     
-    starter = False
+    starter = True
     
     # use the third argument as the com port 
 
@@ -655,6 +657,7 @@ if __name__ == '__main__':
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_THREAD = True
         GPSThread.join()
+
     if PairAllocationThread.is_alive():
         with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
             GlobalVals.BREAK_LORA_ALLOCATION_THREAD = True
