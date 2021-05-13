@@ -223,7 +223,7 @@ def main():
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
                         if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>2:
                             GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
-                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_Data)
+                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_AllocationData.Pair)
 
                     # set the flags for the buffer 
                     with GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX:
