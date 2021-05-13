@@ -160,7 +160,7 @@ def main():
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
-                    print("+++++++++++++++++++++++++++++")
+                    print("++++++++++++++  ooo  +++++++++++++++")
 
                     # get the RSSI data
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
@@ -169,7 +169,7 @@ def main():
                         print ("Radio Network Main: RSSI data error " + str(error) + ".\n")
                         continue
                     
-                    print("+++++++++++++++++++++++++++++")
+                    print("++++++++++++  uuu  +++++++++++++++++")
 
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
@@ -208,7 +208,7 @@ def main():
                     continue
 
                 if recievedPacket.MessageID == 8:
-                    print("xxxxxxxxxxxxxxxx")
+                    print("xxxxxxxx     xxxxxxxx")
 
                     # get the RSSI data
                     RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
@@ -217,7 +217,7 @@ def main():
                         print ("Radio Network Main: RSSI Allocation data error " + str(error) + ".\n")
                         continue
                     
-                    print("xxxxxxxxxxxxxxxx")
+                    print("xxxxxxxx   --    xxxxxxxx")
                     # set the system id for the GPS data
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
                     
@@ -225,7 +225,7 @@ def main():
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
-                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>20:
+                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>2:
                             GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_Data)
 
