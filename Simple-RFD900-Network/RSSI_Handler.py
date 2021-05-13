@@ -78,6 +78,7 @@ def RSSI_LoggerSocket(host,port,index):
         string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
+            print("len string: ", len(string_list))
             rssi_list = []
             for string in string_list:
                 received, rssi_i = stringToRSSI(string)
@@ -85,35 +86,36 @@ def RSSI_LoggerSocket(host,port,index):
                     rssi_list.append(rssi_i)
 
             idx = 0
+            # print("check lenstring 1")
             with GlobalVals.RSSI_UPDATE_MUTEX[index]:
                 while idx < len(rssi_list):
                     rssi_update(rssi_list[idx])
                     idx += 1
-            
+                
             # with GlobalVals.RSSI_UPDATE_MUTEX[index]:
                 rssi_i = copy.deepcopy(GlobalVals.RSSI_ALL)
                 # print(rssi_i)
-        
+            # print("check lenstring 2")
             RSSI_Data = CustMes.MESSAGE_RSSI()
             RSSI_Data.FilteredRSSI = rssi_i.rssi_filtered
             RSSI_Data.Distance = rssi_i.distance
             RSSI_Data.Epoch = rssi_i.epoch
             RSSI_Data.SystemID = GlobalVals.SYSTEM_ID
             RSSI_Data.TargetPayloadID = int(findTargetPayloadID(index))
-
+            # print("check lenstring 3")
             # add data to the gps buffer 
             with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
                 GlobalVals.RSSI_DATA_BUFFER.append(RSSI_Data)
-
+            # print("check lenstring 4")
             # # set the flag for the data 
             with GlobalVals.RECIEVED_RSSI_LOCAL_DATA_MUTEX: # 2 nodes?
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
-
+            # print("check lenstring 5")
             with GlobalVals.RSSI_ALLOCATION_MUTEX:
                 print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
                 print(GlobalVals.RSSI_ALLOCATION)
                 GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID-1][RSSI_Data.TargetPayloadID-1] = True
-
+            # print("check lenstring 6")
             # send GPS data to other balloons 
             RSSI_Packet = CustMes.MESSAGE_FRAME()
             RSSI_Packet.SystemID = GlobalVals.SYSTEM_ID
@@ -121,6 +123,7 @@ def RSSI_LoggerSocket(host,port,index):
             RSSI_Packet.TargetID = 0
             RSSI_Packet.Payload = RSSI_Data.data_to_bytes()
             NetworkManager.sendPacket(RSSI_Packet)
+            # print("check lenstring 5")
             # print(RSSI_Data)
             # print("***************************")
 
@@ -292,6 +295,8 @@ def RSSI_AllocationDistributor():
             if GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD:
                 break
         with GlobalVals.RSSI_ALLOCATION_MUTEX:
+            # print("RSSI ALLOCATION DISTRIBUTOR 3")
+
             if GlobalVals.SYSTEM_ID == 1:
                 nextPair = GlobalVals.NEXT_PAIR
             else:
@@ -314,17 +319,17 @@ def RSSI_AllocationDistributor():
                 breakThread = True
                 time.sleep(2)
                 break
+        time.sleep(0.5)
         
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 
 
 def getPairAllocation():
-    with GlobalVals.RSSI_ALLOCATION_MUTEX:
-        nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
-        if nextPairStatus:
-            if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
-                GlobalVals.NEXT_PAIR = 1
-            else:
-                GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
-            resetRSSI_Allocation()
+    nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
+    if nextPairStatus:
+        if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
+            GlobalVals.NEXT_PAIR = 1
+        else:
+            GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
+        resetRSSI_Allocation()

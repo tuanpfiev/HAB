@@ -180,10 +180,15 @@ def main():
 
                     if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
                         continue
-
+                    # print("check 1")
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
+                            # print("check 22")
+                            # print(GlobalVals.RSSI_ALLOCATION)
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
+                            # print("check 32")
+                            print(GlobalVals.RSSI_ALLOCATION)
+
                             RSSI_Handler.getPairAllocation()
 
                         RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
