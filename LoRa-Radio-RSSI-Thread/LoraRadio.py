@@ -614,7 +614,7 @@ if __name__ == '__main__':
         fileObj.write(logString)
         fileObj.close()
     except Exception as e:
-        print("Exception: " + str(e.__class__))``
+        print("Exception: " + str(e.__class__))
         print("Error using error log file, ending error thread")
 
     print("Port GPS: ",GlobalVals.PORT_GPS[findIndexPort()])
