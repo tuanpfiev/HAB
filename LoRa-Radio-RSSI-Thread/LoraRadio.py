@@ -346,7 +346,7 @@ def main(StartState):
                 print("LoRa Radio: Exception: " + str(e.__class__))
                 connected = False
                 break
-
+            time.sleep(0.1)
             # read line from serial port (the response has line return at the end) 
             try:
                 dataOut = serial_port.readline()
@@ -358,7 +358,7 @@ def main(StartState):
             
             # print response 
             print(dataOut)
-
+            silent = False
             # check if the dataout varibel is big enough to check 
             if (len(dataOut) < 2):
                 print ("LoRa Radio: Recieved data is too small. Discarding current line.")
@@ -415,6 +415,7 @@ def main(StartState):
                         break
                 
                 elif silent:
+                    print("Silent")
                     silent = False
 
             handshake = False
