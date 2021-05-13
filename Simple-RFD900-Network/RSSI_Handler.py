@@ -110,7 +110,9 @@ def RSSI_LoggerSocket(host,port,index):
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
 
             with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID][RSSI_Data.TargetPayloadID] = True
+                print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
+                print(GlobalVals.RSSI_ALLOCATION)
+                GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID-1][RSSI_Data.TargetPayloadID-1] = True
 
             # send GPS data to other balloons 
             RSSI_Packet = CustMes.MESSAGE_FRAME()
@@ -234,7 +236,7 @@ def pairIndex(pairNum):
         i = 3
         j = 1
     
-    return i,j
+    return i-1,j-1
 
 def resetRSSI_Allocation(pairNum):
     i,j = pairIndex(pairNum)
