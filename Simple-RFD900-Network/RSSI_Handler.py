@@ -257,10 +257,10 @@ def checkRSSI_Allocation(pairNum):
 
 
 def RSSI_AllocationDistributor():
-
-    Distro_Socket = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
-    Distro_Connection = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
-    for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+    # print("RSSI ALLOCATION DISTRIBUTOR 1")
+    Distro_Socket = [None]*len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)
+    Distro_Connection = [None]*len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)
+    for i in range(len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)):
         # start socket 
 
         Distro_Socket[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
@@ -284,6 +284,7 @@ def RSSI_AllocationDistributor():
     
     nextPair = 1
     while True:    
+        # print("RSSI ALLOCATION DISTRIBUTOR 2")
 
         with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
             if GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD:
@@ -300,6 +301,7 @@ def RSSI_AllocationDistributor():
         messageStr = "{'pair': " + str(nextPair) +";}"
         messageStr_bytes = messageStr.encode('utf-8')
 
+        # print('Allocated pair: '+messageStr)
         # send the message 
         for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
             try:
@@ -308,8 +310,9 @@ def RSSI_AllocationDistributor():
                 print("Exception: " + str(e.__class__))
                 print("Error when sending to RSSI Allocation Distro_Connection[",i,"]. Now closing thread.")
                 breakThread = True
+                time.sleep(2)
                 break
-                
+        
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 

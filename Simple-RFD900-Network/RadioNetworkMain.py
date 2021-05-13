@@ -214,6 +214,8 @@ def main():
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
+                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>20:
+                            GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_Data)
 
                     # set the flags for the buffer 
@@ -288,6 +290,9 @@ if __name__ == '__main__':
     RSSI_DistroThread = Thread(target=RSSI_Handler.RSSI_Distributor,args = ())
     RSSI_DistroThread.start()
 
+    RSSI_AllocationThread = Thread(target=RSSI_Handler.RSSI_AllocationDistributor,args = ())
+    RSSI_AllocationThread.start()
+
     tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
     tempThread.start()
 
@@ -356,6 +361,9 @@ if __name__ == '__main__':
         with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
             GlobalVals.BREAK_RSSI_DISTRO_THREAD = True
 
+    if RSSI_AllocationThread.is_alive():
+        with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
     if tempThread.is_alive():
         with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
             GlobalVals.BREAK_TEMP_LOGGER_THREAD = True

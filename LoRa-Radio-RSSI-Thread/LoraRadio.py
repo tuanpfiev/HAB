@@ -217,22 +217,25 @@ def getLoraPairNumber():
     return -1
     
 def pairNumberStart_callback(host,port):
+    print("port: ", port)
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     while True:
         try:        
-            s.connect((GlobalVals.HOST,GlobalVals.RSSI_ALLOCATION_SOCKET))
+            s.connect((host,port))
             s.settimeout(GlobalVals.RSSI_TIMEOUT)
         except Exception as e:
-            if e.args[1] == 'Connection refused':
-                print('Retry connecting to lora operation allocation....')
-                time.sleep(1)
-                continue
-            else:
-                print("Exception: " + str(e.__class__))
-                print("There was an error starting the lora operation allocation socket. This thread will now stop.")
-                with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
-                    GlobalVals.BREAK_LORA_ALLOCATION_THREAD = True
-                return 
+            # if e.args[1] == 'Connection refused':
+            #     print('Retry connecting to lora operation allocation....')
+            #     time.sleep(1)
+            #     continue
+            # else:
+            
+            print("Exception: " + str(e.__class__))
+            print("There was an error starting the lora operation allocation socket. This thread will now stop.")
+            with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
+                GlobalVals.BREAK_LORA_ALLOCATION_THREAD = True
+            time.sleep(2)
+            return 
         break
 
     while True:
@@ -599,6 +602,12 @@ if __name__ == '__main__':
     if numArgs >=5:
         GlobalVals.SYSID = int(sys.argv[4])
 
+
+    # cd ~/HAB/LoRa-Radio-RSSI-Thread; python3 LoraRadio.py start /dev/ttyUSB0 ${neighborBalloon[0]} $1"
+    # GlobalVals.PORT = "/dev/ttyUSB0"
+    # GlobalVals.TARGET_BALLOON = 2
+    # GlobalVals.SYSID = 1
+
     # create log file string 
     try:
         os.makedirs("../datalog")
@@ -628,6 +637,9 @@ if __name__ == '__main__':
     GPSThread = Thread(target=gps_callback, args=(GlobalVals.HOST,GlobalVals.PORT_GPS[findIndexPort()]))
     GPSThread.start()
 
+    PairAllocationThread = Thread(target=pairNumberStart_callback, args=(GlobalVals.HOST,GlobalVals.RSSI_ALLOCATION_SOCKET[findIndexPort()]))
+    PairAllocationThread.start()
+
     # run the main function until something goes wrong 
     try:
         main(not starter)
@@ -643,5 +655,9 @@ if __name__ == '__main__':
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
             GlobalVals.BREAK_GPS_THREAD = True
         GPSThread.join()
+    if PairAllocationThread.is_alive():
+        with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
+            GlobalVals.BREAK_LORA_ALLOCATION_THREAD = True
+        PairAllocationThread.join()
 
 
