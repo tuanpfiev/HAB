@@ -310,12 +310,12 @@ def main(StartState):
 
     # Handshake loop
     while connected:
-
+        print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
+        print("getLoraPairNumber(): ",getLoraPairNumber())
         if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
-            time.sleep(0.1)
+            time.sleep(0.5)
             continue
-        else:
-            waiting = False
+        
 
         # DataReady = False
         with GlobalVals.NewRSSISocketData_Mutex:
@@ -416,7 +416,7 @@ def main(StartState):
         
         # if not waiting (Therefore sending the handshake)
         if not waiting: 
-            
+            # print("not waiting")
         # send handshake 
             try:
                 serial_port.write(GlobalVals.HANDSHAKE_BYTES)
@@ -550,7 +550,7 @@ def Thread_RSSI_publish():
                             breakThread = True
                             break
         else:
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     # if the thread is broken set the global flag 
     if breakThread:
@@ -614,7 +614,7 @@ if __name__ == '__main__':
         fileObj.write(logString)
         fileObj.close()
     except Exception as e:
-        print("Exception: " + str(e.__class__))``
+        print("Exception: " + str(e.__class__))
         print("Error using error log file, ending error thread")
 
     print("Port GPS: ",GlobalVals.PORT_GPS[findIndexPort()])
