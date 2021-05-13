@@ -582,6 +582,13 @@ class MESSAGE_RSSI:
         DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
         FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
         TargetPayloadIDTuple = struct.unpack('!d',payloadBytes[24:32])
+
+        print(".........")
+        print(EpochTuple)
+        print(DistanceTuple)
+        print(FilteredRSSITuple)
+        print(TargetPayloadIDTuple)
+
         # store converted values 
         self.Epoch = EpochTuple[0] 
         self.Distance = DistanceTuple[0] 
