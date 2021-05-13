@@ -305,20 +305,21 @@ def RSSI_AllocationDistributor():
                         RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         nextPair = RSSI_DataAllocation
 
-        messageStr = "{'pair': " + str(nextPair) +";}"
-        messageStr_bytes = messageStr.encode('utf-8')
+        if GlobalVals.SYSTEM_ID == 1:
+            messageStr = "{'pair': " + str(nextPair) +";}"
+            messageStr_bytes = messageStr.encode('utf-8')
 
-        RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
-        RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
+            RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
+            RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
 
 
-        RSSI_AllocationPacket = CustMes.MESSAGE_FRAME()
-        RSSI_AllocationPacket.SystemID = GlobalVals.SYSTEM_ID
-        RSSI_AllocationPacket.MessageID = 8
-        RSSI_AllocationPacket.TargetID = 0
-        RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
-        NetworkManager.sendPacket(RSSI_AllocationPacket)
-        # print("Send Pair Num to RFD900")
+            RSSI_AllocationPacket = CustMes.MESSAGE_FRAME()
+            RSSI_AllocationPacket.SystemID = GlobalVals.SYSTEM_ID
+            RSSI_AllocationPacket.MessageID = 8
+            RSSI_AllocationPacket.TargetID = 0
+            RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
+            NetworkManager.sendPacket(RSSI_AllocationPacket)
+            # print("Send Pair Num to RFD900")
 
         # print('Allocated pair: '+messageStr)
         # send the message 
