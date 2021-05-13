@@ -200,12 +200,12 @@ def getLoraPairNumber():
         if GlobalVals.TARGET_BALLOON == 2:
             return 1
         if GlobalVals.TARGET_BALLOON == 3:
-            return 2
+            return 3
     if GlobalVals.SYSID == 2:
         if GlobalVals.TARGET_BALLOON == 1:
             return 1
         if GlobalVals.TARGET_BALLOON == 3:
-            return 3
+            return 2
     if GlobalVals.SYSID == 3:
         if GlobalVals.TARGET_BALLOON == 1:
             return 3
@@ -313,7 +313,8 @@ def main(StartState):
         print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
         print("getLoraPairNumber(): ",getLoraPairNumber())
         if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
-            time.sleep(0.5)
+            time.sleep(1)
+            print("Skipping")
             continue
         
 
