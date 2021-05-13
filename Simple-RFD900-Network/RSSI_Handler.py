@@ -78,7 +78,7 @@ def RSSI_LoggerSocket(host,port,index):
         string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
-            print("len string: ", len(string_list))
+            # print("len string: ", len(string_list))
             rssi_list = []
             for string in string_list:
                 received, rssi_i = stringToRSSI(string)
@@ -307,6 +307,18 @@ def RSSI_AllocationDistributor():
 
         messageStr = "{'pair': " + str(nextPair) +";}"
         messageStr_bytes = messageStr.encode('utf-8')
+
+        RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
+        RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
+
+
+        RSSI_AllocationPacket = CustMes.MESSAGE_FRAME()
+        RSSI_AllocationPacket.SystemID = GlobalVals.SYSTEM_ID
+        RSSI_AllocationPacket.MessageID = 8
+        RSSI_AllocationPacket.TargetID = 0
+        RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
+        NetworkManager.sendPacket(RSSI_AllocationPacket)
+        # print("Send Pair Num to RFD900")
 
         # print('Allocated pair: '+messageStr)
         # send the message 

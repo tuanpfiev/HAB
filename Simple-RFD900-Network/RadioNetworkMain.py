@@ -160,7 +160,7 @@ def main():
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
-                    print("++++++++++++++  ooo  +++++++++++++++")
+                    # print("++++++++++++++  ooo  +++++++++++++++")
 
                     # get the RSSI data
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
@@ -169,7 +169,7 @@ def main():
                         print ("Radio Network Main: RSSI data error " + str(error) + ".\n")
                         continue
                     
-                    print("++++++++++++  uuu  +++++++++++++++++")
+                    # print("++++++++++++  uuu  +++++++++++++++++")
 
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
@@ -191,16 +191,7 @@ def main():
 
                             RSSI_Handler.getPairAllocation()
 
-                        RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
-                        RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
-        
-
-                        RSSI_AllocationPacket = CustMes.MESSAGE_FRAME()
-                        RSSI_AllocationPacket.SystemID = GlobalVals.SYSTEM_ID
-                        RSSI_AllocationPacket.MessageID = 8
-                        RSSI_AllocationPacket.TargetID = 0
-                        RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
-                        NetworkManager.sendPacket(RSSI_AllocationPacket)
+                       
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
@@ -226,7 +217,7 @@ def main():
                     # set the system id for the GPS data
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
                     
-                    print("RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(RSSI_AllocationData.Pair))
+                    print("!!!!!!!!!!!!!!! RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(RSSI_AllocationData.Pair))
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
