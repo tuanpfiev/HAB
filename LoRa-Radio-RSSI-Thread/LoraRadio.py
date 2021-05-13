@@ -208,9 +208,9 @@ def getLoraPairNumber():
             return 3
     if GlobalVals.SYSID == 3:
         if GlobalVals.TARGET_BALLOON == 1:
-            return 2
-        if GlobalVals.TARGET_BALLOON == 2:
             return 3
+        if GlobalVals.TARGET_BALLOON == 2:
+            return 2
     
     print("SOMETHING IS WRONG IN getLoraPairNumber()!!!!!!!!!!!!")
     
