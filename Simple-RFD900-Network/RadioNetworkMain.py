@@ -183,7 +183,7 @@ def main():
 
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                            GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][RSSI_Data.TargetPayloadID-1] = True
+                            GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             RSSI_Handler.getPairAllocation()
 
                         RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
