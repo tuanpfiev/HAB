@@ -163,14 +163,29 @@ def main():
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
                     error = RSSI_Data.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: IMU data error " + str(error) + ".\n")
+                        print ("Radio Network Main: RSSI data error " + str(error) + ".\n")
                         continue
-                    
-                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
                     
 
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
+                    
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
+                    if GlobalVals.SYSTEM_ID == 1:
+                        with GlobalVals.RSSI_ALLOCATION_MUTEX:
+                            GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID][RSSI_Data.TargetPayloadID] = True
+                            RSSI_Handler.getPairAllocation()
+
+                        RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
+                        RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
+        
+
+                        RSSI_AllocationPacket = CustMes.MESSAGE_FRAME()
+                        RSSI_AllocationPacket.SystemID = GlobalVals.SYSTEM_ID
+                        RSSI_AllocationPacket.MessageID = 8
+                        RSSI_AllocationPacket.TargetID = 0
+                        RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
+                        NetworkManager.sendPacket(RSSI_AllocationPacket)
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
@@ -179,6 +194,31 @@ def main():
                     # set the flags for the buffer 
                     with GlobalVals.RECIEVED_RSSI_RADIO_DATA_MUTEX:
                         GlobalVals.RECIEVED_RSSI_RADIO_DATA = True
+                
+                    continue
+
+                if recievedPacket.MessageID == 8:
+                    
+                    # get the RSSI data
+                    RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
+                    error = RSSI_AllocationData.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: RSSI Allocation data error " + str(error) + ".\n")
+                        continue
+                    
+
+                    # set the system id for the GPS data
+                    RSSI_AllocationData.SystemID = recievedPacket.SystemID
+                    
+                    print("RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(RSSI_AllocationData.Pair))
+
+                    # put data into the buffer
+                    with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
+                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_Data)
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA = True
                 
                     continue
 

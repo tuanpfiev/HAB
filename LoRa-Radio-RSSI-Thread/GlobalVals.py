@@ -13,7 +13,7 @@ TIMEOUT = 1                                   # Serial port time out
 PORT = "COM17"                                  # Windows COM por
 BAUDRATE = 9600                                # the baud for the serial port connection 
 HANDSHAKE_BYTES = bytes([0xFF, 0x00, 0xFF])
-WAITING_TIMEOUT = 1
+WAITING_TIMEOUT = 5
 RSSI_COMMAND = bytes(b'\xaf\xaf\x00\x00\xaf\x80\x06\x02\x00\x00\x95\x0d\x0a')
 RSSI_LOG_FILE = "RSSILog.txt"
 
@@ -41,6 +41,9 @@ BREAK_GPS_THREAD_MUTEX = Lock()
 GPS_UPDATE_MUTEX = Lock()
 
 PORT_GPS = GlobalVariables.LORA_GPS_RECEIVE_SOCKET
+
+RSSI_ALLOCATION_SOCKET = GlobalVariables.RSSI_ALLOCATION_DISTRO_SOCKET
+
 # PORT_RSSI = np.array([  [5100, 5110],   # EKF
 #                         [5101,5111],    # LC1
 #                         [5102,5112],    # LC2
@@ -65,3 +68,4 @@ X = np.zeros([1,2])
 RSSI_PARAMS = np.ones([1,2])
 RSSI_CALIBRATION_FINISHED = False
 SYSID = 1
+LORA_ALLOCATION = 1

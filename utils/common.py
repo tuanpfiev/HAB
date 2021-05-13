@@ -232,6 +232,26 @@ def stringToTemperature(raw_data):
 
         return False, TEMPERATURE()        
 
+
+def stringToLoraAllocation(raw_data):
+
+    try:
+        raw_data.index("'pair':")
+
+    except ValueError:
+        
+        return False, 0
+
+
+    try:
+        temp_i = int(extract_string_data("'pair': ",";",raw_data))
+        
+        return True, temp_i
+
+    except ValueError:
+
+        return False, 0    
+
 def extract_str_btw_curly_brackets(data_str):
     string_list = []
     iterator = data_str.find('{')

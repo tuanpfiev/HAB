@@ -43,7 +43,9 @@ RSSI_LOGGER_SOCKET = GlobalVariables.RSSI_LOGGER_SOCKET
 RSSI_LOGGER_SOCKET_TIMEOUT = 60
 
 RSSI_DISTRO_SOCKET = GlobalVariables.RSSI_DISTRO_SOCKET
+RSSI_ALLOCATION_DISTRO_SOCKET = GlobalVariables.RSSI_ALLOCATION_DISTRO_SOCKET
 N_RSSI_NODE_PUBLISH = len(RSSI_DISTRO_SOCKET)
+NEXT_PAIR = 1
 
 
 # other settings 
@@ -81,6 +83,9 @@ TEMPERATURE_ALL = np.array([TEMPERATURE()])
 TEMP_DATA_BUFFER = []
 RSSI_DATA_BUFFER = []
 
+RSSI_ALLOCATION = np.array([np.array([False]*N_REAL_BALLOON)]*N_REAL_BALLOON)
+RSSI_DATA_ALLOCATION_BUFFER = []
+
 
 
 # Global Lists / Buffers Mutexes 
@@ -97,6 +102,8 @@ AWS_GPS_DATA_BUFFER_MUTEX = Lock()
 TEMP_DATA_BUFFER_MUTEX = Lock()
 RSSI_DATA_BUFFER_MUTEX = Lock()
 RECIEVED_RSSI_LOCAL_DATA_MUTEX = Lock()
+RSSI_DATA_ALLOCATION_BUFFER_MUTEX = Lock()
+RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX = Lock()
 
 # Global Flags 
 SEND_PACKETS = False                # This flag informs the network manager to send all packets in the out going buffer
@@ -127,6 +134,8 @@ BREAK_TEMP_LOGGER_THREAD = False
 RECIEVED_RSSI_RADIO_DATA = False
 RECIEVED_RSSI_LOCAL_DATA = False
 BREAK_RSSI_DISTRO_THREAD = False
+BREAK_RSSI_ALLOCATION_DISTRO_THREAD = False
+RECIEVED_RSSI_ALLOCATION_RADIO_DATA = False
 # Global Flags Mutexes  
 SEND_PACKETS_MUTEX = Lock()
 RECIEVED_PACKETS_MUTEX = Lock()
@@ -156,9 +165,14 @@ RECIEVED_EKF_GPS_LOCAL_DATA_MUTEX = Lock()
 
 BREAK_TEMP_LOGGER_THREAD_MUTEX = Lock()
 RECIEVED_RSSI_RADIO_DATA_MUTEX = Lock()
+
+RSSI_ALLOCATION_MUTEX = Lock()
+BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX = Lock()
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages
 PACKET_COUNT = 0
+
+
 
 
 #=====================================================

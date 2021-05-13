@@ -43,3 +43,9 @@ class TEMPERATURE:
         self.epoch = epoch if epoch is not None else 0.0
 
 
+# class LORA_ALLOCATION:
+#     def __init__(self, pair1 = None, pair2 = None, pair3 = None):
+#         self.pair1 = sysID if sysID is not None else 0
+#         self.pair2 = temperature if temperature is not None else 0.0
+#         self.pair3 = epoch if epoch is not None else 0.0
+

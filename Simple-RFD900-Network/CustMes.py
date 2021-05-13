@@ -588,3 +588,41 @@ class MESSAGE_RSSI:
         self.FilteredRSSI = FilteredRSSITuple[0]
         self.TargetPayloadID = TargetPayloadIDTuple[0]
         return 0
+
+
+
+@dataclass
+class MESSAGE_RSSI_ALLOCATION:
+    Pair: int = 0   
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setPair(self,pair):
+        self.Pair = pair
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Pair_ints = struct.pack('!d',self.Pair)
+                
+        # append the values to the byte array for the payload 
+        for x in Pair_ints:
+            payloadBytes.append(x)
+        
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 8:
+            return -1
+        
+        # convert payload values back to double
+        PairTuple = struct.unpack('!d',payloadBytes[0:8])
+        # store converted values 
+        self.Pair = PairTuple[0] 
+        return 0

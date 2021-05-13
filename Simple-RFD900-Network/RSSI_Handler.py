@@ -109,6 +109,9 @@ def RSSI_LoggerSocket(host,port,index):
             with GlobalVals.RECIEVED_RSSI_LOCAL_DATA_MUTEX: # 2 nodes?
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
 
+            with GlobalVals.RSSI_ALLOCATION_MUTEX:
+                GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID][RSSI_Data.TargetPayloadID] = True
+
             # send GPS data to other balloons 
             RSSI_Packet = CustMes.MESSAGE_FRAME()
             RSSI_Packet.SystemID = GlobalVals.SYSTEM_ID
@@ -198,9 +201,6 @@ def RSSI_Distributor():
                 epoch = RSSI_Data.Epoch
                 systemID = RSSI_Data.SystemID
 
-                # create message string 
-                                    # socketPayload = "{RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
-
                 messageStr = "{sysID: " + str(systemID) + "; time: " + str(epoch) + "; RSSI_filter: " + str(filteredRSSI) + "; distance: " + str(distance) + "; targetPayloadID: " + str(targetPayloadID) + ";}"
                 messageStr_bytes = messageStr.encode('utf-8')
 
@@ -218,3 +218,108 @@ def RSSI_Distributor():
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 
+
+def pairIndex(pairNum):
+    i = 0
+    j = 0
+    if pairNum == 1:
+        i = 1
+        j = 2
+    
+    if pairNum == 2:
+        i = 2
+        j = 3
+    
+    if pairNum == 3:
+        i = 3
+        j = 1
+    
+    return i,j
+
+def resetRSSI_Allocation(pairNum):
+    i,j = pairIndex(pairNum)
+
+    GlobalVals.RSSI_ALLOCATION[i][j] = False
+    GlobalVals.RSSI_ALLOCATION[j][i] = False
+
+def resetRSSI_Allocation():
+    for i in range(len(GlobalVals.RSSI_ALLOCATION)):
+        for j in range(len(GlobalVals.RSSI_ALLOCATION[0])):
+            GlobalVals.RSSI_ALLOCATION[i][j] = False
+
+def checkRSSI_Allocation(pairNum):
+    i,j = pairIndex(pairNum)
+
+    if GlobalVals.RSSI_ALLOCATION[i][j] and GlobalVals.RSSI_ALLOCATION[j][i]:
+        return True
+    else:
+        return False
+
+
+def RSSI_AllocationDistributor():
+
+    Distro_Socket = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
+    Distro_Connection = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
+    for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+        # start socket 
+
+        Distro_Socket[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+        Distro_Socket[i].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
+        Distro_Socket[i].bind((GlobalVals.HOST, GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET[i]))
+        Distro_Socket[i].settimeout(GlobalVals.RSSI_LOGGER_SOCKET_TIMEOUT)
+        
+
+        # Wait for connection on the distro socket 
+        try:
+            Distro_Socket[i].listen(1) 
+            Distro_Connection[i], addr = Distro_Socket[i].accept()  
+            Distro_Connection[i].settimeout(GlobalVals.RSSI_LOGGER_SOCKET_TIMEOUT) 
+            print("RSSI Allocation Logger[",i,"] Connected to ", addr)                                            
+        except Exception as e:
+            print("Exception: " + str(e.__class__))
+            print("Error in the RSSI_Allocation Distributor[",i,"] logger socket. Now closing thread.")
+            with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
+                GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
+            return 0
+    
+    nextPair = 1
+    while True:    
+
+        with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
+            if GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD:
+                break
+        with GlobalVals.RSSI_ALLOCATION_MUTEX:
+            if GlobalVals.SYSTEM_ID == 1:
+                nextPair = GlobalVals.NEXT_PAIR
+            else:
+                with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
+                    if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER) > 0:
+                        RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
+                        nextPair = RSSI_DataAllocation.Pair
+
+        messageStr = "{'pair': " + str(nextPair) +";}"
+        messageStr_bytes = messageStr.encode('utf-8')
+
+        # send the message 
+        for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+            try:
+                Distro_Connection[i].sendall(messageStr_bytes)
+            except Exception as e:
+                print("Exception: " + str(e.__class__))
+                print("Error when sending to RSSI Allocation Distro_Connection[",i,"]. Now closing thread.")
+                breakThread = True
+                break
+                
+    for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+        Distro_Connection[i].close()
+
+
+def getPairAllocation():
+    with GlobalVals.RSSI_ALLOCATION_MUTEX:
+        nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
+        if nextPairStatus:
+            if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
+                GlobalVals.NEXT_PAIR = 1
+            else:
+                GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
+            resetRSSI_Allocation()
