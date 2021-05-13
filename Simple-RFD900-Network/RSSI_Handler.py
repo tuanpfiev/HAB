@@ -303,7 +303,7 @@ def RSSI_AllocationDistributor():
                 with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
                     if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER) > 0:
                         RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
-                        nextPair = RSSI_DataAllocation.Pair
+                        nextPair = RSSI_DataAllocation
 
         messageStr = "{'pair': " + str(nextPair) +";}"
         messageStr_bytes = messageStr.encode('utf-8')
