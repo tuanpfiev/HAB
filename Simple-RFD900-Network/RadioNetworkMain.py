@@ -88,6 +88,8 @@ def main():
                         print ("Radio Network Main: GPS data error " + str(error) + ".\n")
                         continue
                     
+                    
+
                     print("GPS Data from " + str(recievedPacket.SystemID) + ":" +"Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,1)) + ", Time:" + str(round(GPSdata.GPSTime,1)))
                     # print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
@@ -175,6 +177,10 @@ def main():
                     print(RSSI_Data.SystemID)
                     print(RSSI_Data.TargetPayloadID)
                     print(GlobalVals.RSSI_ALLOCATION)
+
+                    if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
+                        continue
+
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][RSSI_Data.TargetPayloadID-1] = True

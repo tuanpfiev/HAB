@@ -301,7 +301,7 @@ def main(StartState):
         print("LoRa Radio: Exception: " + str(e.__class__))
         connected = False
     
-    time.sleep(0.1)
+    time.sleep(1)
 
     #intiallise Variables 
     waiting = StartState
