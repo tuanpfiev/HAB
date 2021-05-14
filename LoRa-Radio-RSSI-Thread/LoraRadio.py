@@ -556,7 +556,7 @@ def Thread_RSSI_publish():
                     for i in range(len(GlobalVals.PORT_RSSI)):
                         try:
                             Logger_Connection[i].sendall(socketPayload)
-                            time.sleep(65)
+
                         except Exception as e:
                             print("Exception: " + str(e.__class__))
                             print("Error in the logger socket(sending [",i,"]). Now closing thread.")
