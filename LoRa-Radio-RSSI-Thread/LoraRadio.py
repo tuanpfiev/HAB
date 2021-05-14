@@ -315,8 +315,8 @@ def main(StartState):
 
     # Handshake loop
     while connected:
-        # print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
-        # print("getLoraPairNumber(): ",getLoraPairNumber())
+        print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
+        print("getLoraPairNumber(): ",getLoraPairNumber())
         if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
             time.sleep(1)
             print("Skipping")
