@@ -177,6 +177,7 @@ def main():
                     # print(RSSI_Data.SystemID)
                     # print(RSSI_Data.TargetPayloadID)
                     # print(GlobalVals.RSSI_ALLOCATION)
+                    RSSI_Data.SystemID = recievedPacket.SystemID
 
                     # Check if the message was sent correctly via the RFD900
                     if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
@@ -184,8 +185,8 @@ def main():
                     # print("check 1")
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                            print("UPDATE RSSI ALLOCATION FROM RADIO !!!!")
-                            print(GlobalVals.RSSI_ALLOCATION)
+                            print("UPDATE RSSI ALLOCATION FROM RADIO [",RSSI_Data.SystemID,"] !!!!")
+                            # print(GlobalVals.RSSI_ALLOCATION)
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             # print("check 32")
                             print(GlobalVals.RSSI_ALLOCATION)

@@ -43,11 +43,19 @@ def TemperatureLoggerSocket():
                 break
 
         # read the socket 
-        try:
-            data_bytes = socket_logger.recv(bufferRead)
-        except:
-            print("Connection error.")
-            break
+        while True:
+            try:
+                data_bytes = socket_logger.recv(bufferRead)
+                break
+            except Exception as e:
+                if e.args[0] == 'timed out':
+                    print("temperature Socket receive timed out. Retrying...")
+                    time.sleep(0.1)
+                    continue
+                else:
+                    print("Temperature Socket Connection error.")
+                    break
+                break
         
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:

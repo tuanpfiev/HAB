@@ -77,12 +77,20 @@ def RSSI_LoggerSocket(host,port,index):
                 break
 
         # read the socket 
-        try:
-            data_bytes = socket_logger.recv(bufferRead)
-        except:
-            print("RSSI_LoggerSocket Connection error.")
-            break
-        
+        while True:
+            try:
+                data_bytes = socket_logger.recv(bufferRead)
+                # print("data received[",index,"]")
+                break
+            except Exception as e:
+                if e.args[0] == 'timed out':
+                    print("RSSI_LoggerSocket Receive Time Out for Index [",index,"]. Retrying ...")
+                    time.sleep(0.1)
+                    continue
+                else:
+                    print("RSSI_LoggerSocket Connection error.")
+                    break
+                break
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:
             continue
@@ -146,7 +154,9 @@ def RSSI_LoggerSocket(host,port,index):
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
 
-    print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    while True:
+        print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        time.sleep(0.5)
     socket_logger.close()
     return 
 
@@ -236,7 +246,9 @@ def RSSI_Distributor():
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")
                         breakThread = True
                         break
-                
+    while True:
+        print("Close RSSI Distro to other nodes ")
+        time.sleep(1)
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 
@@ -353,7 +365,9 @@ def RSSI_AllocationDistributor():
             NetworkManager.sendPacket(RSSI_AllocationPacket)
 
         time.sleep(0.1)
-        
+    while True:
+        print("Closing RSSI Allocation Distro !!!!!!!!!")
+        time.sleep(0.5)
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 
