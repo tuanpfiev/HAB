@@ -177,8 +177,8 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
     rssi = RSSI_ToDistance(rssi,params)
     if rssi.distance >10e10:
         xx = rssi.distance
-    print("Calibrated RSSI sys ID: ",targetBalloon,", (GPS Distance, RSSI distance): (",round(distance,1),",",round(rssi.distance,1),")")
-    print("Distance Error: ", round(rssi.distance-distance,1), ", Params (n,A): ",np.array([[round(n,1),round(A,1)]]))
+    # print("Calibrated RSSI sys ID: ",targetBalloon,", (GPS Distance, RSSI distance): (",round(distance,1),",",round(rssi.distance,1),")")
+    # print("Distance Error: ", round(rssi.distance-distance,1), ", Params (n,A): ",np.array([[round(n,1),round(A,1)]]))
 
     return params, True, rssi
 
@@ -275,7 +275,7 @@ def pairNumberStart_callback(host,port):
                 while idx < len(loraAllocation_list):
                     loraAllocation_update(loraAllocation_list[idx])
                     idx += 1
-        # print("LOOPING")
+        # print("RECEIVING UPDATED RSSI ALLOCATION !!!")
     s.close()
 
 def loraAllocation_update(new_data):
@@ -321,7 +321,7 @@ def main(StartState):
     # Handshake loop
     while connected:
         print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
-        print("getLoraPairNumber(): ",getLoraPairNumber())
+        # print("getLoraPairNumber(): ",getLoraPairNumber())
         if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
             time.sleep(1)
             print("Skipping")
@@ -362,7 +362,7 @@ def main(StartState):
                 break
             
             # print response 
-            print(dataOut)
+            # print(dataOut)
             silent = False
             # check if the dataout varibel is big enough to check 
             if (len(dataOut) < 2):
@@ -552,7 +552,7 @@ def Thread_RSSI_publish():
                     socketPayload = "{sysID: "+ str(GlobalVals.SYSID) + "; targetPayloadID: "+ str(GlobalVals.TARGET_BALLOON) + "; RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
                 
                     socketPayload = socketPayload.encode("utf-8")
-                    print(socketPayload)
+                    print("PUBLISHING: ", socketPayload)
                     for i in range(len(GlobalVals.PORT_RSSI)):
                         try:
                             Logger_Connection[i].sendall(socketPayload)
@@ -562,7 +562,7 @@ def Thread_RSSI_publish():
                             breakThread = True
                             break
         else:
-            time.sleep(1)
+            time.sleep(0.01)
 
     # if the thread is broken set the global flag 
     if breakThread:

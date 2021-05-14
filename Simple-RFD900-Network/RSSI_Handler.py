@@ -80,7 +80,7 @@ def RSSI_LoggerSocket(host,port,index):
         try:
             data_bytes = socket_logger.recv(bufferRead)
         except:
-            print("Connection error.")
+            print("RSSI_LoggerSocket Connection error.")
             break
         
         # if there is nothing in the socket then it has timed out 
@@ -126,7 +126,7 @@ def RSSI_LoggerSocket(host,port,index):
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
             # print("check lenstring 5")
             with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                # print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
+                print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
                 # print(GlobalVals.RSSI_ALLOCATION)
                 GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID-1][RSSI_Data.TargetPayloadID-1] = True
             # print("check lenstring 6")
@@ -137,10 +137,11 @@ def RSSI_LoggerSocket(host,port,index):
             RSSI_Packet.TargetID = 0
             RSSI_Packet.Payload = RSSI_Data.data_to_bytes()
             NetworkManager.sendPacket(RSSI_Packet)
+            print("SENDING RSSI TO RFD900 !!!!!!!!!!!!!!!!!")
             # print("check lenstring 5")
-            print(index)
-            print(RSSI_Data)
-            print("***************************")
+            # print(index)
+            # print(RSSI_Data)
+            # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
