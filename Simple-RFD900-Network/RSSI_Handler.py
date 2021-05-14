@@ -23,7 +23,7 @@ def rssi_update(new_data):
     GlobalVals.RSSI_ALL = new_data
     
 def findTargetPayloadID(index):
-    for i in range(len(GlobalVals.REAL_BALLOON)):
+    for i in range(index,len(GlobalVals.REAL_BALLOON)):
         if GlobalVals.REAL_BALLOON[i] == GlobalVals.SYSTEM_ID:
             index = index + 1
         return GlobalVals.REAL_BALLOON[index]
