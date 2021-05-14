@@ -174,10 +174,11 @@ def main():
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
                     print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
-                    print(RSSI_Data.SystemID)
-                    print(RSSI_Data.TargetPayloadID)
-                    print(GlobalVals.RSSI_ALLOCATION)
+                    # print(RSSI_Data.SystemID)
+                    # print(RSSI_Data.TargetPayloadID)
+                    # print(GlobalVals.RSSI_ALLOCATION)
 
+                    # Check if the message was sent correctly via the RFD900
                     if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
                         continue
                     # print("check 1")
@@ -217,13 +218,13 @@ def main():
                     # set the system id for the GPS data
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
                     
-                    print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(RSSI_AllocationData.Pair))
+                    print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
                         if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>2:
                             GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
-                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(RSSI_AllocationData.Pair)
+                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(int(RSSI_AllocationData.Pair))
 
                     # set the flags for the buffer 
                     with GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX:

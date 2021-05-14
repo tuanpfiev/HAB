@@ -259,7 +259,10 @@ def pairNumberStart_callback(host,port):
         if len(string_list) > 0:
             loraAllocation_list = []
             for string in string_list:
+                # print('check2')
+                # print(string)
                 received, node_i = stringToLoraAllocation(string)
+                
                 
                 if received:
                     loraAllocation_list.append(node_i)
@@ -267,6 +270,8 @@ def pairNumberStart_callback(host,port):
             
             idx = 0
             with GlobalVals.LORA_ALLOCATION_UPDATE_MUTEX:
+                # print("check3")
+
                 while idx < len(loraAllocation_list):
                     loraAllocation_update(loraAllocation_list[idx])
                     idx += 1

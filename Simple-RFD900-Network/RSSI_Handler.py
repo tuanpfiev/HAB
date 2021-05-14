@@ -112,8 +112,8 @@ def RSSI_LoggerSocket(host,port,index):
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
             # print("check lenstring 5")
             with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
-                print(GlobalVals.RSSI_ALLOCATION)
+                # print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
+                # print(GlobalVals.RSSI_ALLOCATION)
                 GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID-1][RSSI_Data.TargetPayloadID-1] = True
             # print("check lenstring 6")
             # send GPS data to other balloons 
@@ -305,10 +305,25 @@ def RSSI_AllocationDistributor():
                         RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         nextPair = RSSI_DataAllocation
 
-        if GlobalVals.SYSTEM_ID == 1:
-            messageStr = "{'pair': " + str(nextPair) +";}"
-            messageStr_bytes = messageStr.encode('utf-8')
+        messageStr = "{'pair': " + str(nextPair) +";}"
+        messageStr_bytes = messageStr.encode('utf-8')
 
+            # print("Send Pair Num to RFD900")
+
+        # print('Allocated pair: '+messageStr)
+        # send the message 
+        for i in range(len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)):
+            try:
+                Distro_Connection[i].sendall(messageStr_bytes)
+            except Exception as e:
+                print("Exception: " + str(e.__class__))
+                print("Error when sending to RSSI Allocation Distro_Connection[",i,"]. Now closing thread.")
+                breakThread = True
+                time.sleep(2)
+                break
+
+        # Send via RFD900 network
+        if GlobalVals.SYSTEM_ID == 1:
             RSSI_Allocation = CustMes.MESSAGE_RSSI_ALLOCATION()
             RSSI_Allocation.Pair = GlobalVals.NEXT_PAIR
 
@@ -319,20 +334,8 @@ def RSSI_AllocationDistributor():
             RSSI_AllocationPacket.TargetID = 0
             RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
             NetworkManager.sendPacket(RSSI_AllocationPacket)
-            # print("Send Pair Num to RFD900")
 
-        # print('Allocated pair: '+messageStr)
-        # send the message 
-        for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
-            try:
-                Distro_Connection[i].sendall(messageStr_bytes)
-            except Exception as e:
-                print("Exception: " + str(e.__class__))
-                print("Error when sending to RSSI Allocation Distro_Connection[",i,"]. Now closing thread.")
-                breakThread = True
-                time.sleep(2)
-                break
-        time.sleep(0.5)
+        time.sleep(0.1)
         
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()

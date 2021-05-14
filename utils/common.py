@@ -138,7 +138,7 @@ def stringToIMU(raw_data):
 
     imu_i = IMU()
     try:
-        imu_i.sysID = int(extract_string_data("SYSTEM_ID: ",";",raw_data))
+        imu_i.sysID = int(float(extract_string_data("SYSTEM_ID: ",";",raw_data)))
         imu_i.epoch = float(extract_string_data("EPOCH: ",";",raw_data))
         imu_i.accel = convert_to_array(extract_string_data("ACCELERATION: ",";",raw_data))
         imu_i.mag_vector = convert_to_array(extract_string_data("MAGNETIC_VECTOR: ",";",raw_data))
@@ -167,7 +167,7 @@ def stringToGPS(raw_data):
     gps_i = GPS()
 
     try:
-        gps_i.sysID = int(extract_string_data("'system': ",";",raw_data))
+        gps_i.sysID = int(float(extract_string_data("'system': ",";",raw_data)))
         gps_i.alt = float(extract_string_data("'altitude': ",";",raw_data))
         gps_i.lat = float(extract_string_data("'latitude': ",";",raw_data))
         gps_i.lon = float(extract_string_data("'longitude': ",";",raw_data))
@@ -197,8 +197,8 @@ def stringToRSSI(raw_data):
         rssi_i.rssi_filtered = float(extract_string_data("RSSI_filter: ",";",raw_data))
         rssi_i.distance = float(extract_string_data("distance: ",";",raw_data))
         rssi_i.epoch = float(extract_string_data("time: ",";",raw_data))
-        rssi_i.targetPayloadID = int(extract_string_data("targetPayloadID: ",";",raw_data))
-        rssi_i.sysID = int(extract_string_data("sysID: ",";",raw_data))
+        rssi_i.targetPayloadID = int(float(extract_string_data("targetPayloadID: ",";",raw_data)))
+        rssi_i.sysID = int(float(extract_string_data("sysID: ",";",raw_data)))
 
         # rssi_i.distance = 0
         return True, rssi_i
@@ -222,7 +222,7 @@ def stringToTemperature(raw_data):
     temp_i = TEMPERATURE()
 
     try:
-        temp_i.sysID = int(extract_string_data("'system': ",";",raw_data))
+        temp_i.sysID = int(float(extract_string_data("'system': ",";",raw_data)))
         temp_i.temperature = float(extract_string_data("'temp': ",";",raw_data))
         temp_i.epoch = float(extract_string_data("'epoch': ",";",raw_data))
         
@@ -239,17 +239,15 @@ def stringToLoraAllocation(raw_data):
         raw_data.index("'pair':")
 
     except ValueError:
-        
         return False, 0
-
+    
+    temp_i = 0
 
     try:
-        temp_i = int(extract_string_data("'pair': ",";",raw_data))
-        
+        temp_i = int(float(extract_string_data("'pair': ",";",raw_data)))
         return True, temp_i
 
     except ValueError:
-
         return False, 0    
 
 def extract_str_btw_curly_brackets(data_str):
