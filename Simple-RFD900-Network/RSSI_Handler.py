@@ -23,10 +23,24 @@ def rssi_update(new_data):
     GlobalVals.RSSI_ALL = new_data
     
 def findTargetPayloadID(index):
-    for i in range(index,len(GlobalVals.REAL_BALLOON)):
-        if GlobalVals.REAL_BALLOON[i] == GlobalVals.SYSTEM_ID:
-            index = index + 1
-        return GlobalVals.REAL_BALLOON[index]
+    if GlobalVals.SYSTEM_ID == 1:
+        if index == 0:
+            return 2
+        if index == 1:
+            return 3
+    if GlobalVals.SYSTEM_ID == 2:
+        if index == 0:
+            return 1
+        if index == 1:
+            return 2
+    if GlobalVals.SYSTEM_ID == 3:
+        if index == 0:
+            return 1
+        if index == 1:
+            return 2
+    print("SOMETHING IS WRONG !!!!")
+    return -1
+    
 #=====================================================
 # Thread for local GPS logger socket connection 
 #=====================================================
