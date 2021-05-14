@@ -124,12 +124,14 @@ def RSSI_LoggerSocket(host,port,index):
             RSSI_Packet.Payload = RSSI_Data.data_to_bytes()
             NetworkManager.sendPacket(RSSI_Packet)
             # print("check lenstring 5")
+            print(index)
             print(RSSI_Data)
             print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
 
+    print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     socket_logger.close()
     return 
 
