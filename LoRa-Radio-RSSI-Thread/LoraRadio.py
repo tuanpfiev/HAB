@@ -552,7 +552,7 @@ def Thread_RSSI_publish():
                     socketPayload = "{sysID: "+ str(GlobalVals.SYSID) + "; targetPayloadID: "+ str(GlobalVals.TARGET_BALLOON) + "; RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
                 
                     socketPayload = socketPayload.encode("utf-8")
-                    # print(socketPayload)
+                    print(socketPayload)
                     for i in range(len(GlobalVals.PORT_RSSI)):
                         try:
                             Logger_Connection[i].sendall(socketPayload)
@@ -566,6 +566,8 @@ def Thread_RSSI_publish():
 
     # if the thread is broken set the global flag 
     if breakThread:
+        print("THREAD IS BROKEN!!!!!!")
+        time.sleep(100)
         with GlobalVals.EndRSSISocket_Mutex:
             GlobalVals.EndRSSISocket = True
     
