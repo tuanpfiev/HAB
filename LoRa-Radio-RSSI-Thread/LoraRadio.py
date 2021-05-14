@@ -378,6 +378,9 @@ def main(StartState):
                     
                     # get rssi
                     rssi = int(dataOut[8]) - 164
+                    if rssi > 0:
+                        continue
+                    
                     print("RSSI = " + str(rssi))
 
                     # Kalman filter for RSSI
