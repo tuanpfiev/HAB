@@ -160,7 +160,7 @@ def main():
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
-                    # print("++++++++++++++  ooo  +++++++++++++++")
+                    print("++++++++++++++  msg 7  +++++++++++++++")
 
                     # get the RSSI data
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
@@ -185,10 +185,10 @@ def main():
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
                             # print("check 22")
-                            # print(GlobalVals.RSSI_ALLOCATION)
+                            print(GlobalVals.RSSI_ALLOCATION)
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             # print("check 32")
-                            # print(GlobalVals.RSSI_ALLOCATION)
+                            print(GlobalVals.RSSI_ALLOCATION)
 
                             RSSI_Handler.getPairAllocation()
 
@@ -205,7 +205,7 @@ def main():
                     continue
 
                 if recievedPacket.MessageID == 8:
-                    # print("xxxxxxxx     xxxxxxxx")
+                    print("xxxxxxxx   msg 8  xxxxxxxx")
 
                     # get the RSSI data
                     RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
