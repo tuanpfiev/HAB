@@ -344,7 +344,7 @@ def RSSI_AllocationDistributor():
 def getPairAllocation():
     nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
     if nextPairStatus:
-        if GlobalVals.NEXT_PAIR == 2:
+        if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
             GlobalVals.NEXT_PAIR = 1
         else:
             GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
