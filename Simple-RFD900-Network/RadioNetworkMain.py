@@ -187,7 +187,7 @@ def main():
                             # print(GlobalVals.RSSI_ALLOCATION)
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             # print("check 32")
-                            print(GlobalVals.RSSI_ALLOCATION)
+                            # print(GlobalVals.RSSI_ALLOCATION)
 
                             RSSI_Handler.getPairAllocation()
 
