@@ -589,8 +589,9 @@ if __name__ == '__main__':
             
             # Sleep
             elapsed = time.time()-timeLoopStart
-            # print('Elapsed Time: ',elapsed)
-            if GlobalVals.LOOPTIME - elapsed >= 0:
+            
+            if GlobalVals.LOOPTIME - elapsed > 0:
+                print('Elapsed Time: ',elapsed, "remaining time: ",GlobalVals.LOOPTIME - elapsed  )
                 time.sleep(GlobalVals.LOOPTIME - elapsed)
 
 

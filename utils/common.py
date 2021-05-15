@@ -76,6 +76,7 @@ def checkAllGPS(gps_list):
 
 def checkRSSI(rssi):
     if rssi.epoch == 0.0 or rssi.distance == 0.0:
+    # if rssi.epoch == 0.0:
         return False
     else:
         return True
