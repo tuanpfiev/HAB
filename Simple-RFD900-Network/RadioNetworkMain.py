@@ -160,7 +160,7 @@ def main():
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
-                    print("++++++++++++++  msg 7  +++++++++++++++")
+                    # print("++++++++++++++  msg 7  +++++++++++++++")
 
                     # get the RSSI data
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
@@ -173,23 +173,24 @@ def main():
 
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
-                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
                     # print(RSSI_Data.SystemID)
                     # print(RSSI_Data.TargetPayloadID)
                     # print(GlobalVals.RSSI_ALLOCATION)
-                    RSSI_Data.SystemID = recievedPacket.SystemID
 
                     # Check if the message was sent correctly via the RFD900
                     if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
                         continue
+                    
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
+
                     # print("check 1")
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                            print("UPDATE RSSI ALLOCATION FROM RADIO [",RSSI_Data.SystemID,"] !!!!")
+                            # print("UPDATE RSSI ALLOCATION FROM RADIO [",RSSI_Data.SystemID,"] !!!!")
                             # print(GlobalVals.RSSI_ALLOCATION)
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             # print("check 32")
-                            print(GlobalVals.RSSI_ALLOCATION)
+                            # print(GlobalVals.RSSI_ALLOCATION)
 
                             RSSI_Handler.getPairAllocation()
 

@@ -134,7 +134,7 @@ def RSSI_LoggerSocket(host,port,index):
                 GlobalVals.RECIEVED_RSSI_LOCAL_DATA = True
             # print("check lenstring 5")
             with GlobalVals.RSSI_ALLOCATION_MUTEX:
-                print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
+                # print("UPDATE RSSI ALLOCATION MATRIX LOCALLYYYY")
                 # print(GlobalVals.RSSI_ALLOCATION)
                 GlobalVals.RSSI_ALLOCATION[GlobalVals.SYSTEM_ID-1][RSSI_Data.TargetPayloadID-1] = True
             # print("check lenstring 6")
@@ -147,7 +147,7 @@ def RSSI_LoggerSocket(host,port,index):
             NetworkManager.sendPacket(RSSI_Packet)
             print(RSSI_Data)
             print(RSSI_Packet.Payload)
-            print("SENDING RSSI TO RFD900 !!!!!!!!!!!!!!!!!")
+            # print("SENDING RSSI TO RFD900 !!!!!!!!!!!!!!!!!")
             # print("check lenstring 5")
             # print(index)
             # print(RSSI_Data)

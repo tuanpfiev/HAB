@@ -317,14 +317,14 @@ def main(StartState):
     silent = False
     curTime = time.time()
     waitLimit = curTime + GlobalVals.WAITING_TIMEOUT
-
+    currentPairNumber = getLoraPairNumber()
     # Handshake loop
     while connected:
-        print("GlobalVals.LORA_ALLOCATION: ",GlobalVals.LORA_ALLOCATION)
         # print("getLoraPairNumber(): ",getLoraPairNumber())
-        if GlobalVals.LORA_ALLOCATION != getLoraPairNumber():
-            time.sleep(1)
-            print("Skipping")
+        currentPairNumber 
+        if GlobalVals.LORA_ALLOCATION != currentPairNumber:
+            print("Current Pair Number: ",currentPairNumber,", Activated Pair: ",GlobalVals.LORA_ALLOCATION," ==> SKIPPING")
+            time.sleep(0.1)
             continue
         
 
@@ -362,7 +362,7 @@ def main(StartState):
                 break
             
             # print response 
-            # print(dataOut)
+            print(dataOut)
             silent = False
             # check if the dataout varibel is big enough to check 
             if (len(dataOut) < 2):
@@ -379,6 +379,7 @@ def main(StartState):
                     # get rssi
                     rssi = int(dataOut[8]) - 164
                     if rssi > 0:
+                        print("RSSI is positive. Something is wrong. Discard this value ...")
                         continue
                     
                     print("RSSI = " + str(rssi))
@@ -389,7 +390,7 @@ def main(StartState):
                         dt = 1
                     else:
                         dt = handshakeTime - prev_handshakeTime
-                        prev_handshakeTime = handshakeTime
+                        prev_handshakeTime = copy.deepcopy(handshakeTime)
 
                     x, P = Tracker.update(x, P, rssi, dt)
                     filtered_RSSI = x[0,0]
