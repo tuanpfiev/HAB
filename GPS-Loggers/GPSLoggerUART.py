@@ -330,13 +330,14 @@ def LoggerSocket():
 
         # if there is new data 
         if newData:
-            
+            print("NEW GPS DATA")
             SocketPayload = bytearray()
 
             # go through all the new GPS data and append to one byte array
             with GlobalVals.GPSValuesMutex:
+                print("check0")
                 while len(GlobalVals.GPSAltitude) > 0:
-
+                    print("check 1")
                     # get the GPS values 
                     Longitude = GlobalVals.GPSLongitude.pop(0)
                     Latitude = GlobalVals.GPSLatitude.pop(0)
@@ -370,7 +371,7 @@ def LoggerSocket():
             SocketPayload = bytes(SocketPayload)
             try:
                 Logger_Connection.sendall(SocketPayload)
-                # print(SocketPayload)
+                print("SENDING TO NETWORK MANAGER: ",SocketPayload)
             except Exception as e:
                 print("Exception: " + str(e.__class__))
                 print("Error in the logger socket. Now closing thread.")
@@ -506,6 +507,7 @@ def main():
                             with GlobalVals.NewGPSSocketData_Mutex:
                                 GlobalVals.NewGPSSocketData = True
                             print("here")
+                            updateGlobalGPS_Data(GPS_Data)
                             # Log the GPS data
                             logData(GPS_Data)
                             GPS_DataPrev = copy.deepcopy(GPS_Data) 
