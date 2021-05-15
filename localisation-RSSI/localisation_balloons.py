@@ -151,10 +151,12 @@ def get_distance(n,balloon,offset,Leader,var_measurement,rssiAll,gps,gpsAll):
             
             Y = np.array([balloon[jj].X,balloon[jj].Y])
             if i in GlobalVals.REAL_BALLOON_LIST and jj in GlobalVals.REAL_BALLOON_LIST:
-                distance_matrix[i,jj]= distance2D([gps, gpsAll[i-1],GlobalVals.GPS_REF,rssiAll[i][jj].distance])
+                test = distance2D([gps, gpsAll[jj],GlobalVals.GPS_REF,rssiAll[i][jj].distance])
+                distance_matrix[i,jj]= distance2D([gps, gpsAll[jj],GlobalVals.GPS_REF,rssiAll[i][jj].distance])
                 sigma[i,jj] = var_measurement
                 sigma[jj,i] = var_measurement
             else:
+                test = np.linalg.norm(X-Y) + random.uniform(-10,10)
                 distance_matrix[i,jj] = np.linalg.norm(X-Y) + random.uniform(-10,10)  # CHECK THIS!! SHOULD WE ADD NOISE TO MEASUREMENT?
                 sigma[i,jj] = 5
                 sigma[jj,i] = 5

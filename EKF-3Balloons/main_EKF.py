@@ -567,7 +567,8 @@ if __name__ == '__main__':
 
 
                 # just for plotting
-                anchor_distance = -np.ones([len(GlobalVals.ANCHOR),1])           
+                if anchor_distance.size == 0:
+                    anchor_distance = -np.ones([len(GlobalVals.ANCHOR),1])           
                 output.writerow([GlobalVals.SYSID, x_h[0][0],x_h[1][0],x_h[2][0],x_h[3][0],x_h[4][0],x_h[5][0],x_h[6][0],x_h[7][0],x_h[8][0],x_h[9][0],node.roll,node.pitch,node.yaw,\
                     gps_all[0].lat, gps_all[0].lon, gps_all[0].alt, gps_all[1].lat, gps_all[1].lon, gps_all[1].alt, gps_all[2].lat, gps_all[2].lon, gps_all[2].alt, gps_all[3].lat, gps_all[3].lon, gps_all[3].alt, gps_all[4].lat, gps_all[4].lon, gps_all[4].alt,
                         imu.gyros[0][0],imu.gyros[1][0],imu.gyros[2][0],accel[0][0],accel[1][0],accel[2][0],imu.raw_qt[0][0],imu.raw_qt[1][0],imu.raw_qt[2][0],imu.raw_qt[3][0],epoch,\
