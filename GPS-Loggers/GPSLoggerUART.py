@@ -371,7 +371,7 @@ def LoggerSocket():
             SocketPayload = bytes(SocketPayload)
             try:
                 Logger_Connection.sendall(SocketPayload)
-                print("SENDING TO NETWORK MANAGER: ",SocketPayload)
+                # print("SENDING TO NETWORK MANAGER: ",SocketPayload)
             except Exception as e:
                 print("Exception: " + str(e.__class__))
                 print("Error in the logger socket. Now closing thread.")
@@ -480,6 +480,7 @@ def main():
 
             if time.time() - GPS_DataPrev.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
                 test = time.time() - GPS_DataPrev.epoch
+                print("Test time: ", test)
                 statusUblox = False
 
             if not statusUblox:
@@ -501,7 +502,8 @@ def main():
                                     updateGlobalGPS_Data(GPS_Data)
                                 else:
                                     if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                        print('Using QuecTel GPS:')
+                                        print('dt: ',GPS_Data.epoch - GlobalVals.GPSTimestamp[-1])
+                                        print('Using QuecTel GPS2:')
                                         updateGlobalGPS_Data(GPS_Data)
                             
                             with GlobalVals.NewGPSSocketData_Mutex:
