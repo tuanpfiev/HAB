@@ -556,7 +556,7 @@ def Thread_RSSI_publish():
                     socketPayload = "{sysID: "+ str(GlobalVals.SYSID) + "; targetPayloadID: "+ str(GlobalVals.TARGET_BALLOON) + "; RSSI_filter: " + str(RSSI_filtered) + "; distance: " + str(distance) + "; time: " + str(RSSI_time) +";}"
                 
                     socketPayload = socketPayload.encode("utf-8")
-                    print("PUBLISHING: ", socketPayload)
+                    # print("PUBLISHING: ", socketPayload)
                     for i in range(len(GlobalVals.PORT_RSSI)):
                         try:
                             Logger_Connection[i].sendall(socketPayload)
