@@ -86,6 +86,8 @@ RSSI_DATA_BUFFER = []
 RSSI_ALLOCATION = np.array([np.array([False]*N_REAL_BALLOON)]*N_REAL_BALLOON)
 RSSI_DATA_ALLOCATION_BUFFER = []
 
+GPS_ARRAY_RADIO_CHECK = [[GPS()]*N_REAL_BALLOON]
+
 
 
 # Global Lists / Buffers Mutexes 

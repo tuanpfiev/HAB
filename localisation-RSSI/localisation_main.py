@@ -24,6 +24,7 @@ import copy
 
 global gps_all, imu_all, gps_ref, positionXY, distance
 
+
 def rssi_update(new_data):
     sysID = new_data.sysID
     targetID = new_data.targetPayloadID
@@ -61,13 +62,20 @@ def gps_callback(host,port):
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
             if GlobalVals.BREAK_GPS_THREAD:
                 break
-
-        try:
-            data_bytes = s.recv(GlobalVals.GPS_BUFFER)
-        except Exception as e:
-            print("Exception: " + str(e.__class__))
-            print("There was an error starting the GPS receiver socket. This thread will now stop.")
-            break
+        
+        while True:
+            try:
+                data_bytes = s.recv(GlobalVals.GPS_BUFFER)
+                break
+            except Exception as e:
+                if e.args[0] == 'timed out':
+                    print("gps_callback timed out. Retrying ...")
+                    time.sleep(0.1)
+                else:
+                    print("Exception: " + str(e.__class__))
+                    print("There was an error starting the GPS receiver socket. This thread will now stop.")
+                    break
+                break
 
         if len(data_bytes) == 0:
             continue
@@ -119,14 +127,20 @@ def distanceRSSI_callback(host,port):
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
             if GlobalVals.BREAK_RSSI_THREAD:
                 break
-
-        try:
-            data_bytes = s.recv(GlobalVals.RSSI_BUFFER)
-        except Exception as e:
-            print("Exception: " + str(e.__class__))
-            print("There was an error starting the RSSI receiver socket. This thread will now stop.")
-            break
-        
+        while True:
+            try:
+                data_bytes = s.recv(GlobalVals.RSSI_BUFFER)
+                break
+            except Exception as e:
+                if e.args[0] == 'timed out':
+                    print("distanceRSSI_callback timed out. Retrying ...")
+                    time.sleep(0.1)
+                else:
+                    print("Exception: " + str(e.__class__))
+                    print("There was an error starting the RSSI receiver socket. This thread will now stop.")
+                    break
+                break
+            
         # print("ID",balloon_id,"Received RSSI: ",data_bytes)
 
         if len(data_bytes) == 0:
@@ -204,10 +218,24 @@ if __name__ == "__main__":
 
     time.sleep(10)
 
-    print("Reading GPS signals ...")
+    print("Reading GPS & RSSI signals ...")
+    # while True:
+    #     if checkAllGPS(GlobalVals.GPS_ALL):
+    #         break
     while True:
-        if checkAllGPS(GlobalVals.GPS_ALL):
+        with GlobalVals.GPS_UPDATE_MUTEX:
+            GPS_Status = checkAllGPS(GlobalVals.GPS_ALL)
+        print("All GPS ready ?: ", GPS_Status)
+
+        with GlobalVals.RSSI_UPDATE_MUTEX:
+            RSSI_Status = checkAllRSSI(GlobalVals.RSSI_MATRIX)
+        print("RSSI ready ?:    ", checkAllRSSI(GlobalVals.RSSI_MATRIX))
+
+        if GPS_Status and RSSI_Status:
             break
+        time.sleep(2)
+
+    print("Calculation loop STARTED!!!")
     
     print("Algorithm started ....")
 

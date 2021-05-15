@@ -18,6 +18,8 @@ import sys, os
 
 sys.path.insert(1,'../utils')
 from utils import get_port
+from common import *
+from common_class import *
 
 #=====================================================
 # Main function  

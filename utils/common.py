@@ -81,10 +81,17 @@ def checkRSSI(rssi):
         return True
 
 def checkAllRSSI(rssi_list):
-    for i in range(len(rssi_list)):
-        if not checkRSSI(rssi_list[i]):
-            return False
-    return True    
+    if type(rssi_list[0]) == type(RSSI()):
+        for i in range(len(rssi_list)):
+            if not checkRSSI(rssi_list[i]):
+                return False
+        return True    
+    else:
+        for i in range(len(rssi_list)):
+            for j in range(i+1,len(rssi_list[i])):
+                if not checkRSSI(rssi_list[i][j]) or not checkRSSI(rssi_list[j][i]):
+                    return False
+        return True
 
 def positionENU(gps,gps_ref):
 
