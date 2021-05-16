@@ -98,6 +98,10 @@ def main():
                     # set the system id for the GPS data
                     GPSdata.SystemID = recievedPacket.SystemID
 
+                    if not GPSdata.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(GPSdata.Longitude,[110,160]) or not valueInRange(GPSdata.Latitude,[-45,-10]) or not valueInRange(GPSdata.Altitude,[-100,50000]) or not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
+                        print("Message via RFD900 was broken. Discard it...") 
+                        continue
+
                     # put data into the buffer
                     with GlobalVals.GPS_DATA_BUFFER_MUTEX:
                         GlobalVals.GPS_DATA_BUFFER.append(GPSdata)
@@ -162,7 +166,6 @@ def main():
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
-                    # print("++++++++++++++  msg 7  +++++++++++++++")
 
                     # get the RSSI data
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
@@ -171,8 +174,6 @@ def main():
                         print ("Radio Network Main: RSSI data error " + str(error) + ".\n")
                         continue
                     
-                    # print("++++++++++++  uuu  +++++++++++++++++")
-
                     # set the system id for the GPS data
                     RSSI_Data.SystemID = recievedPacket.SystemID
                     # print(RSSI_Data.SystemID)
@@ -180,12 +181,12 @@ def main():
                     # print(GlobalVals.RSSI_ALLOCATION)
 
                     # Check if the message was sent correctly via the RFD900
-                    if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON):
+                    if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON) or not valueInRange(RSSI_Data.Distance,[-1,500000]) or not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]) or valueInRange(RSSI_Data.FilteredRSSI,[-164,0]):
+                        print("Message via RFD900 was broken. Discard it...")
                         continue
                     
                     print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
 
-                    # print("check 1")
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
                             # print("UPDATE RSSI ALLOCATION FROM RADIO [",RSSI_Data.SystemID,"] !!!!")
@@ -193,11 +194,9 @@ def main():
                             GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
                             # print("check 32")
                             # print(GlobalVals.RSSI_ALLOCATION)
-
                             RSSI_Handler.getPairAllocation()
 
                        
-
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
                         GlobalVals.RSSI_DATA_BUFFER.append(RSSI_Data)
@@ -209,7 +208,6 @@ def main():
                     continue
 
                 if recievedPacket.MessageID == 8:
-                    # print("xxxxxxxx   msg 8  xxxxxxxx")
 
                     # get the RSSI data
                     RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
@@ -218,9 +216,12 @@ def main():
                         print ("Radio Network Main: RSSI Allocation data error " + str(error) + ".\n")
                         continue
                     
-                    # print("xxxxxxxx   --    xxxxxxxx")
                     # set the system id for the GPS data
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
+                    
+                    if not RSSI_AllocationData.SystemID in GlobalVals.REAL_BALLOON or not RSSI_AllocationData.Pair in GlobalVals.LORA_PAIR_NUM:
+                        print("Message via RFD900 was broken. Discard it...")
+                        continue
                     
                     # print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
 

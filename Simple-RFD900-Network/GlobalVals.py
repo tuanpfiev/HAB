@@ -1,4 +1,5 @@
 import time
+import datetime
 from dataclasses import dataclass
 from threading import Lock
 
@@ -47,6 +48,8 @@ RSSI_ALLOCATION_DISTRO_SOCKET = GlobalVariables.RSSI_ALLOCATION_DISTRO_SOCKET
 N_RSSI_NODE_PUBLISH = len(RSSI_DISTRO_SOCKET)
 NEXT_PAIR = 1
 
+EXPERIMENT_TIME = GlobalVariables.EXPERIMENT_TIME
+LORA_PAIR_NUM = GlobalVariables.LORA_PAIR_NUM
 
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 

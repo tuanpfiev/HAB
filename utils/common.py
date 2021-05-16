@@ -268,3 +268,23 @@ def extract_str_btw_curly_brackets(data_str):
         iterator = substring_end + 1
     return string_list
 
+
+def valueInRange(val,valRange):
+
+    if valRange[0] == None:
+        if val > valRange[1]:
+            return False
+        else:
+            return True
+    elif valRange[1] == None:
+        if val < valRange[0]:
+            return False
+        else:
+            return True
+    else:
+        if val > valRange[1]:
+            return False
+        elif val < valRange[0]:
+            return False
+        else:
+            return True

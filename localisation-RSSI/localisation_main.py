@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-localisationRSSI.txt"
 
-    logString = "px1, py1, px2, py2, px3, py3, px4, py4, px5, py5, lx1, ly1,lx2, ly2, lx3, ly3, lx4, ly4, lx5,ly5, iteration, execution time, epoch,  gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon,gps5lat,gps5lon,rssi12, rssi13, rssi21, rssi23, rssi31, rssi32,distanceMatrix01,distanceMatrix02,distanceMatrix10,distanceMatrix12,distanceMatrix20,distanceMatrix21 \n"
+    logString = "px1, py1, px2, py2, px3, py3, px4, py4, px5, py5, lx1, ly1,lx2, ly2, lx3, ly3, lx4, ly4, lx5,ly5, iteration, execution time, epoch,  gps1lat, gps1lon, gps2lat, gps2lon, gps3lat, gps3lon, gps4lat, gps4lon,gps5lat,gps5lon,rssi12, rssi13, rssi21, rssi23, rssi31, rssi32,dMatrix12,dMatrix13,dMatrix14,dMatrix15,dMatrix21,dMatrix23,dMatrix24,dMatrix25,dMatrix31,dMatrix32,dMatrix34,dMatrix35,dMatrix41,dMatrix42,dMatrix43,dMatrix45,dMatrix51,dMatrix52,dMatrix53,dMatrix54 \n"
     
     try:
         fileObj = open(file_name, "a")
@@ -219,9 +219,7 @@ if __name__ == "__main__":
     time.sleep(10)
 
     print("Reading GPS & RSSI signals ...")
-    # while True:
-    #     if checkAllGPS(GlobalVals.GPS_ALL):
-    #         break
+
     while True:
         with GlobalVals.GPS_UPDATE_MUTEX:
             GPS_Status = checkAllGPS(GlobalVals.GPS_ALL)
@@ -265,9 +263,10 @@ if __name__ == "__main__":
         print('Time: ', start_time)
         print("Balloon 1: lat", round(gps_tmp[0].lat,4), "lon: ", round(gps_tmp[0].lon,4))
         print("Balloon 2: lat", round(gps_tmp[1].lat,4), "lon: ", round(gps_tmp[1].lon,4))
+        print("Balloon 3: lat", round(gps_tmp[2].lat,4), "lon: ", round(gps_tmp[2].lon,4))
 
         print("localisation error: \n", pos_error)
-        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, posXYZ_tmp[4].x, posXYZ_tmp[4].y,location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon, gps_tmp[4].lat, gps_tmp[4].lon,rssiAll[0][1].distance,rssiAll[0][2].distance,rssiAll[1][0].distance,rssiAll[1][2].distance,rssiAll[2][0].distance,rssiAll[2][1].distance,distanceMatrix[0][1],distanceMatrix[0][2],distanceMatrix[1][0],distanceMatrix[1][2],distanceMatrix[2][0],distanceMatrix[2][1]])
+        logString = list_to_str([posXYZ_tmp[0].x, posXYZ_tmp[0].y,posXYZ_tmp[1].x, posXYZ_tmp[1].y, posXYZ_tmp[2].x, posXYZ_tmp[2].y, posXYZ_tmp[3].x, posXYZ_tmp[3].y, posXYZ_tmp[4].x, posXYZ_tmp[4].y,location[0,0],location[0,1],location[1,0],location[1,1],location[2,0],location[2,1],location[3,0],location[3,1],location[4,0],location[4,1], iteration,execution_time, start_time, gps_tmp[0].lat, gps_tmp[0].lon, gps_tmp[1].lat, gps_tmp[1].lon, gps_tmp[2].lat, gps_tmp[2].lon, gps_tmp[3].lat, gps_tmp[3].lon, gps_tmp[4].lat, gps_tmp[4].lon,rssiAll[0][1].distance,rssiAll[0][2].distance,rssiAll[1][0].distance,rssiAll[1][2].distance,rssiAll[2][0].distance,rssiAll[2][1].distance,distanceMatrix[0][1],distanceMatrix[0][2],distanceMatrix[0][3],distanceMatrix[0][4],distanceMatrix[1][0],distanceMatrix[1][2],distanceMatrix[1][3],distanceMatrix[1][4],distanceMatrix[2][0],distanceMatrix[2][1],distanceMatrix[2][3],distanceMatrix[2][4],distanceMatrix[3][0],distanceMatrix[3][1],distanceMatrix[3][2],distanceMatrix[3][4],distanceMatrix[4][0],distanceMatrix[4][1],distanceMatrix[4][2],distanceMatrix[4][3])
         
         try:
             fileObj = open(file_name, "a")

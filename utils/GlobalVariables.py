@@ -1,9 +1,12 @@
 import numpy as np
+import datetime
+EXPERIMENT_TIME = datetime.datetime(2021,5,16,15,15,0).timestamp()
 
 N_BALLOON = 5
 N_REAL_BALLOON = 3
 REAL_BALLOON = np.array([1,2,3])
 ALL_BALLOON = np.array([1,2,3,4,5])
+LORA_PAIR_NUM = np.array([1,2,3])
 # GPS-Loggers.py
 GPS_READER_SOCKET = 5001
 
@@ -52,9 +55,8 @@ RSSI_LOGGER_SOCKET = [5190, 5191]
 
 RSSI_DISTRO_SOCKET = [5120] 
 
-
-LAT_REF = -36.7189
-LON_REF = 142.1962
+LAT_REF = -37.818649411268986
+LON_REF = 144.94974616676797
 ALT_REF = 0
 
 
