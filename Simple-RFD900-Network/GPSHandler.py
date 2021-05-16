@@ -128,7 +128,7 @@ def GPSLoggerSocket():
             GPSPacket.TargetID = 0
             GPSPacket.Payload = GPSData.data_to_bytes()
             NetworkManager.sendPacket(GPSPacket)
-            print("SEND GPS TO RFD900!!!!!!")
+            # print("SEND GPS TO RFD900!!!!!!")
             # reset 
             synced = False
 
