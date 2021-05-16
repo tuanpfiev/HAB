@@ -164,6 +164,26 @@ def main():
                         GlobalVals.RECIEVED_IMU_RADIO_DATA = True
                     
                     continue
+                # Temperature
+                if recievedPacket.MessageID == 6:
+
+                    # get the RSSI data
+                    temperatureData = CustMes.MESSAGE_TEMP()                    
+                    error = temperatureData.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: temperature data error " + str(error) + ".\n")
+                        continue
+                    
+                    # set the system id for the GPS data
+                    temperatureData.SystemID = recievedPacket.SystemID
+                    
+                    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(temperatureData.Temperature,[-100,150]) or not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+                        print("Temperature message via RFD900 was broken. Discard it...")
+                        continue
+                    
+                    print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
+
+
 
                 # RSSI
                 if recievedPacket.MessageID == 7:
