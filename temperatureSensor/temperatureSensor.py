@@ -45,7 +45,9 @@ def main():
             GlobalVals.newTempData = True
         
         logString = str(GlobalVals.sysID) + str(tempTime) + ',' + str(tempVal) + '\n'
-        print(logString)
+        timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(tempTime))
+
+        print("SysID: ", GlobalVals.sysID,", Temperature: ",round(tempVal,1),", Time: ", timeLocal)
         try:
             fileObj = open(GlobalVals.fileName, "a")
             fileObj.write(logString)
@@ -56,7 +58,7 @@ def main():
             break
         
         
-        YAPI.Sleep(1000)
+        YAPI.Sleep(3000)
 
     YAPI.FreeAPI()
 
@@ -109,7 +111,7 @@ def threadTemperatureSocket():
                         breakThread = True
                         break
         else:
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     if breakThread:
         with GlobalVals.endTempSocketMutex:

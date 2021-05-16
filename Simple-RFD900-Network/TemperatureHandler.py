@@ -104,7 +104,7 @@ def TemperatureLoggerSocket():
             # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
-        time.sleep(1)  
+        time.sleep(3)  
 
     socket_logger.close()
     return 
