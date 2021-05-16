@@ -99,7 +99,7 @@ def main():
                     GPSdata.SystemID = recievedPacket.SystemID
 
                     if not GPSdata.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(GPSdata.Longitude,[110,160]) or not valueInRange(GPSdata.Latitude,[-45,-10]) or not valueInRange(GPSdata.Altitude,[-100,50000]) or not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
-                        print("Message via RFD900 was broken. Discard it...") 
+                        print("GPS message via RFD900 was broken. Discard it...") 
                         continue
 
                     # put data into the buffer
@@ -182,7 +182,7 @@ def main():
 
                     # Check if the message was sent correctly via the RFD900
                     if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON) or not valueInRange(RSSI_Data.Distance,[-1,500000]) or not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]) or valueInRange(RSSI_Data.FilteredRSSI,[-164,0]):
-                        print("Message via RFD900 was broken. Discard it...")
+                        print("RSSI message via RFD900 was broken. Discard it...")
                         continue
                     
                     print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
@@ -220,7 +220,7 @@ def main():
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
                     
                     if not RSSI_AllocationData.SystemID in GlobalVals.REAL_BALLOON or not RSSI_AllocationData.Pair in GlobalVals.LORA_PAIR_NUM:
-                        print("Message via RFD900 was broken. Discard it...")
+                        print("RSSI Allocation message via RFD900 was broken. Discard it...")
                         continue
                     
                     # print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
