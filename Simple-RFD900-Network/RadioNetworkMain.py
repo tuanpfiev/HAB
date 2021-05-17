@@ -98,7 +98,7 @@ def main():
                     # set the system id for the GPS data
                     GPSdata.SystemID = recievedPacket.SystemID
 
-                    if not GPSdata.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(GPSdata.Longitude,[-180,180]) or not valueInRange(GPSdata.Latitude,[-90,90]) or not valueInRange(GPSdata.Altitude,[-100,50000]) or not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
+                    if not GPSdata.SystemID in GlobalVals.REAL_BALLOON or GPSdata.SystemID == GlobalVals.SYSTEM_ID or not valueInRange(GPSdata.Longitude,[-180,180]) or not valueInRange(GPSdata.Latitude,[-90,90]) or not valueInRange(GPSdata.Altitude,[-100,50000]) or not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
                         print(not GPSdata.SystemID in GlobalVals.REAL_BALLOON , not valueInRange(GPSdata.Longitude,[-180,180]) , not valueInRange(GPSdata.Latitude,[-90,90]) , not valueInRange(GPSdata.Altitude,[-100,50000]) , not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]))
                         print("GPS message via RFD900 was broken. Discard it...") 
                         continue
@@ -177,7 +177,7 @@ def main():
                     # set the system id for the GPS data
                     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(temperatureData.Temperature,[-100,150]) or not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+                    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON or temperatureData.SystemID == GlobalVals.SYSTEM_ID or not valueInRange(temperatureData.Temperature,[-100,150]) or not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
                         print("Temperature message via RFD900 was broken. Discard it...")
                         continue
                     
@@ -202,8 +202,8 @@ def main():
                     # print(GlobalVals.RSSI_ALLOCATION)
 
                     # Check if the message was sent correctly via the RFD900
-                    if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON) or not valueInRange(RSSI_Data.Distance,[-1,500000]) or not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]) or not valueInRange(RSSI_Data.FilteredRSSI,[-164,0]):
-                        print(not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON), not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON), not valueInRange(RSSI_Data.Distance,[-1,500000]), not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]), not valueInRange(RSSI_Data.FilteredRSSI,[-164,0]))
+                    if not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON) or RSSI_Data.SystemID == GlobalVals.SYSTEM_ID or not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON) or not valueInRange(RSSI_Data.Distance,[-1,500000]) or not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]) or not valueInRange(RSSI_Data.FilteredRSSI,[-164,0]):
+                        print(not(RSSI_Data.SystemID in GlobalVals.REAL_BALLOON), RSSI_Data.SystemID == GlobalVals.SYSTEM_ID, not(RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON), not valueInRange(RSSI_Data.Distance,[-1,500000]), not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]), not valueInRange(RSSI_Data.FilteredRSSI,[-164,0]))
                         print(RSSI_Data.FilteredRSSI)
                         print("RSSI message via RFD900 was broken. Discard it...")
                         continue
@@ -270,6 +270,7 @@ if __name__ == '__main__':
         GlobalVals.SYSTEM_ID = int(sys.argv[1])
 
     print('SystemID is: ', GlobalVals.SYSTEM_ID)
+    GlobalVals.SYSTEM_ID = 1
     # set Port
     GlobalVals.PORT=get_port('RFD900')
     print('PORT: '+ GlobalVals.PORT)

@@ -2,6 +2,14 @@ import binascii
 from dataclasses import dataclass, field
 from typing import List
 import struct
+import GlobalVals
+
+import sys, os
+
+sys.path.insert(1,'../utils')
+from utils import get_port
+from common import *
+from common_class import *
 
 # CRC globals 
 CRC_POLYNOMIAL = 0x1021     # the polynomial for the CRC calculation 
@@ -94,6 +102,63 @@ def checkPacket(bytepacket):
 # Message frame data classes
 #=====================================================
 
+# GPS Payload - Message ID = 0x02
+@dataclass
+class MESSAGE_GPS:
+    Longitude: float = 0   
+    Latitude: float = 0     
+    Altitude: float = 0
+    GPSTime: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Longitude_ints = struct.pack('!d',self.Longitude)
+        Latitude_ints = struct.pack('!d',self.Latitude)
+        Altitude_ints = struct.pack('!d',self.Altitude)
+        GPSTime_ints = struct.pack('!d',self.GPSTime)
+
+        # append the values to the byte array for the payload 
+        for x in Longitude_ints:
+            payloadBytes.append(x)
+        
+        for x in Latitude_ints:
+            payloadBytes.append(x)
+
+        for x in Altitude_ints:
+            payloadBytes.append(x)
+
+        for x in GPSTime_ints:
+            payloadBytes.append(x)
+        
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 32:
+            return -1
+        
+        # convert payload values back to double
+        LongitudeTuple = struct.unpack('!d',payloadBytes[0:8])
+        LatitudeTuple = struct.unpack('!d',payloadBytes[8:16])
+        AltitudeTuple = struct.unpack('!d',payloadBytes[16:24])
+        GPSTimeTuple = struct.unpack('!d',payloadBytes[24:32])
+
+        # store converted values 
+        self.Longitude = LongitudeTuple[0]
+        self.Latitude = LatitudeTuple[0]
+        self.Altitude = AltitudeTuple[0]
+        self.GPSTime = GPSTimeTuple[0]
+
+        return 0
+
 @dataclass
 class MESSAGE_FRAME:
     PayloadLength: int = 0x00                           # 1 byte
@@ -165,11 +230,26 @@ class MESSAGE_FRAME:
 
         # Return error code 0 confirming there were no issues
         self.ErrorCode = 0
+
+
+        #debug check 
+        # if self.MessageID == 2:
+        #     GPSdata = MESSAGE_GPS()
+        #     GPSdata.bytes_to_data(self.Payload)
+        #     GPSdata.SystemID = self.SystemID
+        #     print(not GPSdata.SystemID in GlobalVals.REAL_BALLOON , not valueInRange(GPSdata.Longitude,[-180,180]) , not valueInRange(GPSdata.Latitude,[-90,90]) , not valueInRange(GPSdata.Altitude,[-100,50000]) , not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]))
+
+        #     if not GPSdata.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(GPSdata.Longitude,[-180,180]) or not valueInRange(GPSdata.Latitude,[-90,90]) or not valueInRange(GPSdata.Altitude,[-100,50000]) or not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
+
+        #         print('Found it !!!')
+
         return 0
 
 #=====================================================
 # Payload data classes
 #=====================================================
+
+
 
 # Ping Payload - Message ID = 0x01
 @dataclass
@@ -218,62 +298,7 @@ class MESSAGE_PING:
 
         return 0
 
-# GPS Payload - Message ID = 0x02
-@dataclass
-class MESSAGE_GPS:
-    Longitude: float = 0   
-    Latitude: float = 0     
-    Altitude: float = 0
-    GPSTime: float = 0
-    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
-    
-    def data_to_bytes(self):
 
-        # create the payload byte array 
-        payloadBytes = bytearray()
-
-        # split values into 8 bit ints 
-        Longitude_ints = struct.pack('!d',self.Longitude)
-        Latitude_ints = struct.pack('!d',self.Latitude)
-        Altitude_ints = struct.pack('!d',self.Altitude)
-        GPSTime_ints = struct.pack('!d',self.GPSTime)
-
-        # append the values to the byte array for the payload 
-        for x in Longitude_ints:
-            payloadBytes.append(x)
-        
-        for x in Latitude_ints:
-            payloadBytes.append(x)
-
-        for x in Altitude_ints:
-            payloadBytes.append(x)
-
-        for x in GPSTime_ints:
-            payloadBytes.append(x)
-        
-        # return the payload byte array 
-        return payloadBytes
-
-    def bytes_to_data(self, payloadBytes):
-
-        # check length of payload 
-        payloadLen = len(payloadBytes)
-        if payloadLen != 32:
-            return -1
-        
-        # convert payload values back to double
-        LongitudeTuple = struct.unpack('!d',payloadBytes[0:8])
-        LatitudeTuple = struct.unpack('!d',payloadBytes[8:16])
-        AltitudeTuple = struct.unpack('!d',payloadBytes[16:24])
-        GPSTimeTuple = struct.unpack('!d',payloadBytes[24:32])
-
-        # store converted values 
-        self.Longitude = LongitudeTuple[0]
-        self.Latitude = LatitudeTuple[0]
-        self.Altitude = AltitudeTuple[0]
-        self.GPSTime = GPSTimeTuple[0]
-
-        return 0
 
 # GPS Payload - Message ID = 0x03
 @dataclass
