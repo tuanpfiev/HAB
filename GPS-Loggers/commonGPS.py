@@ -54,7 +54,10 @@ def GGA_Convert(GGAdata):
     
     GPS_Data = GPS(None,lat,lon,alt,GPSepoch)
 
-    return GPS_Data
+    if GPSepoch == None:
+        return GPS_Data, False
+    else:
+        return GPS_Data, True
 
 def updateGlobalGPS_Data(GPS_Data):
 

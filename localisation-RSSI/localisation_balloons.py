@@ -112,8 +112,8 @@ def localization(balloon,dis,Sigma,Leader):
         def function(i): return sub_fuc_loc(balloon,i,dis,Sigma,iter_all)
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=n)
         with executor:
-            Q = {executor.submit(function, i) for i in np.arange(start=1, stop=n, step=1)}
-        i=1
+            Q = {executor.submit(function, i) for i in np.arange(start=0, stop=n, step=1)}
+        i=0
         Conve = 1
         for fut in concurrent.futures.as_completed(Q):
             balloon[i] = fut.result()[i]
