@@ -183,14 +183,14 @@ def main():
                     if not EKFHandler.EKF_FormatCheck(EKF_Data):
                         print("EKF message via RFD900 was broken. Discard it...") 
                         continue
-
+                    print("EKF: ", EKF_Data.Latitude)
                     # put data into the buffer
-                    with GlobalVals.EKF_DATA_BUFFER_MUTEX:
-                        GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
+                    # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+                    #     GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
 
                     # set the flags for the buffer 
-                    with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
-                        GlobalVals.RECIEVED_EKF_RADIO_DATA = True
+                    # with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
+                    #     GlobalVals.RECIEVED_EKF_RADIO_DATA = True
                     
                     continue
                 # Temperature
@@ -210,7 +210,7 @@ def main():
                         print("Temperature message via RFD900 was broken. Discard it...")
                         continue
                     
-                    print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
+                    # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
 
 
 

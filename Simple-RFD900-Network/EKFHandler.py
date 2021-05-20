@@ -56,6 +56,7 @@ def EKFLoggerSocket():
         while True:
             try:
                 data_bytes = socket_logger.recv(bufferRead)
+                print("EKF socket received")
                 break
             except Exception as e:
                 if e.args[0] == 'timed out':
@@ -69,13 +70,15 @@ def EKFLoggerSocket():
                 
         if breakMainThread:
             break
-        
+        print("EKF socket received2")
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:
             continue
 
         data_str = data_bytes.decode('utf-8')
-        
+        print("EKF socket received3")
+        print(data_str)
+        print('---')
         string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
@@ -87,10 +90,10 @@ def EKFLoggerSocket():
                     ekf_list.append(ekf_i)
 
             idx = 0
-            with GlobalVals.EKF_UPDATE_MUTEX:
-                while idx < len(ekf_list):
-                    ekf_update(ekf_list[idx])
-                    idx += 1
+            # with GlobalVals.EKF_UPDATE_MUTEX:
+            while idx < len(ekf_list):
+                ekf_update(ekf_list[idx])
+                idx += 1
             
             ekf = copy.deepcopy(GlobalVals.EKF_ALL)
         
@@ -108,12 +111,12 @@ def EKFLoggerSocket():
             EKF_Data.P11 = ekf.p11
 
             # add data to the gps buffer 
-            with GlobalVals.EKF_DATA_BUFFER_MUTEX:
-                GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
+            # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+            #     GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
 
             # set the flag for the data 
-            with GlobalVals.RECIEVED_EKF_LOCAL_DATA_MUTEX:
-                GlobalVals.RECIEVED_EKF_LOCAL_DATA = True
+            # with GlobalVals.RECIEVED_EKF_LOCAL_DATA_MUTEX:
+            #     GlobalVals.RECIEVED_EKF_LOCAL_DATA = True
 
             # send GPS data to other balloons 
             EKF_Packet = CustMes.MESSAGE_FRAME()
@@ -122,8 +125,8 @@ def EKFLoggerSocket():
             EKF_Packet.TargetID = 0
             EKF_Packet.Payload = EKF_Data.data_to_bytes()
             NetworkManager.sendPacket(EKF_Packet)
-            # print(EKF_Data)
-            # print("***************************")
+            print(EKF_Data.Longitude)
+            print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
@@ -198,7 +201,6 @@ def EKF_AllDistributor():
 
                 # get the GPS data
                 objEKF = GlobalVals.EKF_DATA_BUFFER.pop(0)
-                objEKF = GlobalVals.EKF_BUFFER.pop(0)
 
                 messageStr = "{'system': " + str(objEKF.sysID) + "; 'altitude': " + str(objEKF.alt) + "; 'latitude': " + str(objEKF.lat) + "; 'longitude': " + str(objEKF.lon) + "; 'time': " + str(objEKF.epoch) + "; 'posX': " + str(objEKF.posX) + "; 'posY': " + str(objEKF.posY) +  "; 'p00': " + str(objEKF.p00) +  "; 'p01': " + str(objEKF.p01) + "; 'p10': " + str(objEKF.p10) + "; 'p11': " + str(objEKF.p11) + ";}"
 
