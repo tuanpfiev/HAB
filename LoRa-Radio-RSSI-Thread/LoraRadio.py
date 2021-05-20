@@ -155,7 +155,7 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
     GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(distance)]])),axis=0)
     
     if len(GlobalVals.X)< GlobalVals.RSSI_CALIBRATION_SIZE:
-        print("Calibrating RSSI sys ID: ",targetBalloon,"(",len(GlobalVals.X),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
+        print("Calibrating RSSI to: ",targetBalloon,"(",len(GlobalVals.X),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
         return np.ones([1,2]), False, rssi
 
     if len(GlobalVals.X) > GlobalVals.RSSI_CALIBRATION_SIZE:

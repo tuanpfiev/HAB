@@ -343,7 +343,7 @@ def RSSI_AllocationDistributor():
 
             # print("Send Pair Num to RFD900")
 
-        # print('Allocated pair: '+messageStr)
+        print('Allocated pair: '+messageStr)
         # send the message 
         for i in range(len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)):
             try:
