@@ -394,9 +394,10 @@ def RSSI_FormatCheck(RSSI_Data):
         errString.append("RSSI_Data.SystemID: " + str(RSSI_Data.SystemID))
         err = True
     
-    # if RSSI_Data.SystemID == GlobalVals.SYSTEM_ID:
-    #     errString.append("RSSI_Data.SystemID must be different")
-    #     err = True
+    if RSSI_Data.SystemID == GlobalVals.SYSTEM_ID:
+        errString.append("RSSI_Data.SystemID must be different")
+        err = True
+        
     if not RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON:
         errString.append("RSSI_Data.TargetPayloadID: " + str(RSSI_Data.TargetPayloadID))
         err = True

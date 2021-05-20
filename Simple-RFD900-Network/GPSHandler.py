@@ -246,9 +246,9 @@ def GPS_FormatCheck(GPSdata):
         errString.append("GPSdata.SystemID: " + str(GPSdata.SystemID))
         err = True
     
-    # if GPSdata.SystemID == GlobalVals.SYSTEM_ID:
-    #     errString.append("GPSdata.SystemID must be different")
-    #     err = True
+    if GPSdata.SystemID == GlobalVals.SYSTEM_ID:
+        errString.append("GPSdata.SystemID must be different")
+        err = True
 
     if not valueInRange(GPSdata.Longitude,[-180,180]):
         errString.append("Longitude: " + str(GPSdata.Longitude))

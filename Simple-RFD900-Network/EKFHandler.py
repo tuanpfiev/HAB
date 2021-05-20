@@ -230,9 +230,9 @@ def EKF_FormatCheck(EKF_Data):
         errString.append("EKF_Data.SystemID: " + str(EKF_Data.SystemID))
         err = True
     
-    # if EKF_Data.SystemID == GlobalVals.SYSTEM_ID:
-    #     errString.append("EKF_Data.SystemID must be different")
-    #     err = True
+    if EKF_Data.SystemID == GlobalVals.SYSTEM_ID:
+        errString.append("EKF_Data.SystemID must be different")
+        err = True
 
     if not valueInRange(EKF_Data.Longitude,[-180,180]):
         errString.append("Longitude: " + str(EKF_Data.Longitude))
