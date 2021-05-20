@@ -7,6 +7,7 @@ currentBalloon=$1
 neighborBalloon=(${allBalloon[@]/$currentBalloon})
 
 xterm  -title "IMU" -hold -e "cd ~/HAB/XSENS_Test/build; ./XSENS_Test" &
+#xterm  -title "IMU" -hold -e "cd ~/HAB/IMU_static; python3 IMU_Static.py" &
 sleep 1; xterm  -title "Thermal log" -hold -e "cd ~/HAB/Thermal_Monitor; python3 jetson_temp_monitor.py $1" &
 sleep 1.1; xterm -title "TemperatureSensor" -hold -e "cd ~/HAB/temperatureSensor; python3 temperatureSensor.py $1" &
 sleep 2; xterm  -title "GPS Logger" -hold -e "cd ~/HAB/GPS-Loggers; python3 GPSLoggerUART.py /dev/ttyUSB2" &

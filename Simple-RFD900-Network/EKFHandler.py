@@ -94,7 +94,7 @@ def EKFLoggerSocket():
             
             ekf = copy.deepcopy(GlobalVals.EKF_ALL)
         
-            EKF_Data = CustMes.MESSAGE_GPS()
+            EKF_Data = CustMes.MESSAGE_EKF()
             EKF_Data.Longitude = ekf.lon
             EKF_Data.Latitude = ekf.lat
             EKF_Data.Altitude = ekf.alt
