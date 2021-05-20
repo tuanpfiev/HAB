@@ -141,13 +141,13 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
         if not GlobalVals.RSSI_CALIBRATION_FINISHED:
             print('GPS is not available!!!!!! Cannot calibrate RSSI!!!')
             time.sleep(0.5)
-            return np.ones([1,2]), False, rssi
+            return np.ones([1,2]), False, rssi, 0
         else:
             print('GPS is not available!!!!!! Use the calibrated RSSI params to calculate the distance')
 
             rssi = RSSI_ToDistance(rssi,GlobalVals.RSSI_PARAMS)
 
-            return GlobalVals.RSSI_PARAMS, True, rssi
+            return GlobalVals.RSSI_PARAMS, True, rssi, 0
 
     distance = distanceCalculation(gpsAll[sysID-1],gpsAll[targetBalloon-1])
     # print(sysID)
@@ -160,7 +160,7 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
     
     if len(GlobalVals.X)< GlobalVals.RSSI_CALIBRATION_SIZE:
         print("Calibrating RSSI to: ",targetBalloon,"(",len(GlobalVals.X),"/",GlobalVals.RSSI_CALIBRATION_SIZE,")")
-        return np.ones([1,2]), False, rssi
+        return np.ones([1,2]), False, rssi, distance
 
     if len(GlobalVals.X) > GlobalVals.RSSI_CALIBRATION_SIZE:
         GlobalVals.X = np.delete(GlobalVals.X,0,0)
@@ -184,7 +184,7 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
     # print("Calibrated RSSI sys ID: ",targetBalloon,", (GPS Distance, RSSI distance): (",round(distance,1),",",round(rssi.distance,1),")")
     # print("Distance Error: ", round(rssi.distance-distance,1), ", Params (n,A): ",np.array([[round(n,1),round(A,1)]]))
 
-    return params, True, rssi
+    return params, True, rssi, distance
 
 
 
@@ -327,6 +327,7 @@ def main(StartState):
     curTime = time.time()
     waitLimit = curTime + GlobalVals.WAITING_TIMEOUT
     currentPairNumber = getLoraPairNumber()
+    distanceGPS = 0
     # Handshake loop
     while connected:
         # print("getLoraPairNumber(): ",getLoraPairNumber())
@@ -387,14 +388,14 @@ def main(StartState):
                     
                     # get rssi
                     try:
-                        rssi = int(dataOut[8]) - 164
+                        rssiRaw = int(dataOut[8]) - 164
                     except: 
                         continue
-                    if rssi > 0:
+                    if rssiRaw > 0:
                         print("RSSI is positive. Something is wrong. Discard this value ...")
                         continue
                     
-                    print("RSSI = " + str(rssi))
+                    print("RSSI = " + str(rssiRaw))
 
                     # Kalman filter for RSSI
                     
@@ -404,14 +405,14 @@ def main(StartState):
                         dt = handshakeTime - prev_handshakeTime
                         prev_handshakeTime = copy.deepcopy(handshakeTime)
 
-                    x, P = Tracker.update(x, P, rssi, dt)
+                    x, P = Tracker.update(x, P, rssiRaw, dt)
                     filtered_RSSI = x[0,0]
                     # distance = RSSI_to_distance(filtered_RSSI)
                     with GlobalVals.GPS_UPDATE_MUTEX:
                         gps_all = copy.deepcopy(GlobalVals.GPS_ALL)
                     
                     rssi = RSSI(filtered_RSSI,None,handshakeTime)
-                    GlobalVals.RSSI_PARAMS, GlobalVals.RSSI_CALIBRATION_FINISHED,rssi = RSSI_Calibration(rssi,gps_all,GlobalVals.SYSID,GlobalVals.TARGET_BALLOON)
+                    GlobalVals.RSSI_PARAMS, GlobalVals.RSSI_CALIBRATION_FINISHED,rssi, distanceGPS = RSSI_Calibration(rssi,gps_all,GlobalVals.SYSID,GlobalVals.TARGET_BALLOON)
                     distance = rssi.distance
 
                     with GlobalVals.RSSIValues_Mutex:
@@ -423,7 +424,7 @@ def main(StartState):
                         GlobalVals.NewRSSISocketData = True
 
                     # format log string 
-                    logString = str(handshakeTime) + "," + str(rssi) + "," + str(filtered_RSSI) + "," + str(distance) + "\n"
+                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + distanceGPS + "," + str(GlobalVals.RSSI_PARAMS) +  "\n"
 
                     # write log string to file  
                     try:
