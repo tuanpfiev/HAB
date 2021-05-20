@@ -343,7 +343,7 @@ def RSSI_AllocationDistributor():
 
             # print("Send Pair Num to RFD900")
 
-        # print('Allocated pair: '+messageStr)
+        print('Allocated pair: '+messageStr)
         # send the message 
         for i in range(len(GlobalVals.RSSI_ALLOCATION_DISTRO_SOCKET)):
             try:
@@ -369,9 +369,9 @@ def RSSI_AllocationDistributor():
             NetworkManager.sendPacket(RSSI_AllocationPacket)
 
         time.sleep(0.1)
-    while True:
-        print("Closing RSSI Allocation Distro !!!!!!!!!")
-        time.sleep(0.5)
+    # while True:
+    #     print("Closing RSSI Allocation Distro !!!!!!!!!")
+    #     time.sleep(0.5)
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 

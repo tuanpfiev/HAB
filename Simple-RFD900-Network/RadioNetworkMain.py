@@ -273,11 +273,11 @@ def main():
                         print("RSSI Allocation message via RFD900 was broken. Discard it...")
                         continue
                     
-                    # print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
+                    print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
-                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>2:
+                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>5:
                             GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(int(RSSI_AllocationData.Pair))
 
