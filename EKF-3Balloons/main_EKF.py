@@ -1,6 +1,6 @@
 from init_filter import *
 from init_nav_state import *
-from EKF import *
+from EKF_Func import *
 import scipy.io
 import numpy as np 
 from class_def import *
@@ -561,7 +561,7 @@ if __name__ == '__main__':
                     q_sensor = np.roll(q_sensor,-1)
 
                 timeCheck2 = time.time()
-                node = EKF(settings,dt,node,IMU_i,anchor_position,GPS_data_vel,anchor_distance,Q_Xsens,q_sensor) # EKF
+                node = EKF_Func(settings,dt,node,IMU_i,anchor_position,GPS_data_vel,anchor_distance,Q_Xsens,q_sensor) # EKF
                 # print('EKF Time: ',time.time()-timeCheck2)
                 x_h = np.array([node.x_h[:,-1]]).T
 

@@ -157,6 +157,7 @@ def ekf_callback(host,port):
         if len(string_list) > 0:
             ekf_list = []
             for string in string_list:
+                print(string)
                 received, ekf_i = stringToEKF(string)
                 if received:
                     ekf_list.append(ekf_i)
