@@ -479,7 +479,7 @@ if __name__ == '__main__':
                 dt = GlobalVals.LOOPTIME
             else:
                 dt = (imu.epoch - imu_prev.epoch)/1000
-
+            print('dt IMU : ',dt)
             if dt > 0 or flag_start:
                 
                 # print('dt: ',dt)
