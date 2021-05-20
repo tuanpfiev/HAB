@@ -259,7 +259,7 @@ def GPS_FormatCheck(GPSdata):
         err = True
     
     if not valueInRange(GPSdata.Altitude,[-100,50000]):
-        errString.append("Altitude: ",GPSdata.Altitude)
+        errString.append("Altitude: "+str(GPSdata.Altitude))
         err = True
 
     if not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
