@@ -167,8 +167,8 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
         GlobalVals.Y = np.delete(GlobalVals.Y,0,0)
 
     # add 2 data point to avoid bifurcation
-    # GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-1,1]])),axis=0)
-    # GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(1)]])),axis=0)    # distance = 1m, rssi = -1
+    GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-15,1]])),axis=0)
+    GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(2)]])),axis=0)    # distance = 1m, rssi = -1
 
     # GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-130,1]])),axis=0)
     # GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(50000)]])),axis=0)    # distance = 20000m, rssi = -130
@@ -424,7 +424,7 @@ def main(StartState):
                         GlobalVals.NewRSSISocketData = True
 
                     # format log string 
-                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + str(distanceGPS) + "," + str(GlobalVals.RSSI_PARAMS) +  "\n"
+                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + str(distanceGPS) + "," + str(GlobalVals.RSSI_PARAMS[0]) +  "\n"
 
                     # write log string to file  
                     try:
@@ -645,7 +645,7 @@ if __name__ == '__main__':
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-LoraRSSI.csv"
     GlobalVals.RSSI_LOG_FILE = file_name
 
-    logString = "epoch, rssi, filtered_RSSI, distance \n"
+    logString = "epoch, rssi raw, filtered_RSSI, distance rssi, distance gps, params \n"
 
     try:
         fileObj = open(GlobalVals.RSSI_LOG_FILE, "a")
