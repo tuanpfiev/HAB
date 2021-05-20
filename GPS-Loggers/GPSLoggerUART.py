@@ -454,7 +454,7 @@ def main():
                                 print('Using Ublox GPS:')
                                 updateGlobalGPS_Data(GPS_Data)
                                 GPS_DataPrevUBlox = copy.deepcopy(GPS_Data)
-                                print(GPS_Data)
+                                # print(GPS_Data)
                                 dataUbloxReady = True
                             else:
                                 with GlobalVals.GGA_QuectelBufferMutex:
