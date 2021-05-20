@@ -166,9 +166,9 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
         GlobalVals.X = np.delete(GlobalVals.X,0,0)
         GlobalVals.Y = np.delete(GlobalVals.Y,0,0)
 
-    # add 2 data point to avoid bifurcation
-    GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-15,1]])),axis=0)
-    GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(2)]])),axis=0)    # distance = 1m, rssi = -1
+    # # add 2 data point to avoid bifurcation
+    # GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-15,1]])),axis=0)
+    # GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(2)]])),axis=0)    # distance = 1m, rssi = -1
 
     # GlobalVals.X = np.concatenate((GlobalVals.X,np.array([[-130,1]])),axis=0)
     # GlobalVals.Y = np.concatenate((GlobalVals.Y,np.array([[np.log10(50000)]])),axis=0)    # distance = 20000m, rssi = -130
@@ -177,6 +177,9 @@ def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
     n = -1/(10*w[0][0])
     A = 10*n*w[1][0]
     params = np.array([[n,A]])
+
+    # if abs(n) > 10e5 or abs(A) > 10e5:
+    #     return params, False, rssi, distance
 
     rssi = RSSI_ToDistance(rssi,params)
     if rssi.distance >10e10:
