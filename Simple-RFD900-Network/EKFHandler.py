@@ -245,7 +245,7 @@ def EKF_FormatCheck(EKF_Data):
         err = True
     
     if not valueInRange(EKF_Data.Altitude,[-100,50000]):
-        errString.append("Altitude: ",EKF_Data.Altitude)
+        errString.append("Altitude: "+str(EKF_Data.Altitude))
         err = True
 
     if not valueInRange(EKF_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
