@@ -424,7 +424,7 @@ def main(StartState):
                         GlobalVals.NewRSSISocketData = True
 
                     # format log string 
-                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + distanceGPS + "," + str(GlobalVals.RSSI_PARAMS) +  "\n"
+                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + str(distanceGPS) + "," + str(GlobalVals.RSSI_PARAMS) +  "\n"
 
                     # write log string to file  
                     try:
