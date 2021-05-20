@@ -78,17 +78,21 @@ def gps_callback(host,port):
                     GlobalVals.BREAK_GPS_THREAD = True
                 return 
         break
-
+    breakGPS_Receive = False
     while True:
         with GlobalVals.BREAK_GPS_THREAD_MUTEX:
             if GlobalVals.BREAK_GPS_THREAD:
                 break
-
-        try:
-            data_bytes = s.recv(GlobalVals.GPS_BUFFER)
-        except Exception as e:
-            print("Exception: " + str(e.__class__))
-            print("There was an error starting the GPS receiver socket. This thread will now stop.")
+        while True:
+            try:
+                data_bytes = s.recv(GlobalVals.GPS_BUFFER)
+                break
+            except Exception as e:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the GPS receiver socket. This thread will now stop.")
+                breakGPS_Receive = True
+                break
+        if breakGPS_Receive:
             break
 
         if len(data_bytes) == 0:
@@ -237,17 +241,22 @@ def pairNumberStart_callback(host,port):
             time.sleep(2)
             return 
         break
-
+    breakLoraAllocation = False
     while True:
         with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
             if GlobalVals.BREAK_LORA_ALLOCATION_THREAD:
                 break
-
-        try:
-            data_bytes = s.recv(GlobalVals.RSSI_BUFFER)
-        except Exception as e:
-            print("Exception: " + str(e.__class__))
-            print("There was an error starting the Lora Allocation receiver socket. This thread will now stop.")
+        while True:
+            try:
+                data_bytes = s.recv(GlobalVals.RSSI_BUFFER)
+                break
+            except Exception as e:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the Lora Allocation receiver socket. This thread will now stop.")
+                breakLoraAllocation
+                break
+            
+        if breakLoraAllocation:
             break
         
         if len(data_bytes) == 0:

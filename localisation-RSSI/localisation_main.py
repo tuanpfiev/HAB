@@ -256,8 +256,8 @@ if __name__ == "__main__":
     RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
     RSSIThread.start()
 
-    EKF_Thread = Thread(target=ekf_callback, args = (GlobalVals.HOST, GlobalVals.PORT_EKF))
-    EKF_Thread.start()    
+    # EKF_Thread = Thread(target=ekf_callback, args = (GlobalVals.HOST, GlobalVals.PORT_EKF))
+    # EKF_Thread.start()    
 
     leader = GlobalVals.LEADER #any anchor                      
     sigma_range_measurement_val = GlobalVals.SIGMA_RSSI_RANGE     # this depends on the real data
@@ -366,9 +366,9 @@ if __name__ == "__main__":
             GlobalVals.BREAK_RSSI_THREAD = True
         RSSIThread.join()
 
-    if EKF_Thread.is_alive():
-        with GlobalVals.BREAK_EKF_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_THREAD = True
-        EKF_Thread.join()
+    # if EKF_Thread.is_alive():
+    #     with GlobalVals.BREAK_EKF_THREAD_MUTEX:
+    #         GlobalVals.BREAK_EKF_THREAD = True
+    #     EKF_Thread.join()
 
 
