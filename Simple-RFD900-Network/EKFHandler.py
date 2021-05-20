@@ -76,9 +76,9 @@ def EKFLoggerSocket():
             continue
 
         data_str = data_bytes.decode('utf-8')
-        print("EKF socket received3")
-        print(data_str)
-        print('---')
+        # print("EKF socket received3")
+        # print(data_str)
+        # print('---')
         string_list = extract_str_btw_curly_brackets(data_str)
         
         if len(string_list) > 0:
@@ -125,8 +125,8 @@ def EKFLoggerSocket():
             EKF_Packet.TargetID = 0
             EKF_Packet.Payload = EKF_Data.data_to_bytes()
             NetworkManager.sendPacket(EKF_Packet)
-            print(EKF_Data.Longitude)
-            print("***************************")
+            # print(EKF_Data.Longitude)
+            # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  

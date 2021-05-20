@@ -458,8 +458,8 @@ if __name__ == '__main__':
             # print('2')
             with GlobalVals.IMU_UPDATE_MUTEX:
                 imu = copy.deepcopy(GlobalVals.IMU_ALL)
-                print('__=================')
-                print(imu.epoch)
+                # print('__=================')
+                # print(imu.epoch)
             # print('3')
             timeCheck3 = time.time()
             for i in range(GlobalVals.N_REAL_BALLOON-1):
@@ -586,7 +586,7 @@ if __name__ == '__main__':
                     GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],smallP[0][0],smallP[0][1],smallP[1][0],smallP[1][1]))
                     # GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],1,1,1,1))
 
-                    print("length buffer: ",len(GlobalVals.EKF_BUFFER))
+                    # print("length buffer: ",len(GlobalVals.EKF_BUFFER))
 
 
                 # gps_all_prev = copy.deepcopy(gps_all)

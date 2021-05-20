@@ -183,7 +183,8 @@ def main():
                     if not EKFHandler.EKF_FormatCheck(EKF_Data):
                         print("EKF message via RFD900 was broken. Discard it...") 
                         continue
-                    print("EKF: ", EKF_Data.Latitude)
+
+                    print("EKF Data from [",EKF_Data.SystemID,"], Lat: ", EKF_Data.Latitude, ", Lon: ", EKF_Data.Longitude, ", Alt: ", EKF_Data.Altitude)
                     # put data into the buffer
                     # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
                     #     GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
@@ -235,7 +236,7 @@ def main():
                         print("RSSI message via RFD900 was broken. Discard it...")
                         continue
                     
-                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
+                    # print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
 
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
