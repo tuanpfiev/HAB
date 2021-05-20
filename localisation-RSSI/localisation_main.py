@@ -152,19 +152,17 @@ def ekf_callback(host,port):
         string_list = extract_str_btw_curly_brackets(data_str)
         # print("EKF string list: ",string_list)
         if len(string_list) > 0:
-            gps_list = []
+            ekf_list = []
             for string in string_list:
-                received, gps_i = stringToGPS(string)
+                received, ekf_i = stringToEKF(string)
                 if received:
-                    gps_list.append(gps_i)
+                    ekf_list.append(ekf_i)
             
             idx = 0
             
-            with GlobalVals.GPS_UPDATE_MUTEX:
-                while idx < len(gps_list):
-                    ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].alt, GlobalVals.GPS_REF.lat, GlobalVals.GPS_REF.lon, GlobalVals.GPS_REF.alt)
-                    posXYZ = POS_XYZ(ned[0],ned[1])   
-                    position_update(posXYZ, gps_list[idx])
+            with GlobalVals.EKF_UPDATE_MUTEX:
+                while idx < len(ekf_list):
+                    ekf_update(ekf_list[idx])
                     idx += 1
 
     s.close()
