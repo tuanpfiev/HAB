@@ -458,7 +458,8 @@ if __name__ == '__main__':
             # print('2')
             with GlobalVals.IMU_UPDATE_MUTEX:
                 imu = copy.deepcopy(GlobalVals.IMU_ALL[sysID-1])
-                # print('2')
+                print('__=================')
+                print(imu.epoch)
             # print('3')
             timeCheck3 = time.time()
             for i in range(GlobalVals.N_REAL_BALLOON-1):

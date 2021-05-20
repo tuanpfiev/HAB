@@ -81,7 +81,7 @@ GPS_DATA_BUFFER = []
 IMU_DATA_BUFFER = []
 AWS_GPS_DATA_BUFFER = [] 
 EKF_DATA_BUFFER = []
-EKF_ALL = np.array([GPS()])
+EKF_ALL = EKF()
 RSSI_ALL = np.array([RSSI()])
 TEMPERATURE_ALL = np.array([TEMPERATURE()])
 

@@ -386,7 +386,10 @@ def main(StartState):
                 elif not silent:
                     
                     # get rssi
-                    rssi = int(dataOut[8]) - 164
+                    try:
+                        rssi = int(dataOut[8]) - 164
+                    except: 
+                        continue
                     if rssi > 0:
                         print("RSSI is positive. Something is wrong. Discard this value ...")
                         continue
