@@ -123,7 +123,7 @@ def ekf_callback(host,port):
                     GlobalVals.BREAK_EKF_THREAD = True
                 return 
         break
-
+    breakReceiveThread = False
     while True:
         with GlobalVals.BREAK_EKF_THREAD_MUTEX:
             if GlobalVals.BREAK_EKF_THREAD:
@@ -140,9 +140,12 @@ def ekf_callback(host,port):
                 else:
                     print("Exception: " + str(e.__class__))
                     print("There was an error starting the EKF receiver socket. This thread will now stop.")
+                    breakReceiveThread = True
                     break
-                break
-
+                
+        if breakReceiveThread:
+            break
+        
         if len(data_bytes) == 0:
             continue
 

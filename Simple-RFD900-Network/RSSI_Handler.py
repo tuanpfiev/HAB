@@ -384,3 +384,38 @@ def getPairAllocation():
         else:
             GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
         resetRSSI_Allocation()
+
+def RSSI_FormatCheck(RSSI_Data):
+    errString = []
+    err = False
+
+
+    if not RSSI_Data.SystemID in GlobalVals.REAL_BALLOON:
+        errString.append("RSSI_Data.SystemID: " + str(RSSI_Data.SystemID))
+        err = True
+    
+    # if RSSI_Data.SystemID == GlobalVals.SYSTEM_ID:
+    #     errString.append("RSSI_Data.SystemID must be different")
+    #     err = True
+    if not RSSI_Data.TargetPayloadID in GlobalVals.REAL_BALLOON:
+        errString.append("RSSI_Data.TargetPayloadID: " + str(RSSI_Data.TargetPayloadID))
+        err = True
+
+    if not valueInRange(RSSI_Data.FilteredRSSI,[-164,0]):
+        errString.append("FilteredRSSI: " + str(RSSI_Data.FilteredRSSI))
+        err = True
+    
+    if not valueInRange(RSSI_Data.Distance,[-100,50000]):
+        errString.append("Distance: ",RSSI_Data.Distance)
+        err = True
+
+    if not valueInRange(RSSI_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+        errString.append("Epoch: " + str(RSSI_Data.Epoch))
+        err = True
+
+    if err:
+        print(errString)
+        return False
+    else:
+        return True
+

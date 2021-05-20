@@ -20,113 +20,6 @@ def ekf_update(new_data):
     GlobalVals.EKF_ALL = new_data
     
 
-#=====================================================
-# Thread for local GPS logger socket connection 
-#=====================================================
-# def EKFLoggerSocket():
-
-#     # set up socket
-#     while True:
-#         try:
-#             socket_logger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
-#             socket_logger.connect((GlobalVals.HOST, GlobalVals.EKF_LOGGER_SOCKET))
-#             socket_logger.settimeout(GlobalVals.EKF_LOGGER_SOCKET_TIMEOUT)
-            
-#         except Exception as e:
-#             if e.args[1] == 'Connection refused':
-#                 print('Retry connecting to EKF....')
-#                 time.sleep(1)
-#                 continue
-#             else:
-#                 print("Exception: " + str(e.__class__))
-#                 print("There was an error starting the EKFlogger socket. This thread will now stop.")
-#                 with GlobalVals.BREAK_EKF_LOGGER_THREAD_MUTEX:
-#                     GlobalVals.BREAK_EKF_LOGGER_THREAD = True
-#                 return 
-#         break
-#     print('Connected to EKF!!!')
-#     # intialize variables 
-#     bufferRead = 1024
-#     breakMainThread = False
-#     while True:
-        
-#         # if flag is set break the thread 
-#         with GlobalVals.BREAK_EKF_LOGGER_THREAD_MUTEX:
-#             if GlobalVals.BREAK_EKF_LOGGER_THREAD:
-#                 break
-
-#         # read the socket 
-#         while True:
-#             try:
-#                 data_bytes = socket_logger.recv(bufferRead)
-#                 break
-#             except Exception as e:
-#                 if e.args[0] == 'timed out':
-#                     print("EKFLoggerSocket() Receive timed out. Retrying...")
-#                     time.sleep(0.1)
-#                     continue
-#                 else:
-#                     print("EKFLoggerSocket(): Receive Connection error.")
-#                     breakMainThread = True
-#                     break
-                
-#         if breakMainThread:
-#             break
-        
-#         # if there is nothing in the socket then it has timed out 
-#         if len(data_bytes) == 0:
-#             continue
-
-#         data_str = data_bytes.decode('utf-8')
-        
-#         string_list = extract_str_btw_curly_brackets(data_str)
-        
-#         if len(string_list) > 0:
-#             gps_list = []
-
-#             for string in string_list:
-#                 received, gps_i = stringToGPS(string)
-#                 if received:
-#                     gps_list.append(gps_i)
-
-#             idx = 0
-#             while idx < len(gps_list):
-#                 gps_update(gps_list[idx])
-#                 idx += 1
-            
-#             gps_i = GlobalVals.EKF_ALL
-        
-#             GPSData = CustMes.MESSAGE_GPS()
-#             GPSData.Longitude = gps_i.lon
-#             GPSData.Latitude = gps_i.lat
-#             GPSData.Altitude = gps_i.alt
-#             GPSData.GPSTime = gps_i.epoch
-#             GPSData.SystemID = gps_i.sysID
-
-#             # add data to the gps buffer 
-#             with GlobalVals.EKF_DATA_BUFFER_MUTEX:
-#                 GlobalVals.EKF_DATA_BUFFER.append(GPSData)
-
-#             # set the flag for the data 
-#             with GlobalVals.RECIEVED_EKF_LOCAL_DATA_MUTEX:
-#                 GlobalVals.RECIEVED_EKF_LOCAL_DATA = True
-
-#             # send GPS data to other balloons 
-#             GPSPacket = CustMes.MESSAGE_FRAME()
-#             GPSPacket.SystemID = GlobalVals.SYSTEM_ID
-#             GPSPacket.MessageID = 5
-#             GPSPacket.TargetID = 0
-#             GPSPacket.Payload = GPSData.data_to_bytes()
-#             NetworkManager.sendPacket(GPSPacket)
-#             # print(GPSData)
-#             # print("***************************")
-
-#         # pause a little bit so the mutexes are not getting called all the time 
-#         time.sleep(1)  
-
-#     socket_logger.close()
-#     return 
-
 def EKFLoggerSocket():
 
     # set up socket
@@ -326,3 +219,38 @@ def EKF_AllDistributor():
     #     time.sleep(1)
     for i in range(GlobalVals.N_EKF_NODE_PUBLISH):
         Distro_Connection[i].close()
+
+
+def EKF_FormatCheck(EKF_Data):
+    errString = []
+    err = False
+
+
+    if not EKF_Data.SystemID in GlobalVals.REAL_BALLOON:
+        errString.append("EKF_Data.SystemID: " + str(EKF_Data.SystemID))
+        err = True
+    
+    # if EKF_Data.SystemID == GlobalVals.SYSTEM_ID:
+    #     errString.append("EKF_Data.SystemID must be different")
+    #     err = True
+
+    if not valueInRange(EKF_Data.Longitude,[-180,180]):
+        errString.append("Longitude: " + str(EKF_Data.Longitude))
+        err = True
+
+    if not valueInRange(EKF_Data.Latitude,[-90,90]):
+        errString.append("Latitude: " + str(EKF_Data.Latitude))
+        err = True
+    
+    if not valueInRange(EKF_Data.Altitude,[-100,50000]):
+        errString.append("Altitude: ",EKF_Data.Altidue)
+        err = True
+
+    if not valueInRange(EKF_Data.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+        errString.append("Epoch: " + str(EKF_Data.Epoch))
+        err = True
+    if err:
+        print(errString)
+        return False
+    else:
+        return True

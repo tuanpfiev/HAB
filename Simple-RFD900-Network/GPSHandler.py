@@ -8,8 +8,12 @@ import GlobalVals
 import CustMes 
 import NetworkManager
 
-GPS_DistroThreadLock = threading.Lock()
+import sys, os
 
+sys.path.insert(1,'../utils')
+from utils import get_port
+from common import *
+from common_class import *
 #=====================================================
 # Thread for local GPS logger socket connection 
 #=====================================================
@@ -233,4 +237,37 @@ def GPSDistributor():
                 
     for i in range(GlobalVals.N_NODE_PUBLISH):
         Distro_Connection[i].close()
+
+
+def GPS_FormatCheck(GPSdata):
+    errString = []
+    err = False
+    if not GPSdata.SystemID in GlobalVals.REAL_BALLOON:
+        errString.append("GPSdata.SystemID: " + str(GPSdata.SystemID))
+        err = True
+    
+    # if GPSdata.SystemID == GlobalVals.SYSTEM_ID:
+    #     errString.append("GPSdata.SystemID must be different")
+    #     err = True
+
+    if not valueInRange(GPSdata.Longitude,[-180,180]):
+        errString.append("Longitude: " + str(GPSdata.Longitude))
+        err = True
+
+    if not valueInRange(GPSdata.Latitude,[-90,90]):
+        errString.append("Latitude: " + str(GPSdata.Latitude))
+        err = True
+    
+    if not valueInRange(GPSdata.Altitude,[-100,50000]):
+        errString.append("Altitude: ",GPSdata.Altidue)
+        err = True
+
+    if not valueInRange(GPSdata.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
+        errString.append("Epoch: " + str(GPSdata.GPSTime))
+        err = True
+    if err:
+        print(errString)
+        return False
+    else:
+        return True
 
