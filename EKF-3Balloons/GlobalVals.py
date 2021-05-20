@@ -50,7 +50,7 @@ RSSI_TIMEOUT = 360
 
 RSSI = np.array([RSSI()]*(N_REAL_BALLOON-1))
 GPS_ALL = np.array([GPS()]*N_BALLOON)
-IMU_ALL = np.array([IMU()]*N_BALLOON)
+IMU_ALL = IMU()
 GPS_REF = GPS(None, LAT_REF, LON_REF, ALT_REF)
 
 

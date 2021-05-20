@@ -48,8 +48,8 @@ def gps_update(new_data):
 
 def imu_update(new_data):
     i = sysID_to_index(new_data.sysID)
-    GlobalVals.IMU_ALL[i-1] = new_data
-
+    # GlobalVals.IMU_ALL[i-1] = new_data
+    GlobalVals.IMU_ALL = new_data
 
 def gps_callback(host,port):
 
@@ -392,8 +392,8 @@ if __name__ == '__main__':
     ##
 
     gps_ref = GlobalVals.GPS_REF
-    mag0 = GlobalVals.IMU_ALL[sysID-1].mag_vector
-    acc0 = GlobalVals.IMU_ALL[sysID-1].accel
+    mag0 = GlobalVals.IMU_ALL.mag_vector
+    acc0 = GlobalVals.IMU_ALL.accel
     timeCheck1 = time.time()
     pos0_enu = positionENU(GlobalVals.GPS_ALL[sysID-1], GlobalVals.GPS_REF)
     # print('Time ENU: ',time.time()-timeCheck1)
@@ -457,7 +457,7 @@ if __name__ == '__main__':
             gps = gps_all[sysID-1]
             # print('2')
             with GlobalVals.IMU_UPDATE_MUTEX:
-                imu = copy.deepcopy(GlobalVals.IMU_ALL[sysID-1])
+                imu = copy.deepcopy(GlobalVals.IMU_ALL)
                 print('__=================')
                 print(imu.epoch)
             # print('3')
