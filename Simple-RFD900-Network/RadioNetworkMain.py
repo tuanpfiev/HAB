@@ -297,7 +297,6 @@ if __name__ == '__main__':
         GlobalVals.SYSTEM_ID = int(sys.argv[1])
 
     print('SystemID is: ', GlobalVals.SYSTEM_ID)
-    GlobalVals.SYSTEM_ID = 1
     # set Port
     GlobalVals.PORT=get_port('RFD900')
     print('PORT: '+ GlobalVals.PORT)
