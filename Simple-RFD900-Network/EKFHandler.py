@@ -14,7 +14,6 @@ sys.path.insert(1,'../utils')
 from common import *
 from common_class import *
 
-GPS_DistroThreadLock = threading.Lock()
 
 
 def ekf_update(new_data):
