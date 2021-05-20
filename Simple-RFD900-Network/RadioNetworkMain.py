@@ -164,6 +164,37 @@ def main():
                         GlobalVals.RECIEVED_IMU_RADIO_DATA = True
                     
                     continue
+
+                if recievedPacket.MessageID == 5:
+                    
+                    # get the GPS data
+                    EKF_Data = CustMes.MESSAGE_EKF()                    
+                    error = EKF_Data.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: EKF data error " + str(error) + ".\n")
+                        continue
+                    
+
+                    # print("GPS Data from " + str(recievedPacket.SystemID) + ":" +"Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,1)) + ", Time:" + str(round(GPSdata.GPSTime,1)))
+                    # print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+
+                    # set the system id for the GPS data
+                    EKF_Data.SystemID = recievedPacket.SystemID
+
+                    if not EKF_Data.SystemID in GlobalVals.REAL_BALLOON or EKF_Data.SystemID == GlobalVals.SYSTEM_ID or not valueInRange(EKF_Data.Longitude,[-180,180]) or not valueInRange(EKF_Data.Latitude,[-90,90]) or not valueInRange(EKF_Data.Altitude,[-100,50000]) or not valueInRange(EKF_Data.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]):
+                        print(not EKF_Data.SystemID in GlobalVals.REAL_BALLOON , not valueInRange(EKF_Data.Longitude,[-180,180]) , not valueInRange(EKF_Data.Latitude,[-90,90]) , not valueInRange(EKF_Data.Altitude,[-100,50000]) , not valueInRange(EKF_Data.GPSTime,[GlobalVals.EXPERIMENT_TIME,None]))
+                        print("EKF message via RFD900 was broken. Discard it...") 
+                        continue
+
+                    # put data into the buffer
+                    with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+                        GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_EKF_RADIO_DATA = True
+                    
+                    continue
                 # Temperature
                 if recievedPacket.MessageID == 6:
 

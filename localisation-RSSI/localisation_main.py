@@ -103,6 +103,72 @@ def gps_callback(host,port):
 
     s.close()
 
+def ekf_callback(host,port):
+
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    
+    while True:
+        try:        
+            s.connect((host,port))
+            s.settimeout(GlobalVals.GPS_TIMEOUT)
+        except Exception as e:
+            if e.args[1] == 'Connection refused':
+                print('Retry connecting to EKF....')
+                time.sleep(1)
+                continue
+            else:
+                print("Exception: " + str(e.__class__))
+                print("There was an error starting the EKF socket. This thread will now stop.")
+                with GlobalVals.BREAK_EKF_THREAD_MUTEX:
+                    GlobalVals.BREAK_EKF_THREAD = True
+                return 
+        break
+
+    while True:
+        with GlobalVals.BREAK_EKF_THREAD_MUTEX:
+            if GlobalVals.BREAK_EKF_THREAD:
+                break
+        
+        while True:
+            try:
+                data_bytes = s.recv(GlobalVals.EKF_BUFFER)
+                break
+            except Exception as e:
+                if e.args[0] == 'timed out':
+                    print("ekf_callback timed out. Retrying ...")
+                    time.sleep(0.1)
+                else:
+                    print("Exception: " + str(e.__class__))
+                    print("There was an error starting the EKF receiver socket. This thread will now stop.")
+                    break
+                break
+
+        if len(data_bytes) == 0:
+            continue
+
+        data_str = data_bytes.decode('utf-8')
+        
+        string_list = []
+        string_list = extract_str_btw_curly_brackets(data_str)
+        # print("EKF string list: ",string_list)
+        if len(string_list) > 0:
+            gps_list = []
+            for string in string_list:
+                received, gps_i = stringToGPS(string)
+                if received:
+                    gps_list.append(gps_i)
+            
+            idx = 0
+            
+            with GlobalVals.GPS_UPDATE_MUTEX:
+                while idx < len(gps_list):
+                    ned = lla2ned(gps_list[idx].lat, gps_list[idx].lon, gps_list[idx].alt, GlobalVals.GPS_REF.lat, GlobalVals.GPS_REF.lon, GlobalVals.GPS_REF.alt)
+                    posXYZ = POS_XYZ(ned[0],ned[1])   
+                    position_update(posXYZ, gps_list[idx])
+                    idx += 1
+
+    s.close()
+
 def distanceRSSI_callback(host,port):
 
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -187,7 +253,9 @@ if __name__ == "__main__":
 
     RSSIThread = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI))
     RSSIThread.start()
-    
+
+    EKF_Thread = Thread(target=ekf_callback, args = (GlobalVals.HOST, GlobalVals.PORT_EKF))
+    EKF_Thread.start()    
 
     leader = GlobalVals.LEADER #any anchor                      
     sigma_range_measurement_val = GlobalVals.SIGMA_RSSI_RANGE     # this depends on the real data
@@ -295,4 +363,10 @@ if __name__ == "__main__":
         with GlobalVals.BREAK_RSSI_THREAD_MUTEX:
             GlobalVals.BREAK_RSSI_THREAD = True
         RSSIThread.join()
+
+    if EKF_Thread.is_alive():
+        with GlobalVals.BREAK_EKF_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_THREAD = True
+        EKF_Thread.join()
+
 

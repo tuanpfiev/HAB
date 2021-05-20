@@ -167,8 +167,8 @@ def GPSDistributor():
         except Exception as e:
             print("Exception: " + str(e.__class__))
             print("Error in the GPSDistributor[",i,"] logger socket. Now closing thread.")
-            # with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
-                # GlobalVals.BREAK_GPS_DISTRO_THREAD = True
+            with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
+                GlobalVals.BREAK_GPS_DISTRO_THREAD = True
             return 0
   
     

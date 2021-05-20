@@ -410,6 +410,7 @@ def main():
         # check to see if there is new data 
         dataUbloxReady = False
         dataQuectelReady = False
+        usedQuectel = False
 
         with GlobalVals.NewGPSData_Mutex:
             if GlobalVals.NewGPSData:
@@ -473,13 +474,13 @@ def main():
                                             if not GlobalVals.GPSTimestamp:
                                                 print('Using QuecTel GPS:')
                                                 updateGlobalGPS_Data(GPS_Data)
-                                                dataQuectelReady = True
+                                                usedQuectel = True
                                             else:
                                                 if obtainedQuectelCheck:
                                                     if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
                                                         print('Using QuecTel GPS:')
                                                         updateGlobalGPS_Data(GPS_Data)
-                                                        dataQuectelReady = True
+                                                        usedQuectel = True
 
                                             loopLengthQuectel = loopLengthQuectel -1
 
@@ -497,7 +498,7 @@ def main():
                 print("Test time: ", test)
                 statusUblox = False
 
-            if not statusUblox and not dataQuectelReady:
+            if not statusUblox and not usedQuectel:
                 with GlobalVals.GPSValuesMutex:
                     with GlobalVals.GGA_QuectelBufferMutex:     
                         # loop through each value in buffer

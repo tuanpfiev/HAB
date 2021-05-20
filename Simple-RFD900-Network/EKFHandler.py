@@ -240,30 +240,30 @@ def EKFLoggerSocket():
     return 
 
 
-def EKF_Distributor():
+def EKF_AllDistributor():
 
-    Distro_Socket = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
-    Distro_Connection = [None]*GlobalVals.N_RSSI_NODE_PUBLISH
-    for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+    Distro_Socket = [None]*GlobalVals.N_EKF_NODE_PUBLISH
+    Distro_Connection = [None]*GlobalVals.N_EKF_NODE_PUBLISH
+    for i in range(GlobalVals.N_EKF_NODE_PUBLISH):
         # start socket 
 
         Distro_Socket[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
         Distro_Socket[i].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
-        Distro_Socket[i].bind((GlobalVals.HOST, GlobalVals.RSSI_DISTRO_SOCKET[i]))
-        Distro_Socket[i].settimeout(GlobalVals.RSSI_LOGGER_SOCKET_TIMEOUT)
+        Distro_Socket[i].bind((GlobalVals.HOST, GlobalVals.EKF_ALL_DISTRO_SOCKET[i]))
+        Distro_Socket[i].settimeout(GlobalVals.EKF_LOGGER_SOCKET_TIMEOUT)
         
 
         # Wait for connection on the distro socket 
         try:
             Distro_Socket[i].listen(1) 
             Distro_Connection[i], addr = Distro_Socket[i].accept()  
-            Distro_Connection[i].settimeout(GlobalVals.RSSI_LOGGER_SOCKET_TIMEOUT) 
-            print("Logger[",i,"] Connected to ", addr)                                            
+            Distro_Connection[i].settimeout(GlobalVals.EKF_LOGGER_SOCKET_TIMEOUT) 
+            print("EKF All Distributor[",i,"] Connected to ", addr)                                            
         except Exception as e:
             print("Exception: " + str(e.__class__))
-            print("Error in the RSSI_Distributor[",i,"] logger socket. Now closing thread.")
-            with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
-                GlobalVals.BREAK_RSSI_DISTRO_THREAD = True
+            print("Error in the EKF_AllDistributor[",i,"] socket. Now closing thread.")
+            with GlobalVals.BREAK_EKF_ALL_DISTRO_THREAD_MUTEX:
+                GlobalVals.BREAK_EKF_ALL_DISTRO_THREAD = True
             return 0
   
     
@@ -277,21 +277,21 @@ def EKF_Distributor():
         if breakThread:
             break
 
-        with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
-            if GlobalVals.BREAK_RSSI_DISTRO_THREAD:
+        with GlobalVals.BREAK_EKF_ALL_DISTRO_THREAD_MUTEX:
+            if GlobalVals.BREAK_EKF_ALL_DISTRO_THREAD:
                 break
 
         # check if local GPS data has been recived 
-        with GlobalVals.RECIEVED_RSSI_LOCAL_DATA_MUTEX:
-            if GlobalVals.RECIEVED_RSSI_LOCAL_DATA:
+        with GlobalVals.RECIEVED_EKF_LOCAL_DATA_MUTEX:
+            if GlobalVals.RECIEVED_EKF_LOCAL_DATA:
                 source1 = True
-                GlobalVals.RECIEVED_RSSI_LOCAL_DATA = False
+                GlobalVals.RECIEVED_EKF_LOCAL_DATA_MUTEX = False
         
         # check if GPS data from the radio has been recieved 
-        with GlobalVals.RECIEVED_RSSI_RADIO_DATA_MUTEX:
-            if GlobalVals.RECIEVED_RSSI_RADIO_DATA:
+        with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
+            if GlobalVals.RECIEVED_EKF_RADIO_DATA:
                 source2 = True
-                GlobalVals.RECIEVED_RSSI_RADIO_DATA = False
+                GlobalVals.RECIEVED_EKF_RADIO_DATA = False
         
         # if no data has been recieved sleep and loop
         if not source1 and not source2:
@@ -301,22 +301,19 @@ def EKF_Distributor():
             source1 = False
             source2 = False
 
-        with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
-            while len(GlobalVals.RSSI_DATA_BUFFER) > 0:
+        with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+            while len(GlobalVals.EKF_DATA_BUFFER) > 0:
 
                 # get the GPS data
-                RSSI_Data = GlobalVals.RSSI_DATA_BUFFER.pop(0)
-                distance = RSSI_Data.Distance
-                filteredRSSI = RSSI_Data.FilteredRSSI
-                targetPayloadID = RSSI_Data.TargetPayloadID
-                epoch = RSSI_Data.Epoch
-                systemID = RSSI_Data.SystemID
+                objEKF = GlobalVals.EKF_DATA_BUFFER.pop(0)
+                objEKF = GlobalVals.EKF_BUFFER.pop(0)
 
-                messageStr = "{sysID: " + str(systemID) + "; time: " + str(epoch) + "; RSSI_filter: " + str(filteredRSSI) + "; distance: " + str(distance) + "; targetPayloadID: " + str(targetPayloadID) + ";}"
+                messageStr = "{'system': " + str(objEKF.sysID) + "; 'altitude': " + str(objEKF.alt) + "; 'latitude': " + str(objEKF.lat) + "; 'longitude': " + str(objEKF.lon) + "; 'time': " + str(objEKF.epoch) + "; 'posX': " + str(objEKF.posX) + "; 'posY': " + str(objEKF.posY) +  "; 'p00': " + str(objEKF.p00) +  "; 'p01': " + str(objEKF.p01) + "; 'p10': " + str(objEKF.p10) + "; 'p11': " + str(objEKF.p11) + ";}"
+
                 messageStr_bytes = messageStr.encode('utf-8')
 
                 # send the message 
-                for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+                for i in range(GlobalVals.N_EKF_NODE_PUBLISH):
                     try:
                         Distro_Connection[i].sendall(messageStr_bytes)
                         # print("Sending RSSI:",messageStr)
@@ -325,8 +322,8 @@ def EKF_Distributor():
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")
                         breakThread = True
                         break
-    while True:
-        print("Close RSSI Distro to other nodes ")
-        time.sleep(1)
-    for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
+    # while True:
+    #     print("Close EKF Distro to other nodes ")
+    #     time.sleep(1)
+    for i in range(GlobalVals.N_EKF_NODE_PUBLISH):
         Distro_Connection[i].close()
