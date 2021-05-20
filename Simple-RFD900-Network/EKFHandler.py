@@ -101,7 +101,7 @@ def EKFLoggerSocket():
             EKF_Data.Longitude = ekf.lon
             EKF_Data.Latitude = ekf.lat
             EKF_Data.Altitude = ekf.alt
-            EKF_Data.GPSTime = ekf.epoch
+            EKF_Data.Epoch = ekf.epoch
             EKF_Data.SystemID = ekf.sysID
             EKF_Data.PosX = ekf.posX
             EKF_Data.PosY = ekf.posY
