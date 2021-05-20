@@ -154,7 +154,9 @@ def imu_callback(host,port):
         if len(string_list) > 0:
             imu_list = []
             for string in string_list:
+                # print(string)
                 received, imu_i = stringToIMU(string)
+                # print(imu_i.epoch)
                 if received:
                     imu_list.append(imu_i)
             
