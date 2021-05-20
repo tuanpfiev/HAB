@@ -68,7 +68,7 @@ def RSSI_LoggerSocket(host,port,index):
     print('Connected to RSSI[',index,'], Port: ',port,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     # intialize variables 
     bufferRead = 1024
-
+    breakMainThread = False
     while True:
         
         # if flag is set break the thread 
@@ -89,8 +89,10 @@ def RSSI_LoggerSocket(host,port,index):
                     continue
                 else:
                     print("RSSI_LoggerSocket Connection error.")
+                    breakMainThread = True
                     break
-                break
+        if breakMainThread:
+            break
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:
             continue

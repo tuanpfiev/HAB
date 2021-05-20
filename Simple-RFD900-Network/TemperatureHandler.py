@@ -35,6 +35,7 @@ def TemperatureLoggerSocket():
         return 
     
     bufferRead = 1024
+    breakMainThread = False
     while True:
         # print("TEMPERATURE SOCKET")
         # if flag is set break the thread 
@@ -54,8 +55,11 @@ def TemperatureLoggerSocket():
                     continue
                 else:
                     print("Temperature Socket Connection error.")
+                    breakMainThread = True
                     break
-                break
+        
+        if breakMainThread:
+            break
         
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:

@@ -315,8 +315,8 @@ if __name__ == '__main__':
     # IMUDistroThread.start()
 
     # start EKF logger
-    EKF_GPS_Thread = Thread(target=EKFHandler.EKFGPSLoggerSocket, args = ())
-    EKF_GPS_Thread.start()
+    EKF_Thread = Thread(target=EKFHandler.EKFGPSLoggerSocket, args = ())
+    EKF_Thread.start()
 
     # start RSSI logger
     RSSI_Thread = [None]*(GlobalVals.N_REAL_BALLOON-1)
@@ -383,10 +383,10 @@ if __name__ == '__main__':
     #         GlobalVals.BREAK_IMU_DISTRO_THREAD = True
     #     IMUDistroThread.join()
 
-    if EKF_GPS_Thread.is_alive():
-        with GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_GPS_LOGGER_THREAD = True
-        EKF_GPS_Thread.join()
+    if EKF_Thread.is_alive():
+        with GlobalVals.BREAK_EKF_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_LOGGER_THREAD = True
+        EKF_Thread.join()
 
     for i in range(GlobalVals.N_REAL_BALLOON-1):
         if RSSI_Thread[i].is_alive():

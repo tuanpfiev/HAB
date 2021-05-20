@@ -291,24 +291,24 @@ def distanceRSSI_callback(host,port,balloon_id):
 
 
 
-def LLA_EKF_Distributor():
+def EKF_Distributor():
     # start socket 
     Distro_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     Distro_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1) 
-    Distro_Socket.bind((GlobalVals.HOST, GlobalVals.EKF_GPS_DISTRO_SOCKET))
-    Distro_Socket.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT)
+    Distro_Socket.bind((GlobalVals.HOST, GlobalVals.EKF_OUTPUT_DISTRO_SOCKET))
+    Distro_Socket.settimeout(GlobalVals.EKF_LOGGER_SOCKET_TIMEOUT)
     
     # Wait for connection on the distro socket 
     try:
         Distro_Socket.listen(1) 
         Distro_Connection, addr = Distro_Socket.accept()  
-        Distro_Connection.settimeout(GlobalVals.EKF_GPS_LOGGER_SOCKET_TIMEOUT) 
+        Distro_Connection.settimeout(GlobalVals.EKF_LOGGER_SOCKET_TIMEOUT) 
         print("Logger Connected to ", addr)                                            
     except Exception as e:
         print("Exception: " + str(e.__class__))
         print("Error in the logger socket. Now closing thread.")
-        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
+        with GlobalVals.BREAK_EKF_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_DISTRO_THREAD = True
         return
 
     breakThread = False
@@ -317,15 +317,15 @@ def LLA_EKF_Distributor():
         if breakThread:
             break
 
-        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
-            if GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD:
+        with GlobalVals.BREAK_EKF_DISTRO_THREAD_MUTEX:
+            if GlobalVals.BREAK_EKF_DISTRO_THREAD:
                 break
 
-        with GlobalVals.LLA_EKF_BUFFER_MUTEX:
-            while len(GlobalVals.LLA_EKF_BUFFER)>0:
-                llaEKF = GlobalVals.LLA_EKF_BUFFER.pop(0)
+        with GlobalVals.EKF_BUFFER_MUTEX:
+            while len(GlobalVals.EKF_BUFFER)>0:
+                objEKF = GlobalVals.EKF_BUFFER.pop(0)
 
-                messageStr = "{'system': " + str(llaEKF.sysID) + "; 'altitude': " + str(llaEKF.alt) + "; 'latitude': " + str(llaEKF.lat) + "; 'longitude': " + str(llaEKF.lon) + "; 'time': " + str(llaEKF.epoch) + "}"
+                messageStr = "{'system': " + str(objEKF.sysID) + "; 'altitude': " + str(objEKF.alt) + "; 'latitude': " + str(objEKF.lat) + "; 'longitude': " + str(objEKF.lon) + "; 'time': " + str(objEKF.epoch) + "; 'posX': " + str(objEKF.posX) + "; 'posY': " + str(objEKF.posY) +  "; 'p00': " + str(objEKF.p00) +  "; 'p01': " + str(objEKF.p01) + "; 'p10': " + str(objEKF.p10) + "; 'p11': " + str(objEKF.p11) + ";}"
                 messageStr_bytes = messageStr.encode('utf-8')
 
                 try:
@@ -358,8 +358,8 @@ if __name__ == '__main__':
         RSSIThread[i] = Thread(target=distanceRSSI_callback, args = (GlobalVals.HOST, GlobalVals.PORT_RSSI[i],i))
         RSSIThread[i].start()
 
-    LLA_EKF_DistributorThread = Thread(target = LLA_EKF_Distributor, args = ())
-    LLA_EKF_DistributorThread.start()
+    EKF_DistributorThread = Thread(target = EKF_Distributor, args = ())
+    EKF_DistributorThread.start()
 
     sysID = GlobalVals.SYSID
 
@@ -576,11 +576,11 @@ if __name__ == '__main__':
 
 
                 posENU_EKF = np.array([x_h[0][0],x_h[1][0],x_h[2][0]]).T
-                llaEKF = enu2lla(posENU_EKF, gps_ref)
-                print('Lon: ',round(llaEKF[1],2), ', Lat: ', round(llaEKF[0],2), ', Alt: ', round(llaEKF[2],1), 'Time: ',timeLocal)
+                objEKF = enu2lla(posENU_EKF, gps_ref)
+                print('Lon: ',round(objEKF[1],2), ', Lat: ', round(objEKF[0],2), ', Alt: ', round(objEKF[2],1), 'Time: ',timeLocal)
 
-                with GlobalVals.LLA_EKF_BUFFER_MUTEX:
-                    GlobalVals.LLA_EKF_BUFFER.append(GPS(sysID, llaEKF[0],llaEKF[1],llaEKF[2],epoch))
+                with GlobalVals.EKF_BUFFER_MUTEX:
+                    GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],node.P[0][0],node.P[0][1],node.P[1][0],node.P[1][1]))
 
                 # gps_all_prev = copy.deepcopy(gps_all)
                 
@@ -617,9 +617,9 @@ if __name__ == '__main__':
             GlobalVals.BREAK_RSSI_THREAD[i] = True
         RSSIThread[i].join()
 
-    if LLA_EKF_DistributorThread.is_alive():
-        with GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD_MUTEX:
-            GlobalVals.BREAK_EKF_GPS_DISTRO_THREAD = True
-        LLA_EKF_DistributorThread.join()
+    if EKF_DistributorThread.is_alive():
+        with GlobalVals.BREAK_EKF_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_DISTRO_THREAD = True
+        EKF_DistributorThread.join()
 
 

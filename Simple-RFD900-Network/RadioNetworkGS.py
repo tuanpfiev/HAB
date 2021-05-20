@@ -223,6 +223,14 @@ def gps_lambda_handler():
 
         for i in pathHistory:
             aws_message.append(i)
+        
+        initial_message = {
+            'nBalloon': str(nRealBalloon),  
+            'launch': "Horsham",
+            'nFire': str(2),
+            'fireLocation': str([-36.7, 142.2, -36.8, 142.4])
+        }
+        aws_message.append(initial_message)
 
         response = k_client.put_record(
                 StreamName=stream_name,
@@ -412,12 +420,12 @@ def main():
                     print('Distance EKF: ',round(distance,2)," [m]")
                     print('------------------------------------------------')
                     # put data into the buffer
-                    # with GlobalVals.EKF_GPS_DATA_BUFFER_MUTEX:
-                    #     GlobalVals.EKF_GPS_DATA_BUFFER.append(GPSdata)
+                    # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+                    #     GlobalVals.EKF_DATA_BUFFER.append(GPSdata)
 
                     # set the flags for the buffer 
-                    # with GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA_MUTEX:
-                    #     GlobalVals.RECIEVED_EKF_GPS_RADIO_DATA = True
+                    # with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
+                    #     GlobalVals.RECIEVED_EKF_RADIO_DATA = True
                     
                     continue
 

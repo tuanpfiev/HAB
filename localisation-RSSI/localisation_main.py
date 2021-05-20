@@ -249,7 +249,10 @@ if __name__ == "__main__":
         with GlobalVals.RSSI_UPDATE_MUTEX:
             rssiAll = copy.deepcopy(GlobalVals.RSSI_MATRIX)
 
-
+        if not checkAllGPS(gps_tmp):
+            time.sleep(0.1)
+            continue
+        
         # Main loop
         start_time = time.time()
         location,_,iteration,distanceMatrix = balloon_main(leader,GlobalVals.ANCHOR_LIST,posXYZ_tmp,sigma_range_measurement_val,rssiAll,gps_tmp[sysID-1],gps_tmp)

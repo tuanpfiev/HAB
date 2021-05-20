@@ -34,7 +34,7 @@ def GPSLoggerSocket():
     syncA = False
     syncB = False
     bufferRead = 1
-
+    breakMainThread = False
     while True:
         
         # if flag is set break the thread 
@@ -58,8 +58,11 @@ def GPSLoggerSocket():
                     continue
                 else:
                     print("GPSLoggerSocket: Receive Connection error.")
+                    breakMainThread = True
                     break
-                break
+        
+        if breakMainThread:
+            break
             
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:

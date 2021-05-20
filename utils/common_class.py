@@ -42,6 +42,19 @@ class TEMPERATURE:
         self.temperature = temperature if temperature is not None else 0.0
         self.epoch = epoch if epoch is not None else 0.0
 
+class EKF:
+    def __init__(self, sysID = None, lat = None, lon = None, alt = None, epoch = None, posX = None,posY = None, p00 = None, p01 = None, p10 = None, p11 = None):
+        self.sysID = sysID if sysID is not None else 0
+        self.lat = lat if lat is not None else 0.0
+        self.lon = lon if lon is not None else 0.0
+        self.alt = alt if alt is not None else 0.0
+        self.epoch = epoch if epoch is not None else 0.0
+        self.posX = posX if posX is not None else 0.0
+        self.posY = posY if posY is not None else 0.0
+        self.p00 = p00 if p00 is not None else 0.0
+        self.p01 = p01 if p01 is not None else 0.0
+        self.p10 = p10 if p10 is not None else 0.0
+        self.p11 = p11 if p11 is not None else 0.0
 
 # class LORA_ALLOCATION:
 #     def __init__(self, pair1 = None, pair2 = None, pair3 = None):

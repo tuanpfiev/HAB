@@ -215,6 +215,46 @@ def stringToRSSI(raw_data):
 
         return False, RSSI()
 
+def stringToEKF(raw_data):
+    try:
+        raw_data.index("'system':")
+        raw_data.index("'altitude':")
+        raw_data.index("'latitude':")
+        raw_data.index("'longitude':")
+        raw_data.index("'time':")
+        raw_data.index("'posX':")
+        raw_data.index("'posY':")
+        raw_data.index("'p00':")
+        raw_data.index("'p01':")
+        raw_data.index("'p10':")
+        raw_data.index("'p11':")
+
+    except ValueError:
+        
+        return False, EKF()
+
+    ekf_i = EKF()
+
+    try:
+        ekf_i.sysID = int(float(extract_string_data("'system': ",";",raw_data)))
+        ekf_i.alt = float(extract_string_data("'altitude': ",";",raw_data))
+        ekf_i.lat = float(extract_string_data("'latitude': ",";",raw_data))
+        ekf_i.lon = float(extract_string_data("'longitude': ",";",raw_data))
+        ekf_i.epoch = float(extract_string_data("'time': ",";",raw_data))
+        ekf_i.posX = float(extract_string_data("'posX': ",";",raw_data))
+        ekf_i.posY = float(extract_string_data("'posY': ",";",raw_data))
+        ekf_i.p00 = float(extract_string_data("'p00': ",";",raw_data))
+        ekf_i.p01 = float(extract_string_data("'p01': ",";",raw_data))
+        ekf_i.p10 = float(extract_string_data("'p10': ",";",raw_data))
+        ekf_i.p11 = float(extract_string_data("'p11': ",";",raw_data))
+
+        return True, ekf_i
+
+    except ValueError:
+
+        return False, EKF()
+        
+
 def stringToTemperature(raw_data):
                         # socketPayload = "{'epoch': " + str(tempTime) + "; 'temp': " + str(tempVal) + ';}'
 
