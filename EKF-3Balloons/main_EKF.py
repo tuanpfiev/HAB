@@ -583,8 +583,8 @@ if __name__ == '__main__':
                 print('Lon: ',round(objEKF[1],2), ', Lat: ', round(objEKF[0],2), ', Alt: ', round(objEKF[2],1), 'Time: ',timeLocal)
 
                 with GlobalVals.EKF_BUFFER_MUTEX:
-                    GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],smallP[0][0],smallP[0][1],smallP[1][0],smallP[1][1]))
-                    # GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],1,1,1,1))
+                    #GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,node.x_h[0][0],x_h[1][0],smallP[0][0],smallP[0][1],smallP[1][0],smallP[1][1]))
+                    GlobalVals.EKF_BUFFER.append(EKF(sysID, objEKF[0],objEKF[1],objEKF[2],epoch,1,1,1,1,1,1))
 
                     # print("length buffer: ",len(GlobalVals.EKF_BUFFER))
 

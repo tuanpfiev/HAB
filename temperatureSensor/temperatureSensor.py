@@ -44,7 +44,7 @@ def main():
         with GlobalVals.newTempDataMutex:
             GlobalVals.newTempData = True
         
-        logString = str(GlobalVals.sysID) + str(tempTime) + ',' + str(tempVal) + '\n'
+        logString = str(GlobalVals.sysID) + ','+ str(tempTime) + ',' + str(tempVal) + '\n'
         timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(tempTime))
 
         print("SysID: ", GlobalVals.sysID,", Temperature: ",round(tempVal,1),", Time: ", timeLocal)
