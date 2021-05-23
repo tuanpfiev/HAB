@@ -557,7 +557,7 @@ class MESSAGE_RSSI:
     FilteredRSSI: float = 0   
     Epoch: float = 0 
     Distance: float = 0
-    TargetPayloadID: int = 0
+    TargetPayloadID: float = 0
     SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
     
     def setFilteredRSSI(self,filteredRSSI):
@@ -625,7 +625,7 @@ class MESSAGE_RSSI:
 
 @dataclass
 class MESSAGE_RSSI_ALLOCATION:
-    Pair: int = 0   
+    Pair: float = 0   
     SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
     
     def setPair(self,pair):
@@ -665,7 +665,7 @@ class MESSAGE_RSSI:
     FilteredRSSI: float = 0   
     Epoch: float = 0 
     Distance: float = 0
-    TargetPayloadID: int = 0
+    TargetPayloadID: float = 0
     SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
     
     def setFilteredRSSI(self,filteredRSSI):

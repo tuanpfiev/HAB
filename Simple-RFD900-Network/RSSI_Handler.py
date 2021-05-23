@@ -420,3 +420,21 @@ def RSSI_FormatCheck(RSSI_Data):
     else:
         return True
 
+
+def RSSI_AllocationFormatCheck(RSSI_AllocationData):
+    errString = []
+    err = False
+
+    if not RSSI_AllocationData.SystemID in GlobalVals.REAL_BALLOON:
+        errString.append("RSSI_AllocationData.SystemID: " + str(RSSI_AllocationData.SystemID))
+        err = True
+    
+    if not RSSI_AllocationData.Pair in GlobalVals.LORA_PAIR_NUM:
+        errString.append("RSSI_AllocationData.Pair: " + str(RSSI_AllocationData.Pair))
+        err = True
+
+    if err:
+        print(errString)
+        return False
+    else:
+        return True

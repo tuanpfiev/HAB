@@ -113,3 +113,30 @@ def TemperatureLoggerSocket():
     socket_logger.close()
     return 
 
+
+def temperatureFormatCheck(temperatureData):
+    errString = []
+    err = False
+
+
+    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON:
+        errString.append("temperatureData.SystemID: " + str(temperatureData.SystemID))
+        err = True
+    
+    if temperatureData.SystemID == GlobalVals.SYSTEM_ID:
+        errString.append("temperatureData.SystemID must be different")
+        err = True
+
+    if not valueInRange(temperatureData.Temperature,[-100,150]):
+        errString.append("Temperature: " + str(temperatureData.Temperature))
+        err = True
+
+    if not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+        errString.append("Epoch: " + str(temperatureData.Epoch))
+        err = True
+
+    if err:
+        print(errString)
+        return False
+    else:
+        return True

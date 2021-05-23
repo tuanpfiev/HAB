@@ -207,7 +207,7 @@ def main():
                     # set the system id for the GPS data
                     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(temperatureData.Temperature,[-100,150]) or not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+                    if TemperatureHandler.temperatureFormatCheck(temperatureData):
                         print("Temperature message via RFD900 was broken. Discard it...")
                         continue
                     
@@ -270,7 +270,7 @@ def main():
                     # set the system id for the GPS data
                     RSSI_AllocationData.SystemID = recievedPacket.SystemID
                     
-                    if not RSSI_AllocationData.SystemID in GlobalVals.REAL_BALLOON or not RSSI_AllocationData.Pair in GlobalVals.LORA_PAIR_NUM:
+                    if not RSSI_Handler.RSSI_AllocationFormatCheck(RSSI_AllocationData):
                         print("RSSI Allocation message via RFD900 was broken. Discard it...")
                         continue
                     
