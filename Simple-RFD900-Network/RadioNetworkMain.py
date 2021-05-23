@@ -307,6 +307,11 @@ if __name__ == '__main__':
     except FileExistsError:
         pass
 
+    GlobalVals.ERROR_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ErrorLog.txt"
+    GlobalVals.PING_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PingLog.txt"
+    GlobalVals.PACKET_STATS_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PacketStats.txt"
+    GlobalVals.GROUND_STATION_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GSLog.txt"
+
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.SerialManagerThread,args=())
