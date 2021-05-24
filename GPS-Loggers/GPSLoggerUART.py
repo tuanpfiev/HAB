@@ -403,6 +403,7 @@ def main():
     statusUblox = True
     GPS_Data = GPS()
     GPS_DataPrevUBlox = GPS()
+    sensorID = 1
     # loop only while the other threads are running 
     while not GlobalVals.EndGPSSerial and not GlobalVals.EndGPSSocket:
         timeCheck1 = time.time()
@@ -410,7 +411,7 @@ def main():
         # check to see if there is new data 
         dataUbloxReady = False
         dataQuectelReady = False
-        usedQuectel = False
+        # usedQuectel = False
 
         with GlobalVals.NewGPSData_Mutex:
             if GlobalVals.NewGPSData:
@@ -433,7 +434,7 @@ def main():
             # loop through each value in buffer
             loopLength = len(GlobalVals.GGAbuffer)
             if loopLength > 0:
-                statusUblox = True
+                # statusUblox = True
                 while loopLength > 0:
                     
                     # Get GPS data from the value in buffer
@@ -450,12 +451,12 @@ def main():
             
                             if obtainedUbloxCheck or firstRunUblox:
                                 firstRunUblox = False
-                            # if obtainedUbloxCheck:
                                 print('Using Ublox GPS:')
                                 updateGlobalGPS_Data(GPS_Data)
                                 GPS_DataPrevUBlox = copy.deepcopy(GPS_Data)
                                 # print(GPS_Data)
                                 dataUbloxReady = True
+                                sensorID = 1
                             else:
                                 with GlobalVals.GGA_QuectelBufferMutex:
                                     # loop through each value in buffer
@@ -475,13 +476,15 @@ def main():
                                             if not GlobalVals.GPSTimestamp:
                                                 print('Using QuecTel GPS:')
                                                 updateGlobalGPS_Data(GPS_Data)
-                                                usedQuectel = True
+                                                sensorID = 2
+                                                # usedQuectel = True
                                             else:
                                                 if obtainedQuectelCheck:
                                                     if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
                                                         print('Using QuecTel GPS:')
                                                         updateGlobalGPS_Data(GPS_Data)
-                                                        usedQuectel = True
+                                                        sensorID = 2
+                                                        # usedQuectel = True
 
                                             loopLengthQuectel = loopLengthQuectel -1
 
@@ -490,55 +493,54 @@ def main():
                                 GlobalVals.NewGPSSocketData = True
                                     
                             # Log the GPS data
-                            logData(GPS_Data)
+                            logData(GPS_Data,sensorID)
                             loopLength = loopLength - 1
-
-
-            if not usedQuectel and time.time() - GPS_DataPrevUBlox.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
+            
+            else:
+                if time.time() - GPS_DataPrevUBlox.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
                 # test = time.time() - GPS_DataPrevUBlox.epoch
                 # print("Test time: ", test)
-                statusUblox = False
-
-            if not statusUblox and not usedQuectel:
-                with GlobalVals.GPSValuesMutex:
-                    with GlobalVals.GGA_QuectelBufferMutex:     
-                        # loop through each value in buffer
-                        loopLengthQuectel = len(GlobalVals.GGA_QuectelBuffer)
-                        while loopLengthQuectel > 0:
-                            
-                            # Get GPS data from the value in buffer
-                            GGAdataQuectel = GlobalVals.GGA_QuectelBuffer.pop(0)
-                            
-                            GPS_Data, messageValid = GGA_Convert(GGAdataQuectel)
-                            if not messageValid:
-                                loopLengthQuectel = loopLengthQuectel - 1
-                                continue
-                            else:
-                                # print("3: ",GPS_Data)
-                                obtainedQuectelCheck = checkGPS(GPS_Data)
-                                    
-                                if obtainedQuectelCheck:
-                                    if not GlobalVals.GPSTimestamp:
-                                        print('Using QuecTel GPS2:')
-                                        updateGlobalGPS_Data(GPS_Data)
-                                    else:
-                                        if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                            print('dt: ',GPS_Data.epoch - GlobalVals.GPSTimestamp[-1])
-                                            print('Using QuecTel GPS2:')
-                                else:
-                                    print('Using QuecTel GPS when both are unavailable')
-                                    updateGlobalGPS_Data(GPS_Data)
-                                    
+                    with GlobalVals.GPSValuesMutex:
+                        with GlobalVals.GGA_QuectelBufferMutex:     
+                            # loop through each value in buffer
+                            loopLengthQuectel = len(GlobalVals.GGA_QuectelBuffer)
+                            while loopLengthQuectel > 0:
                                 
-                                with GlobalVals.NewGPSSocketData_Mutex:
-                                    GlobalVals.NewGPSSocketData = True
-                                # Log the GPS data
-                                logData(GPS_Data)
-                                # GPS_DataPrev = copy.deepcopy(GPS_Data) 
-                                # print("GPS_DataPrev updated")
-                                loopLengthQuectel = loopLengthQuectel -1
+                                # Get GPS data from the value in buffer
+                                GGAdataQuectel = GlobalVals.GGA_QuectelBuffer.pop(0)
+                                
+                                GPS_Data, messageValid = GGA_Convert(GGAdataQuectel)
+                                if not messageValid:
+                                    loopLengthQuectel = loopLengthQuectel - 1
+                                    continue
+                                else:
+                                    # print("3: ",GPS_Data)
+                                    obtainedQuectelCheck = checkGPS(GPS_Data)
+                                        
+                                    if obtainedQuectelCheck:
+                                        if not GlobalVals.GPSTimestamp:
+                                            print('Using QuecTel GPS2:')
+                                            updateGlobalGPS_Data(GPS_Data)
+                                            sensorID = 2
+                                        else:
+                                            if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
+                                                print('dt: ',GPS_Data.epoch - GlobalVals.GPSTimestamp[-1])
+                                                print('Using QuecTel GPS2:')
+                                    else:
+                                        print('Using QuecTel GPS when both are unavailable')
+                                        updateGlobalGPS_Data(GPS_Data)
+                                        sensorID = 2
+                                        
+                                    
+                                    with GlobalVals.NewGPSSocketData_Mutex:
+                                        GlobalVals.NewGPSSocketData = True
+                                    # Log the GPS data
+                                    logData(GPS_Data,sensorID)
+                                    # GPS_DataPrev = copy.deepcopy(GPS_Data) 
+                                    # print("GPS_DataPrev updated")
+                                    loopLengthQuectel = loopLengthQuectel -1
 
-                                # set the flag for the socket code 
+                                    # set the flag for the socket code 
 
                       
             # timecheck2 = time.time()
@@ -602,7 +604,7 @@ if __name__ == '__main__':
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GPSLogger.csv"
     GlobalVals.GPS_LOGGER_FILE = file_name
 
-    logString = "epoch, lon, lat, alt, ascent_rate \n"
+    logString = "epoch, lon, lat, alt, ascent_rate, sensorID \n"
 
     try:
         fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")

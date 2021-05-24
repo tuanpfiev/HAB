@@ -5,7 +5,7 @@ import GlobalVariables
 
 HOST = '127.0.0.1'
 PORT_TEMPERATURE = GlobalVariables.TS_TEMPT_DISTRO_SOCKET
-socketTimeout = 60
+socketTimeout = 36000
 
 fileName = 'TemperatureYoctopuce.txt'
 sysID = 1

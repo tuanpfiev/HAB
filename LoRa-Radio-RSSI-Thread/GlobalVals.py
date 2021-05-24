@@ -9,7 +9,7 @@ import GlobalVariables
 #=====================================================
 
 HOST = '127.0.0.1'
-TIMEOUT = 1                                   # Serial port time out 
+TIMEOUT = 10                                   # Serial port time out 
 PORT = "COM17"                                  # Windows COM por
 BAUDRATE = 9600                                # the baud for the serial port connection 
 HANDSHAKE_BYTES = bytes([0xFF, 0x00, 0xFF])
@@ -26,8 +26,8 @@ RSSI_time = []
 TIMESEND = [0,1]
 
 
-SOCKET_TIMEOUT = 60
-GPS_TIMEOUT = 60
+SOCKET_TIMEOUT = 36000
+GPS_TIMEOUT = 36000
 GPS_BUFFER = 2048
 
 EndRSSISocket = False
@@ -54,7 +54,7 @@ RSSI_ALLOCATION_SOCKET = GlobalVariables.RSSI_ALLOCATION_DISTRO_SOCKET
 #                         [5101,5111]])   # LC1
 
 PORT_RSSI = GlobalVariables.LORA_RSSI_DISTRO_SOCKET
-RSSI_TIMEOUT = 60
+RSSI_TIMEOUT = 36000
 RSSI_BUFFER = 1024
 
 N_BALLOON = GlobalVariables.N_BALLOON

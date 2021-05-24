@@ -158,9 +158,9 @@ def RSSI_LoggerSocket(host,port,index):
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
 
-    while True:
-        print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        time.sleep(0.5)
+    # while True:
+    #     print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #     time.sleep(0.5)
     socket_logger.close()
     return 
 
@@ -250,9 +250,9 @@ def RSSI_Distributor():
                         print("Error when sending to RSSI Distro_Connection[",i,"]. Now closing thread.")
                         breakThread = True
                         break
-    while True:
-        print("Close RSSI Distro to other nodes ")
-        time.sleep(1)
+    # while True:
+    #     print("Close RSSI Distro to other nodes ")
+    #     time.sleep(1)
     for i in range(GlobalVals.N_RSSI_NODE_PUBLISH):
         Distro_Connection[i].close()
 
@@ -320,23 +320,27 @@ def RSSI_AllocationDistributor():
                 GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
             return 0
     
+    breakThread = False
     nextPair = 1
     while True:    
         # print("RSSI ALLOCATION DISTRIBUTOR 2")
+        if breakThread:
+            break
 
         with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
             if GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD:
                 break
-        with GlobalVals.RSSI_ALLOCATION_MUTEX:
+        
             # print("RSSI ALLOCATION DISTRIBUTOR 3")
 
-            if GlobalVals.SYSTEM_ID == 1:
+        if GlobalVals.SYSTEM_ID == 1:
+            with GlobalVals.NEXT_PAIR_MUTEX:
                 nextPair = GlobalVals.NEXT_PAIR
-            else:
-                with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
-                    if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER) > 0:
-                        RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
-                        nextPair = RSSI_DataAllocation
+        else:
+            with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
+                if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER) > 0:
+                    RSSI_DataAllocation = GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
+                    nextPair = RSSI_DataAllocation
 
         messageStr = "{'pair': " + str(nextPair) +";}"
         messageStr_bytes = messageStr.encode('utf-8')
@@ -377,13 +381,19 @@ def RSSI_AllocationDistributor():
 
 
 def getPairAllocation():
-    nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
+    with GlobalVals.RSSI_ALLOCATION_MUTEX:
+        nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
+    
+
     if nextPairStatus:
-        if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
-            GlobalVals.NEXT_PAIR = 1
-        else:
-            GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
-        resetRSSI_Allocation()
+        with GlobalVals.NEXT_PAIR_MUTEX:
+            if GlobalVals.NEXT_PAIR == GlobalVals.N_REAL_BALLOON:
+                GlobalVals.NEXT_PAIR = 1
+            else:
+                GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
+        
+        with GlobalVals.RSSI_ALLOCATION_MUTEX:
+            resetRSSI_Allocation()
 
 def RSSI_FormatCheck(RSSI_Data):
     errString = []

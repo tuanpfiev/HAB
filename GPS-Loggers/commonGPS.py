@@ -91,8 +91,8 @@ def updateGlobalGPS_Data(GPS_Data):
         GlobalVals.GPSAscentRate = ascentRate
         GlobalVals.GPSAscentRateVals.pop(0)
 
-def logData(gpsData):
-    logString = str(gpsData.epoch) + "," + str(gpsData.lon) + "," + str(gpsData.lat) + "," + str(gpsData.alt) + "," + str(GlobalVals.GPSAscentRate) + "\n"
+def logData(gpsData,sensorID):
+    logString = str(gpsData.epoch) + "," + str(gpsData.lon) + "," + str(gpsData.lat) + "," + str(gpsData.alt) + "," + str(GlobalVals.GPSAscentRate) + "," + str(sensorID) + "\n"
     timeLocal = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(gpsData.epoch))
     try:
         fileObj = open(GlobalVals.GPS_LOGGER_FILE, "a")
