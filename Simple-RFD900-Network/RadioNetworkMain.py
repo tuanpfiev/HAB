@@ -207,7 +207,7 @@ def main():
                     # set the system id for the GPS data
                     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if TemperatureHandler.temperatureFormatCheck(temperatureData):
+                    if not TemperatureHandler.temperatureFormatCheck(temperatureData):
                         print("Temperature message via RFD900 was broken. Discard it...")
                         continue
                     
