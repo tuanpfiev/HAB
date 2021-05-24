@@ -278,8 +278,8 @@ def main():
 
                     # put data into the buffer
                     with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
-                        if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>5:
-                            GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
+                        # if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>5:
+                        #     GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
                         GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(int(RSSI_AllocationData.Pair))
 
                     # set the flags for the buffer 
