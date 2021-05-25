@@ -149,7 +149,7 @@ def RSSI_LoggerSocket(host,port,index):
             NetworkManager.sendPacket(RSSI_Packet)
             # print(RSSI_Data)
             # print(RSSI_Packet.Payload)
-            # print("SENDING RSSI TO RFD900 !!!!!!!!!!!!!!!!!")
+            print("SENDING RSSI TO RFD900: "+", RSSI Distance:" + str(RSSI_Data.Distance) + ", Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + ", TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + ", SysID: " + str(RSSI_Data.SystemID))
             # print("check lenstring 5")
             # print(index)
             # print(RSSI_Data)
