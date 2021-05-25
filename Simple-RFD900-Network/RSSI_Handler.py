@@ -113,6 +113,7 @@ def RSSI_LoggerSocket(host,port,index):
             # print("check lenstring 1")
             with GlobalVals.RSSI_UPDATE_MUTEX[index]:
                 while idx < len(rssi_list):
+                    # print("len rssi_list: ",len(rssi_list), "idx: ",idx)
                     rssi_update(rssi_list[idx])
                     idx += 1
                 
@@ -156,7 +157,7 @@ def RSSI_LoggerSocket(host,port,index):
             # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
-        time.sleep(1)  
+        time.sleep(0.1)  
 
     # while True:
     #     print("RSSI TO RFD900 SOCKET CLOSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -356,7 +357,7 @@ def RSSI_AllocationDistributor():
                 print("Exception: " + str(e.__class__))
                 print("Error when sending to RSSI Allocation Distro_Connection[",i,"]. Now closing thread.")
                 breakThread = True
-                time.sleep(2)
+                time.sleep(1)
                 break
 
         # Send via RFD900 network
@@ -372,7 +373,7 @@ def RSSI_AllocationDistributor():
             RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
             NetworkManager.sendPacket(RSSI_AllocationPacket)
             print("sending RSSI ALLOCATOR (pair: ",RSSI_Allocation.Pair,") from 1...")
-        time.sleep(0.1)
+        time.sleep(0.2)
     # while True:
     #     print("Closing RSSI Allocation Distro !!!!!!!!!")
     #     time.sleep(0.5)
@@ -381,8 +382,7 @@ def RSSI_AllocationDistributor():
 
 
 def getPairAllocation():
-    with GlobalVals.RSSI_ALLOCATION_MUTEX:
-        nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
+    nextPairStatus = checkRSSI_Allocation(GlobalVals.NEXT_PAIR)
     
 
     if nextPairStatus:
@@ -392,8 +392,7 @@ def getPairAllocation():
             else:
                 GlobalVals.NEXT_PAIR = GlobalVals.NEXT_PAIR + 1
         
-        with GlobalVals.RSSI_ALLOCATION_MUTEX:
-            resetRSSI_Allocation()
+        resetRSSI_Allocation()
 
 def RSSI_FormatCheck(RSSI_Data):
     errString = []

@@ -125,8 +125,8 @@ def EKFLoggerSocket():
             EKF_Packet.TargetID = 0
             EKF_Packet.Payload = EKF_Data.data_to_bytes()
             NetworkManager.sendPacket(EKF_Packet)
-            # print(EKF_Data.Longitude)
-            # print("***************************")
+            print(EKF_Data.Longitude)
+            print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  
