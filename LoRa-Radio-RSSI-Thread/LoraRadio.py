@@ -351,8 +351,10 @@ def main(StartState):
     # Handshake loop
     while connected:
         # print("getLoraPairNumber(): ",getLoraPairNumber())
-        currentPairNumber 
-        if GlobalVals.LORA_ALLOCATION != currentPairNumber:
+        with GlobalVals.LORA_ALLOCATION_UPDATE_MUTEX:
+            activatedPairNum = copy.deepcopy(GlobalVals.LORA_ALLOCATION)
+
+        if activatedPairNum != currentPairNumber:
             print("Current Pair Number: ",currentPairNumber,", Activated Pair: ",GlobalVals.LORA_ALLOCATION," ==> SKIPPING")
             time.sleep(0.1)
             continue
@@ -411,7 +413,8 @@ def main(StartState):
                         rssiRaw = int(dataOut[8]) - 164
                     except: 
                         continue
-                    if rssiRaw > 0:
+
+                    if rssiRaw >= -8:   # in theory, it should be 0, but in practice, there is some noise => this is a practical value
                         print("RSSI is positive. Something is wrong. Discard this value ...")
                         continue
                     
@@ -444,7 +447,7 @@ def main(StartState):
                         GlobalVals.NewRSSISocketData = True
 
                     # format log string 
-                    logString = str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + str(distanceGPS) + "," + str(GlobalVals.RSSI_PARAMS[0]) +  "\n"
+                    logString = str(GlobalVals.SYSID) + "," + str(GlobalVals.TARGET_BALLOON) + "," + str(handshakeTime) + "," + str(rssiRaw) + "," + str(filtered_RSSI) + "," + str(distance) + "," + str(distanceGPS) + "," + str(GlobalVals.RSSI_PARAMS[0][0]) + "," + str(GlobalVals.RSSI_PARAMS[0][1]) + "," + str(currentPairNumber) + "," + str(activatedPairNum) + "\n"
 
                     # write log string to file  
                     try:
@@ -665,7 +668,7 @@ if __name__ == '__main__':
     file_name = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-LoraRSSI.csv"
     GlobalVals.RSSI_LOG_FILE = file_name
 
-    logString = "epoch, rssi raw, filtered_RSSI, distance rssi, distance gps, params \n"
+    logString = "sysID, targetID, epoch, rssi raw, filtered_RSSI, distance rssi, distance gps, n, A , current pair, activated pair \n"
 
     try:
         fileObj = open(GlobalVals.RSSI_LOG_FILE, "a")

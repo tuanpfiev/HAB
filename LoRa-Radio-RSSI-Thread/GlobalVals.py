@@ -46,13 +46,6 @@ PORT_GPS = GlobalVariables.LORA_GPS_RECEIVE_SOCKET
 LORA_ALLOCATION_UPDATE_MUTEX = Lock()
 RSSI_ALLOCATION_SOCKET = GlobalVariables.RSSI_ALLOCATION_DISTRO_SOCKET
 
-# PORT_RSSI = np.array([  [5100, 5110],   # EKF
-#                         [5101,5111],    # LC1
-#                         [5102,5112],    # LC2
-#                         [5103,5113]])   # LC3
-# PORT_RSSI = np.array([  [5100, 5110],   # EKF
-#                         [5101,5111]])   # LC1
-
 PORT_RSSI = GlobalVariables.LORA_RSSI_DISTRO_SOCKET
 RSSI_TIMEOUT = 36000
 RSSI_BUFFER = 1024
