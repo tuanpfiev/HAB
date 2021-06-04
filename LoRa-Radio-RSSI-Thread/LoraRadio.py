@@ -415,7 +415,8 @@ def main(StartState):
                         continue
 
                     if rssiRaw >= -8 or rssiRaw < -160:   # in theory, rssi should be <=0 or >=-164, but in practice, there is some noise => this is a practical value
-                        print("RSSI is positive. Something is wrong. Discard this value ...")
+                        # print("RSSI is positive. Something is wrong. Discard this value ...")
+                        print("RSSI is not in the reasonable range. Something is wrong. Discard this value ...")
                         continue
                     
                     print("RSSI = " + str(rssiRaw))
