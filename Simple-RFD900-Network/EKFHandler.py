@@ -56,7 +56,7 @@ def EKFLoggerSocket():
         while True:
             try:
                 data_bytes = socket_logger.recv(bufferRead)
-                print("EKF socket received")
+                # print("EKF socket received")
                 break
             except Exception as e:
                 if e.args[0] == 'timed out':
@@ -70,7 +70,7 @@ def EKFLoggerSocket():
                 
         if breakMainThread:
             break
-        print("EKF socket received2")
+        # print("EKF socket received2")
         # if there is nothing in the socket then it has timed out 
         if len(data_bytes) == 0:
             continue
@@ -125,8 +125,8 @@ def EKFLoggerSocket():
             EKF_Packet.TargetID = 0
             EKF_Packet.Payload = EKF_Data.data_to_bytes()
             NetworkManager.sendPacket(EKF_Packet)
-            print(EKF_Data.Longitude)
-            print("***************************")
+            # print(EKF_Data.Longitude)
+            # print("***************************")
 
         # pause a little bit so the mutexes are not getting called all the time 
         time.sleep(1)  

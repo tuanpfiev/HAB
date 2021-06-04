@@ -109,7 +109,7 @@ def distanceEKF_MatrixCalculation(gpsAll,nRound):
 
     for i in range(GlobalVals.N_REAL_BALLOON):
         for j in range(i+1,GlobalVals.N_REAL_BALLOON):
-            distanceMatrix[i][j] = round(distance_calculation(gpsAll[i+GlobalVals.N_REAL_BALLOON],gpsAll[j+GlobalVals.N_REAL_BALLOON]),nRound)
+            distanceMatrix[i][j] = round(distance_calculation(gpsAll[i],gpsAll[j]),nRound)
             distanceMatrix[j][i] = distanceMatrix[i][j]
 
     return distanceMatrix
@@ -178,11 +178,10 @@ def update_GPS_Log(gps_data):
     except:
         print('here')
 
-def update_GPS_EKF_log(EKF_Data):
+def update_EKF_Log(EKF_Data):
     index = EKF_Data.SystemID
-    nRealBalloon = GlobalVals.N_REAL_BALLOON
     try:    
-        GlobalVals.GPS_ALL[index-1+nRealBalloon]= GPS(EKF_Data.SystemID+nRealBalloon, EKF_Data.Latitude, EKF_Data.Longitude, EKF_Data.Altitude,EKF_Data.Epoch)
+        GlobalVals.EKF_ALL[index-1]= EKF(EKF_Data.SystemID, EKF_Data.Latitude, EKF_Data.Longitude, EKF_Data.Altitude,EKF_Data.Epoch)
     except:
         print('here')
 
@@ -271,11 +270,11 @@ def gps_lambda_handler():
         }
         aws_message.append(initial_message)
 
-        response = k_client.put_record(
-                StreamName=stream_name,
-                Data=json.dumps(aws_message),
-                PartitionKey=str(random.randrange(10000))
-        )
+        # response = k_client.put_record(
+        #         StreamName=stream_name,
+        #         Data=json.dumps(aws_message),
+        #         PartitionKey=str(random.randrange(10000))
+        # )
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         # print(json.dumps(aws_message))
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
@@ -465,9 +464,9 @@ def main():
                         continue
 
                     # update GPS_Log
-                    with GlobalVals.GPS_LOG_MUTEX:
-                        update_GPS_EKF_log(EKF_Data)
-                        distance = distanceEKF_MatrixCalculation(GlobalVals.GPS_ALL,0,)
+                    with GlobalVals.EKF_LOG_MUTEX:
+                        update_EKF_Log(EKF_Data)
+                        distance = distanceEKF_MatrixCalculation(GlobalVals.EKF_ALL,0,)
 
                     print("==================================================================================================")
                     print("EKF EKF EKF " + str(recievedPacket.SystemID) +str(recievedPacket.SystemID) +str(recievedPacket.SystemID) + ":" + " Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,1)) + ", Time:" + str(round(GPSdata.GPSTime,1)))
@@ -489,7 +488,7 @@ def main():
                     # set the system id for the GPS data
                     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if not temperatureData.SystemID in GlobalVals.REAL_BALLOON or not valueInRange(temperatureData.Temperature,[-100,150]) or not valueInRange(temperatureData.Epoch,[GlobalVals.EXPERIMENT_TIME,None]):
+                    if not TemperatureHandler.temperatureFormatCheck(temperatureData):
                         print("Temperature message via RFD900 was broken. Discard it...")
                         continue
                     

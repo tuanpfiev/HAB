@@ -250,7 +250,6 @@ def pairNumberStart_callback(host,port):
             print("There was an error starting the lora operation allocation socket. This thread will now stop.")
             with GlobalVals.BREAK_LORA_ALLOCATION_THREAD_MUTEX:
                 GlobalVals.BREAK_LORA_ALLOCATION_THREAD = True
-            time.sleep(2)
             return 
         break
 
@@ -419,7 +418,7 @@ def main(StartState):
                         print("RSSI is not in the reasonable range. Something is wrong. Discard this value ...")
                         continue
                     
-                    print("RSSI = " + str(rssiRaw))
+                    print("RSSI = " + str(rssiRaw) + "(Pair: " + str(currentPairNumber) + ")")
 
                     # Kalman filter for RSSI
                     
@@ -604,12 +603,11 @@ def Thread_RSSI_publish():
                             breakThread = True
                             break
         else:
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     # if the thread is broken set the global flag 
     if breakThread:
         print("THREAD IS BROKEN!!!!!!")
-        time.sleep(100)
         with GlobalVals.EndRSSISocket_Mutex:
             GlobalVals.EndRSSISocket = True
     

@@ -184,7 +184,7 @@ def main():
                         print("EKF message via RFD900 was broken. Discard it...") 
                         continue
 
-                    print("EKF Data from [",EKF_Data.SystemID,"], Lat: ", EKF_Data.Latitude, ", Lon: ", EKF_Data.Longitude, ", Alt: ", EKF_Data.Altitude)
+                    print("EKF EKF EKF Data from [",EKF_Data.SystemID,"], Lat: ", EKF_Data.Latitude, ", Lon: ", EKF_Data.Longitude, ", Alt: ", EKF_Data.Altitude)
                     # put data into the buffer
                     # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
                     #     GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
