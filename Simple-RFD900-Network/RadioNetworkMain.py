@@ -101,7 +101,7 @@ def main():
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 
                         continue
-
+                    print("RECEIVED GPS from ",GPSdata.SystemID,"!!")
                     # put data into the buffer
                     with GlobalVals.GPS_DATA_BUFFER_MUTEX:
                         GlobalVals.GPS_DATA_BUFFER.append(GPSdata)

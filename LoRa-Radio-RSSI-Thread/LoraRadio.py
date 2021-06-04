@@ -414,7 +414,7 @@ def main(StartState):
                     except: 
                         continue
 
-                    if rssiRaw >= -8:   # in theory, it should be 0, but in practice, there is some noise => this is a practical value
+                    if rssiRaw >= -8 or rssiRaw < -160:   # in theory, rssi should be <=0 or >=-164, but in practice, there is some noise => this is a practical value
                         print("RSSI is positive. Something is wrong. Discard this value ...")
                         continue
                     
