@@ -191,6 +191,7 @@ TEMPERATURE_UPDATE_MUTEX = Lock()
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages
 PACKET_COUNT = 0
+SEQUENCE_NUM = 0                      # The current sequence num used for sending messages
 
 
 

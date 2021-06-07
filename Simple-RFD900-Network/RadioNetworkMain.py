@@ -20,7 +20,6 @@ import ImaginaryBalloons
 def main():
 
     recievedPackets = False
-
     # this loop will wait for packets and then process them 
     while True:
 
@@ -33,6 +32,7 @@ def main():
         # if packets have been recieved 
         if recievedPackets:
             recievedPackets = False
+            print("main1")
 
             # go through all the packets in the buffer 
             while True:
@@ -41,7 +41,7 @@ def main():
                         recievedPacket = GlobalVals.PACKET_BUFFER_IN.pop(0)
                     else:
                         break
-
+                print("loop")
                 # if the packet is a ping 
                 if recievedPacket.MessageID == 1:
                     
@@ -205,11 +205,10 @@ if __name__ == '__main__':
         GPSLoggerThread = Thread(target=GPSHandler.GPSLoggerSocket, args=())
         GPSLoggerThread.setDaemon(True)
         GPSLoggerThread.start()
-
-        # Start GPS distributor 
-        GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
-        GPSDistroThread.setDaemon(True)
-        GPSDistroThread.start()
+        # # Start GPS distributor 
+        # GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
+        # GPSDistroThread.setDaemon(True)
+        # GPSDistroThread.start()
 
         # Start imaginary balloon socket
         ImaginaryBalloonsThread = Thread(target=ImaginaryBalloons.ImaginaryBalloons, args=())
@@ -249,10 +248,10 @@ if __name__ == '__main__':
             GPSLoggerThread.join()
         
         # Safely end the GPS distributor thread 
-        if GPSDistroThread.is_alive():
-            with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
-                GlobalVals.BREAK_GPS_DISTRO_THREAD = True
-            GPSDistroThread.join()
+        # if GPSDistroThread.is_alive():
+        #     with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
+        #         GlobalVals.BREAK_GPS_DISTRO_THREAD = True
+        #     GPSDistroThread.join()
         
         # Safely end the imaginary balloon thread 
         if ImaginaryBalloonsThread.is_alive():
