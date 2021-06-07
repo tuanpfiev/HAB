@@ -314,7 +314,7 @@ if __name__ == '__main__':
 
 
     # Start serial thread 
-    NetworkThread = Thread(target=NetworkManager.RFD900_ManagerThread,args=())
+    NetworkThread = Thread(target=NetworkManager.SerialManagerThread,args=())
     NetworkThread.daemon = True
     NetworkThread.start()
 

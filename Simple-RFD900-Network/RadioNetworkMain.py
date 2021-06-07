@@ -159,38 +159,29 @@ def main():
 if __name__ == '__main__':
 
     # get arguments for running the script
-    numArgs = len(sys.argv)
-    
-    # check if the number of args are correct 
-    if numArgs != 4:
-        print("Incorrect number of Args.")
-        print(numArgs)
-        sys.exit() 
+
     
     # check the type is correct
-    if sys.argv[1] == 'g':
-        GlobalVals.IS_GROUND_STATION = True
-    elif sys.argv[1] == 'b':
-        GlobalVals.IS_GROUND_STATION = False
-    else:
-        print("ERROR: Arg1 isn't recognised. Closing program.") 
-        sys.exit() 
+    # if sys.argv[1] == 'g':
+    #     GlobalVals.IS_GROUND_STATION = True
+    # elif sys.argv[1] == 'b':
+    GlobalVals.IS_GROUND_STATION = False
+    # else:
+        # print("ERROR: Arg1 isn't recognised. Closing program.") 
+        # sys.exit() 
     
     # check the system ID is in range
-    sysID = int(sys.argv[2])
-    if sysID < 1 or sysID > 255:
-        print("ERROR: Arg2 isn't in range (1 - 255). Closing program.")
-        sys.exit()
+    sysID = 1
 
     # set system ID and serial port
     GlobalVals.SYSTEM_ID = sysID
-    GlobalVals.PORT = sys.argv[3]
+    GlobalVals.PORT = "/dev/ttyUSB0"
 
     # setup the log files 
-    GlobalVals.ERROR_LOG_FILE = "ErrorLog_" + sys.argv[2] + ".txt"
-    GlobalVals.PING_LOG_FILE = "PingLog_" + sys.argv[2] + ".txt"
-    GlobalVals.PACKET_STATS_FILE = "PacketStats_" + sys.argv[2] + ".txt"
-    GlobalVals.GROUND_STATION_LOG_FILE = "GSLog_" + sys.argv[2] + ".txt"
+    GlobalVals.ERROR_LOG_FILE = "ErrorLog_" + str(sysID) + ".txt"
+    GlobalVals.PING_LOG_FILE = "PingLog_" + str(sysID) + ".txt"
+    GlobalVals.PACKET_STATS_FILE = "PacketStats_" + str(sysID) + ".txt"
+    GlobalVals.GROUND_STATION_LOG_FILE = "GSLog_" + str(sysID) + ".txt"
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.RFD900_ManagerThread,args=())
