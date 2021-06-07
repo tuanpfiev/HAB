@@ -409,6 +409,7 @@ def ByteProcessing(readBytes):
     # append the packet to the input buffer and remove old packets
     with GlobalVals.PACKET_BUFFER_IN_MUTEX:
         GlobalVals.PACKET_BUFFER_IN.append(completePacket)
+        print("add data to buffer!!!!")
     
     # set recieved packet flag
     with GlobalVals.RECIEVED_PACKETS_MUTEX:
@@ -451,7 +452,6 @@ def RFD900_ManagerThread():
 
     # begin the loop used for reading and writing to the serial port 
     while True:
-
         # check if the thread needs to read or send data 
         with GlobalVals.SEND_PACKETS_MUTEX:
             reading = not GlobalVals.SEND_PACKETS
@@ -460,15 +460,18 @@ def RFD900_ManagerThread():
         with GlobalVals.BREAK_NETWORK_THREAD_MUTEX:
             if GlobalVals.BREAK_NETWORK_THREAD:
                 break 
-        
         #************************************
         # Serial Read
         #************************************
         if reading:
-
+            print('read-data')
             # read serial buffer 
             try:
+                # bytesToRead = serial_port.inWaiting()
+                # comOut = serial_port.read(bytesToRead)
                 comOut = serial_port.read(size=128)
+                print("read: ", comOut)
+
             except serial.SerialTimeoutException:
                 continue
             except (OSError, serial.SerialException) as e:
@@ -477,7 +480,6 @@ def RFD900_ManagerThread():
                 with GlobalVals.BREAK_NETWORK_THREAD_MUTEX:
                     GlobalVals.BREAK_NETWORK_THREAD = True
                 break
-            
             # If the buffer is empty try again
             if len(comOut) == 0:
                 continue 
@@ -485,8 +487,8 @@ def RFD900_ManagerThread():
             # debuging - byte dump
             # else:
             #    ByteDump(comOut,'Buffer ')
-
             # go through each byte of the buffer 
+            print("get some data")
             for comByte in comOut:
             
                 # determine the byte ID
@@ -529,18 +531,16 @@ def RFD900_ManagerThread():
         # Serial Write 
         #************************************
         else:
-
+            print('write-data')
             #send each packet 
             with GlobalVals.PACKET_BUFFER_OUT_MUTEX: 
-                
                 #while len(GlobalVals.PACKET_BUFFER_OUT) > 0:
                 if len(GlobalVals.PACKET_BUFFER_OUT) != 0:
-
                     # get the next packet to send, set the sequence number and convert to bytes
                     outPacket = GlobalVals.PACKET_BUFFER_OUT.pop(0)
                     outPacket.SeqNumber = getSeqNumber()
                     bytesToSend = outPacket.data_to_bytes()
-
+                    # print(outPacket)
                     try:
                         serial_port.write(bytesToSend)
                         serial_port.flush()
@@ -550,14 +550,14 @@ def RFD900_ManagerThread():
                         with GlobalVals.BREAK_NETWORK_THREAD_MUTEX:
                             GlobalVals.BREAK_NETWORK_THREAD = True
                         break
-                        
                     timeLastSent = time.time()
                 
                 else:
-
                     # reset send flag 
                     with GlobalVals.SEND_PACKETS_MUTEX:
                         GlobalVals.SEND_PACKETS = False 
+        time.sleep(0.1)
+
     
     
     try:
