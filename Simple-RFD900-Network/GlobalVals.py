@@ -21,6 +21,8 @@ PORT = "COM8"                       # Windows COM por
 #PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
 BAUDRATE = 57600                    # the baud for the serial port connection 
 
+IS_GROUND_STATION = False
+
 # Socket settings 
 HOST = '127.0.0.1'
 GPS_LOGGER_SOCKET = GlobalVariables.GPS_READER_SOCKET

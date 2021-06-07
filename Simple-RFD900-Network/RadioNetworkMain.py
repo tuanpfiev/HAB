@@ -2,10 +2,9 @@
 import time
 from threading import Thread
 from copy import deepcopy
-import sys
+import sys, os
 import gc
 
-# import files 
 import GlobalVals
 import CustMes
 import NetworkManager
@@ -13,6 +12,15 @@ import ErrorReporter
 import GPSHandler
 import PingLogger
 import ImaginaryBalloons
+import IMU_Handler
+import EKFHandler
+import RSSI_Handler
+import TemperatureHandler
+
+sys.path.insert(1,'../utils')
+from utils import get_port
+from common import *
+from common_class import *
 
 #=====================================================
 # Main function  
@@ -41,7 +49,7 @@ def main():
                         recievedPacket = GlobalVals.PACKET_BUFFER_IN.pop(0)
                     else:
                         break
-                print("loop")
+                # print("loop")
                 # if the packet is a ping 
                 if recievedPacket.MessageID == 1:
                     
@@ -158,30 +166,24 @@ def main():
 #=====================================================
 if __name__ == '__main__':
 
-    # get arguments for running the script
+    numArgs = len(sys.argv)
+    if numArgs == 2:
+        GlobalVals.SYSTEM_ID = int(sys.argv[1])
 
-    
-    # check the type is correct
-    # if sys.argv[1] == 'g':
-    #     GlobalVals.IS_GROUND_STATION = True
-    # elif sys.argv[1] == 'b':
-    GlobalVals.IS_GROUND_STATION = False
-    # else:
-        # print("ERROR: Arg1 isn't recognised. Closing program.") 
-        # sys.exit() 
-    
-    # check the system ID is in range
-    sysID = 1
+    print('SystemID is: ', GlobalVals.SYSTEM_ID)
+    # set Port
+    GlobalVals.PORT=get_port('RFD900')
+    print('PORT: '+ GlobalVals.PORT)
 
-    # set system ID and serial port
-    GlobalVals.SYSTEM_ID = sysID
-    GlobalVals.PORT = "/dev/ttyUSB0"
+    try:
+        os.makedirs("../datalog")
+    except FileExistsError:
+        pass
 
-    # setup the log files 
-    GlobalVals.ERROR_LOG_FILE = "ErrorLog_" + str(sysID) + ".txt"
-    GlobalVals.PING_LOG_FILE = "PingLog_" + str(sysID) + ".txt"
-    GlobalVals.PACKET_STATS_FILE = "PacketStats_" + str(sysID) + ".txt"
-    GlobalVals.GROUND_STATION_LOG_FILE = "GSLog_" + str(sysID) + ".txt"
+    GlobalVals.ERROR_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ErrorLog.txt"
+    GlobalVals.PING_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PingLog.txt"
+    GlobalVals.PACKET_STATS_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PacketStats.txt"
+    GlobalVals.GROUND_STATION_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GSLog.txt"
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.RFD900_ManagerThread,args=())

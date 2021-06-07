@@ -464,13 +464,13 @@ def RFD900_ManagerThread():
         # Serial Read
         #************************************
         if reading:
-            print('read-data')
+            # print('read-data')
             # read serial buffer 
             try:
                 # bytesToRead = serial_port.inWaiting()
                 # comOut = serial_port.read(bytesToRead)
                 comOut = serial_port.read(size=128)
-                print("read: ", comOut)
+                # print("read: ", comOut)
 
             except serial.SerialTimeoutException:
                 continue
@@ -488,7 +488,7 @@ def RFD900_ManagerThread():
             # else:
             #    ByteDump(comOut,'Buffer ')
             # go through each byte of the buffer 
-            print("get some data")
+            # print("get some data")
             for comByte in comOut:
             
                 # determine the byte ID
@@ -531,7 +531,7 @@ def RFD900_ManagerThread():
         # Serial Write 
         #************************************
         else:
-            print('write-data')
+            # print('write-data')
             #send each packet 
             with GlobalVals.PACKET_BUFFER_OUT_MUTEX: 
                 #while len(GlobalVals.PACKET_BUFFER_OUT) > 0:
