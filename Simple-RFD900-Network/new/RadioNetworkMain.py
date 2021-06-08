@@ -2,7 +2,7 @@
 import time
 from threading import Thread
 from copy import deepcopy
-import sys
+import sys, os
 import gc
 
 # import files 
@@ -13,6 +13,11 @@ import ErrorReporter
 import GPSHandler
 import PingLogger
 import ImaginaryBalloons
+
+sys.path.insert(1,'../../utils')
+from utils import get_port
+from common import *
+from common_class import *
 
 #=====================================================
 # Main function  
@@ -158,39 +163,25 @@ def main():
 #=====================================================
 if __name__ == '__main__':
 
-    # get arguments for running the script
     numArgs = len(sys.argv)
-    
-    # check if the number of args are correct 
-    if numArgs != 4:
-        print("Incorrect number of Args.")
-        print(numArgs)
-        sys.exit() 
-    
-    # check the type is correct
-    if sys.argv[1] == 'g':
-        GlobalVals.IS_GROUND_STATION = True
-    elif sys.argv[1] == 'b':
-        GlobalVals.IS_GROUND_STATION = False
-    else:
-        print("ERROR: Arg1 isn't recognised. Closing program.") 
-        sys.exit() 
-    
-    # check the system ID is in range
-    sysID = int(sys.argv[2])
-    if sysID < 1 or sysID > 255:
-        print("ERROR: Arg2 isn't in range (1 - 255). Closing program.")
-        sys.exit()
+    if numArgs == 2:
+        GlobalVals.SYSTEM_ID = int(sys.argv[1])
 
-    # set system ID and serial port
-    GlobalVals.SYSTEM_ID = sysID
-    GlobalVals.PORT = sys.argv[3]
+    print('SystemID is: ', GlobalVals.SYSTEM_ID)
+    # set Port
+    GlobalVals.PORT=get_port('RFD900')
+    print('PORT: '+ GlobalVals.PORT)
 
-    # setup the log files 
-    GlobalVals.ERROR_LOG_FILE = "ErrorLog_" + sys.argv[2] + ".txt"
-    GlobalVals.PING_LOG_FILE = "PingLog_" + sys.argv[2] + ".txt"
-    GlobalVals.PACKET_STATS_FILE = "PacketStats_" + sys.argv[2] + ".txt"
-    GlobalVals.GROUND_STATION_LOG_FILE = "GSLog_" + sys.argv[2] + ".txt"
+    try:
+        os.makedirs("../datalog")
+    except FileExistsError:
+        pass
+
+    GlobalVals.ERROR_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-ErrorLog.txt"
+    GlobalVals.PING_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PingLog.txt"
+    GlobalVals.PACKET_STATS_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PacketStats.txt"
+    GlobalVals.GROUND_STATION_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GSLog.txt"
+
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.RFD900_ManagerThread,args=())
@@ -216,9 +207,9 @@ if __name__ == '__main__':
         GPSLoggerThread.start()
 
         # Start GPS distributor 
-        GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
-        GPSDistroThread.setDaemon(True)
-        GPSDistroThread.start()
+        # GPSDistroThread = Thread(target=GPSHandler.GPSDistributor, args=())
+        # GPSDistroThread.setDaemon(True)
+        # GPSDistroThread.start()
 
         # Start imaginary balloon socket
         ImaginaryBalloonsThread = Thread(target=ImaginaryBalloons.ImaginaryBalloons, args=())
@@ -258,10 +249,10 @@ if __name__ == '__main__':
             GPSLoggerThread.join()
         
         # Safely end the GPS distributor thread 
-        if GPSDistroThread.is_alive():
-            with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
-                GlobalVals.BREAK_GPS_DISTRO_THREAD = True
-            GPSDistroThread.join()
+        # if GPSDistroThread.is_alive():
+        #     with GlobalVals.BREAK_GPS_DISTRO_THREAD_MUTEX:
+        #         GlobalVals.BREAK_GPS_DISTRO_THREAD = True
+        #     GPSDistroThread.join()
         
         # Safely end the imaginary balloon thread 
         if ImaginaryBalloonsThread.is_alive():

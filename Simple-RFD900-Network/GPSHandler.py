@@ -40,7 +40,7 @@ def GPSLoggerSocket():
     bufferRead = 1
     breakMainThread = False
     while True:
-        print("gps loggers")
+        # print("gps loggers")
         # if flag is set break the thread 
         with GlobalVals.BREAK_GPS_LOGGER_THREAD_MUTEX:
             if GlobalVals.BREAK_GPS_LOGGER_THREAD:

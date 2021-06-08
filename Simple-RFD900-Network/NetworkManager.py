@@ -409,7 +409,7 @@ def ByteProcessing(readBytes):
     # append the packet to the input buffer and remove old packets
     with GlobalVals.PACKET_BUFFER_IN_MUTEX:
         GlobalVals.PACKET_BUFFER_IN.append(completePacket)
-        print("add data to buffer!!!!")
+        # print("add data to buffer!!!!")
     
     # set recieved packet flag
     with GlobalVals.RECIEVED_PACKETS_MUTEX:
@@ -467,9 +467,9 @@ def RFD900_ManagerThread():
             # print('read-data')
             # read serial buffer 
             try:
-                # bytesToRead = serial_port.inWaiting()
-                # comOut = serial_port.read(bytesToRead)
-                comOut = serial_port.read(size=128)
+                bytesToRead = serial_port.inWaiting()
+                comOut = serial_port.read(bytesToRead)
+                # comOut = serial_port.read(size=128)
                 # print("read: ", comOut)
 
             except serial.SerialTimeoutException:
