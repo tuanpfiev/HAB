@@ -6,6 +6,9 @@ from threading import Lock
 # Global Constants 
 #=====================================================
 
+PACKET_BUFFER_IN = [[] for _ in range(15)]
+##
+
 # serial settings 
 TIMEOUT = 0.5                       # Serial port time out 
 PORT = "/dev/ttyUSB0"               # Jetson / RasPi / Ubuntu USB COM port
@@ -36,7 +39,7 @@ IS_GROUND_STATION = False
 #=====================================================
 
 # Global Lists / Buffers
-PACKET_BUFFER_IN = []               # The buffer for in coming packets 
+# PACKET_BUFFER_IN = []               # The buffer for in coming packets 
 PACKET_BUFFER_OUT = []              # The buffer for out going packets 
 PACKET_PING_BUFFER = []
 PACKET_ERROR_QUE = []               # The buffer for error reporting 

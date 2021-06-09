@@ -90,6 +90,8 @@ def checkPacket(bytepacket):
     global HEADER_BYTES_SIZE
     global CRC_SIZE
 
+    test = bytepacket.hex()
+
     # Check length 
     packetLen = len(bytepacket)
     if packetLen < (MESSAGE_FRAME_ARG_SIZE + HEADER_BYTES_SIZE + CRC_SIZE):

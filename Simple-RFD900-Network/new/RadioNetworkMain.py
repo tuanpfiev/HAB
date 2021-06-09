@@ -38,27 +38,32 @@ def main():
         # if packets have been recieved 
         if recievedPackets:
             recievedPackets = False
+            
 
             # go through all the packets in the buffer 
             while True:
+                recievedPacket = [[] for _ in range(15)]
                 with GlobalVals.PACKET_BUFFER_IN_MUTEX:
-                    if len(GlobalVals.PACKET_BUFFER_IN) > 0:
-                        recievedPacket = GlobalVals.PACKET_BUFFER_IN.pop(0)
-                    else:
-                        break
+                    for i in range(len(GlobalVals.PACKET_BUFFER_IN)):
+                        if len(GlobalVals.PACKET_BUFFER_IN[i]) > 0:
+                            recievedPacket[i] = GlobalVals.PACKET_BUFFER_IN[i].pop(0)
+                        # else:
+                        #     break
 
+                
                 # if the packet is a ping 
-                if recievedPacket.MessageID == 1:
+                # if recievedPacket.MessageID == 1:
+                if recievedPacket[1]:
                     
                     # get the payload of the ping
                     pingPayload = CustMes.MESSAGE_PING()
-                    error = pingPayload.bytes_to_data(recievedPacket.Payload)
+                    error = pingPayload.bytes_to_data(recievedPacket[1].Payload)
 
                     # if there was an error with the payload report it 
                     if error != 0:
                         print("Ping Data Error: RadioNetworkMain:" + str(error))
-                        print(recievedPacket.Payload.hex())
-                        print(recievedPacket.SystemID)
+                        print(recievedPacket[1].Payload.hex())
+                        print(recievedPacket[1].SystemID)
                         print('\n')
                     
                     else:
@@ -67,13 +72,13 @@ def main():
                         if pingPayload.Intiator:
                             
                             # respond to the ping if it is  
-                            NetworkManager.PingRespond(recievedPacket.SystemID,recievedPacket.Timestamp)
+                            NetworkManager.PingRespond(recievedPacket[1].SystemID,recievedPacket[1].Timestamp)
                         
                         else:
 
                             # send ping to ping thread if it isn't 
                             with GlobalVals.PACKET_PING_BUFFER_MUTEX:
-                                GlobalVals.PACKET_PING_BUFFER.append(recievedPacket)
+                                GlobalVals.PACKET_PING_BUFFER.append(recievedPacket[1])
 
                             # set the recieved flag
                             with GlobalVals.RECIEVED_PING_MUTEX:
@@ -81,25 +86,27 @@ def main():
                     
 
                 # if the packet is a GPS data packet 
-                if recievedPacket.MessageID == 2:
-                    
+                # if recievedPacket.MessageID == 2:
+                if recievedPacket[2]:                 
                     # get the GPS data
                     GPSdata = CustMes.MESSAGE_GPS()                    
-                    error = GPSdata.bytes_to_data(recievedPacket.Payload)
+                    error = GPSdata.bytes_to_data(recievedPacket[2].Payload)
 
                     # report any errors
                     if error != 0:
                         print("GPS Data Error: RadioNetworkMain:" + str(error))
-                        print(recievedPacket.Payload.hex())
-                        print(recievedPacket.SystemID)
-                        print('\n')
+                        # print(recievedPacket[2].Payload.hex())
+                        # print(recievedPacket[2].SystemID)
+                        # print('\n')
                     else:
+                        # print("gps packet ok: ",recievedPacket[2].Payload.hex())
+
                         # print GPS data to screen 
-                        print("GPS Data from " + str(recievedPacket.SystemID) + ":")
+                        print("GPS Data from " + str(recievedPacket[2].SystemID) + ":")
                         print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                         # set the system id for the GPS data
-                        GPSdata.SystemID = recievedPacket.SystemID
+                        GPSdata.SystemID = recievedPacket[2].SystemID
         
                         # put data into the buffer
                         with GlobalVals.GPS_DATA_BUFFER_MUTEX:
@@ -111,11 +118,11 @@ def main():
                     
                 
                 # if the packet is string message  
-                if recievedPacket.MessageID == 3: 
-
+                # if recievedPacket.MessageID == 3: 
+                if recievedPacket[3]:
                     # get the string  
                     StrData = CustMes.MESSAGE_STR()                    
-                    error = StrData.bytes_to_data(recievedPacket.Payload)
+                    error = StrData.bytes_to_data(recievedPacket[3].Payload)
                     if error != 0:
                         print ("Packet error, packet will be discarded.\n")
                     else:

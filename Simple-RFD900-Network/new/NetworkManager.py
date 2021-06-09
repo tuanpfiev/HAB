@@ -269,7 +269,8 @@ def sendPacket(packetToSend):
 def inputBufferClear():
 
     with GlobalVals.PACKET_BUFFER_IN_MUTEX:
-        GlobalVals.PACKET_BUFFER_IN.clear()
+        for i in GlobalVals.PACKET_BUFFER_IN:
+            i.clear()
     
     return 
 
@@ -356,7 +357,7 @@ def ByteProcessing(readBytes):
         print("Packet Error: NetworkManager: Packet check error " + str(error) + " from " + str(completePacket.SystemID) + ". Getting next packet.")
         print(readBytes.hex())
         return
-    
+    # print("packet ok: ",readBytes.hex())
     # update sequence trackers 
     with GlobalVals.SEQ_TRACKERS_MUTEX:
         
@@ -383,10 +384,13 @@ def ByteProcessing(readBytes):
                 if seqDiff != 0:
                     GlobalVals.reportError(3, seqDiff, completePacket.SystemID)
                     print("Sequence Error: NetworkManager: Packet from " + str(completePacket.SystemID) + " is out of sequence by " + str(seqDiff) + "\n")
-                    
+                    if seqDiff != 256:
+                        print("seqDiff: ",seqDiff)
+
                     # increment packet counter with missing packets  
                     with GlobalVals.PACKET_COUNT_MUTEX:
                         GlobalVals.PACKET_COUNT = GlobalVals.PACKET_COUNT + seqDiff
+                        print("packet_count: ",GlobalVals.PACKET_COUNT)
 
         else:
             # if no trackers exist make a new one
@@ -408,7 +412,7 @@ def ByteProcessing(readBytes):
 
     # append the packet to the input buffer and remove old packets
     with GlobalVals.PACKET_BUFFER_IN_MUTEX:
-        GlobalVals.PACKET_BUFFER_IN.append(completePacket)
+        GlobalVals.PACKET_BUFFER_IN[completePacket.MessageID].append(completePacket)
     
     # set recieved packet flag
     with GlobalVals.RECIEVED_PACKETS_MUTEX:
@@ -468,6 +472,8 @@ def RFD900_ManagerThread():
 
             # read serial buffer 
             try:
+                # bytesToRead = serial_port.inWaiting()
+                # comOut = serial_port.read(bytesToRead)
                 comOut = serial_port.read(size=128)
             except serial.SerialTimeoutException:
                 continue
