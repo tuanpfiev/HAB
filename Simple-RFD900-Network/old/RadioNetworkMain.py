@@ -347,27 +347,27 @@ if __name__ == '__main__':
     # IMUDistroThread.start()
 
     # start EKF logger
-    # EKF_Thread = Thread(target=EKFHandler.EKFLoggerSocket, args = ())
-    # EKF_Thread.start()
+    EKF_Thread = Thread(target=EKFHandler.EKFLoggerSocket, args = ())
+    EKF_Thread.start()
 
     # start EKF distro:
-    # EKF_DistroThread = Thread(target = EKFHandler.EKF_AllDistributor, args = ())
-    # EKF_DistroThread.start()
+    EKF_DistroThread = Thread(target = EKFHandler.EKF_AllDistributor, args = ())
+    EKF_DistroThread.start()
 
     # start RSSI logger
-    # RSSI_Thread = [None]*(GlobalVals.N_REAL_BALLOON-1)
-    # for i in range(GlobalVals.N_REAL_BALLOON-1):
-    #     RSSI_Thread[i] = Thread(target=RSSI_Handler.RSSI_LoggerSocket, args = (GlobalVals.HOST,GlobalVals.RSSI_LOGGER_SOCKET[i],i))
-    #     RSSI_Thread[i].start()
+    RSSI_Thread = [None]*(GlobalVals.N_REAL_BALLOON-1)
+    for i in range(GlobalVals.N_REAL_BALLOON-1):
+        RSSI_Thread[i] = Thread(target=RSSI_Handler.RSSI_LoggerSocket, args = (GlobalVals.HOST,GlobalVals.RSSI_LOGGER_SOCKET[i],i))
+        RSSI_Thread[i].start()
 
-    # RSSI_DistroThread = Thread(target=RSSI_Handler.RSSI_Distributor,args = ())
-    # RSSI_DistroThread.start()
+    RSSI_DistroThread = Thread(target=RSSI_Handler.RSSI_Distributor,args = ())
+    RSSI_DistroThread.start()
 
-    # RSSI_AllocationThread = Thread(target=RSSI_Handler.RSSI_AllocationDistributor,args = ())
-    # RSSI_AllocationThread.start()
+    RSSI_AllocationThread = Thread(target=RSSI_Handler.RSSI_AllocationDistributor,args = ())
+    RSSI_AllocationThread.start()
 
-    # tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
-    # tempThread.start()
+    tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
+    tempThread.start()
 
     try:
         main()
@@ -419,33 +419,33 @@ if __name__ == '__main__':
     #         GlobalVals.BREAK_IMU_DISTRO_THREAD = True
     #     IMUDistroThread.join()
 
-    # if EKF_Thread.is_alive():
-    #     with GlobalVals.BREAK_EKF_LOGGER_THREAD_MUTEX:
-    #         GlobalVals.BREAK_EKF_LOGGER_THREAD = True
-    #     EKF_Thread.join()
+    if EKF_Thread.is_alive():
+        with GlobalVals.BREAK_EKF_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_LOGGER_THREAD = True
+        EKF_Thread.join()
 
-    # if EKF_DistroThread.is_alive():
-    #     with GlobalVals.BREAK_EKF_DISTRO_THREAD_MUTEX:
-    #         GlobalVals.BREAK_EKF_DISTRO_THREAD = True
-    #     EKF_Thread.join()
+    if EKF_DistroThread.is_alive():
+        with GlobalVals.BREAK_EKF_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_EKF_DISTRO_THREAD = True
+        EKF_Thread.join()
 
-    # for i in range(GlobalVals.N_REAL_BALLOON-1):
-    #     if RSSI_Thread[i].is_alive():
-    #         with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX[i]:
-    #             GlobalVals.BREAK_RSSI_LOGGER_THREAD[i] = True
-    #         RSSI_Thread[i].join()
+    for i in range(GlobalVals.N_REAL_BALLOON-1):
+        if RSSI_Thread[i].is_alive():
+            with GlobalVals.BREAK_RSSI_LOGGER_THREAD_MUTEX[i]:
+                GlobalVals.BREAK_RSSI_LOGGER_THREAD[i] = True
+            RSSI_Thread[i].join()
 
-    # if RSSI_DistroThread.is_alive():
-    #     with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
-    #         GlobalVals.BREAK_RSSI_DISTRO_THREAD = True
+    if RSSI_DistroThread.is_alive():
+        with GlobalVals.BREAK_RSSI_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_RSSI_DISTRO_THREAD = True
 
-    # if RSSI_AllocationThread.is_alive():
-    #     with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
-    #         GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
-    # if tempThread.is_alive():
-    #     with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
-    #         GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
-    #     tempThread.join()
+    if RSSI_AllocationThread.is_alive():
+        with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
+            GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
+    if tempThread.is_alive():
+        with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
+            GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
+        tempThread.join()
 
     
     

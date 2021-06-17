@@ -115,6 +115,7 @@ def gps_callback(host,port):
         if len(string_list) > 0:
             gps_list = []
             for string in string_list:
+                # print(string)
                 received, gps_i = stringToGPS(string)
                 if received:
                     gps_list.append(gps_i)
