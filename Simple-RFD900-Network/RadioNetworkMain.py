@@ -164,7 +164,7 @@ def main():
                     if error != 0:
                         print("EKF_Data Error: RadioNetworkMain:" + str(error))
                     else:
-                        EKF_Data.SystemID = recievedPacket.SystemID
+                        EKF_Data.SystemID = recievedPacket[EKF_MsgID].SystemID
 
                         if not EKFHandler.EKF_FormatCheck(EKF_Data):
                             print("EKF message via RFD900 was broken. Discard it...") 
@@ -181,7 +181,7 @@ def main():
                     if error != 0:
                         print("Temperature_Data Error: RadioNetworkMain:" + str(error))
                     else:
-                        temperatureData.SystemID = recievedPacket.SystemID
+                        temperatureData.SystemID = recievedPacket[temperatureMsgID].SystemID
                     
                     if not TemperatureHandler.temperatureFormatCheck(temperatureData):
                         print("Temperature message via RFD900 was broken. Discard it...")
@@ -194,7 +194,7 @@ def main():
                     if error != 0:
                         print("RSSI_Data Error: RadioNetworkMain:" + str(error))
                     else:
-                        RSSI_Data.SystemID = recievedPacket.SystemID
+                        RSSI_Data.SystemID = recievedPacket[RSSI_MsgID].SystemID
                         # print(RSSI_Data.SystemID)
                         # print(RSSI_Data.TargetPayloadID)
                         # print(GlobalVals.RSSI_ALLOCATION)
@@ -204,7 +204,7 @@ def main():
                             print("RSSI message via RFD900 was broken. Discard it...")
                             continue
                         
-                        print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
+                        print("RSSI Data from " + str(recievedPacket[RSSI_MsgID].SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
 
                         if GlobalVals.SYSTEM_ID == 1:
                             with GlobalVals.RSSI_ALLOCATION_MUTEX:
@@ -231,13 +231,13 @@ def main():
                     if error != 0:
                         print("RSSI_AllocationData Error: RadioNetworkMain:" + str(error))
                     else:
-                        RSSI_AllocationData.SystemID = recievedPacket.SystemID
+                        RSSI_AllocationData.SystemID = recievedPacket[RSSI_AllocationID].SystemID
                     
                         if not RSSI_Handler.RSSI_AllocationFormatCheck(RSSI_AllocationData):
                             print("RSSI Allocation message via RFD900 was broken. Discard it...")
                             continue
                         
-                        print(" RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
+                        print(" RSSI Allocation Data from " + str(recievedPacket[RSSI_AllocationID].SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
 
                         # put data into the buffer
                         with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     numArgs = len(sys.argv)
     if numArgs == 2:
         GlobalVals.SYSTEM_ID = int(sys.argv[1])
-
+    GlobalVals.SYSTEM_ID = 3
     print('SystemID is: ', GlobalVals.SYSTEM_ID)
     # set Port
     GlobalVals.PORT=get_port('RFD900')
