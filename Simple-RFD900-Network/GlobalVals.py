@@ -1,7 +1,7 @@
 import time
-import datetime
 from dataclasses import dataclass
 from threading import Lock
+
 
 import numpy as np
 import sys
@@ -12,19 +12,24 @@ import GlobalVariables
 #=====================================================
 # Global Constants 
 #=====================================================
+
 N_BALLOON = GlobalVariables.N_BALLOON
 N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 REAL_BALLOON = GlobalVariables.REAL_BALLOON
-# serial settings 
-TIMEOUT = 10                       # Serial port time out 
-PORT = "COM8"                       # Windows COM por
-#PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
-BAUDRATE = 57600                    # the baud for the serial port connection 
 
-IS_GROUND_STATION = False
+PACKET_BUFFER_IN = [[] for _ in range(15)]
+##
+
+# serial settings 
+TIMEOUT = 0.5                       # Serial port time out 
+PORT = "/dev/ttyUSB0"               # Jetson / RasPi / Ubuntu USB COM port
+BAUDRATE = 57600                    # the baud for the serial port connection 
 
 # Socket settings 
 HOST = '127.0.0.1'
+# GPS_LOGGER_SOCKET = 5001
+# GPS_DISTRO_SOCKET = 5002
+# GPS_LOGGER_SOCKET_TIMEOUT = 10
 GPS_LOGGER_SOCKET = GlobalVariables.GPS_READER_SOCKET
 GPS_DISTRO_SOCKET =GlobalVariables.GPS_ALL_DISTRO
 N_NODE_PUBLISH = len(GPS_DISTRO_SOCKET)
@@ -58,27 +63,29 @@ LORA_PAIR_NUM = GlobalVariables.LORA_PAIR_NUM
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
-SYSTEM_ID = 2                       # ID of this system on the network (max 255) 
-ERROR_LOG_FILE = "../datalog/ErrorLog.txt"
-PING_LOG_FILE = "../datalog/PingLog.txt"
-PACKET_STATS_FILE = "../datalog/PacketStats.txt"
-GROUND_STATION_LOG_FILE = "../datalog/GSLog.txt"
+SYSTEM_ID = 1                       # ID of this system on the network (max 255) 
+ERROR_LOG_FILE = "ErrorLog.txt"
+PING_LOG_FILE = "PingLog.txt"
+PACKET_STATS_FILE = "PacketStats.txt"
+GROUND_STATION_LOG_FILE = "GSLog.txt"
 PING_WAIT_TIME = 0.1
 PING_LOOP_LIMIT = 50
 PING_INTERVAL = 10
 PACKET_STATS_INTERVAL = 60
+IS_GROUND_STATION = False
 
 #=====================================================
 # Global Variables  
 #=====================================================
 
 # Global Lists / Buffers
-PACKET_BUFFER_IN = []               # The buffer for in coming packets 
+# PACKET_BUFFER_IN = []               # The buffer for in coming packets 
 PACKET_BUFFER_OUT = []              # The buffer for out going packets 
 PACKET_PING_BUFFER = []
 PACKET_ERROR_QUE = []               # The buffer for error reporting 
 SEQ_TRACKERS = []                   # The list containing all sequence trackers 
 GPS_DATA_BUFFER = []
+
 
 IMU_DATA_BUFFER = []
 AWS_GPS_DATA_BUFFER = [] 
@@ -97,7 +104,6 @@ GPS_ARRAY_RADIO_CHECK = [[GPS()]*N_REAL_BALLOON]
 GPS_ALL = [GPS()]*N_REAL_BALLOON
 EKF_ALL = [EKF()]*N_REAL_BALLOON
 
-
 # Global Lists / Buffers Mutexes 
 PACKET_BUFFER_IN_MUTEX = Lock()
 PACKET_BUFFER_OUT_MUTEX = Lock()
@@ -106,7 +112,8 @@ ERROR_DETECTED_MUTEX = Lock()
 SEQ_TRACKERS_MUTEX = Lock()
 GPS_DATA_BUFFER_MUTEX = Lock()
 
-IMU_DATA_BUFFER_MUTEX = Lock()
+
+MU_DATA_BUFFER_MUTEX = Lock()
 AWS_GPS_DATA_BUFFER_MUTEX = Lock()
 
 TEMP_DATA_BUFFER_MUTEX = Lock()
@@ -129,6 +136,7 @@ RECIEVED_GPS_LOCAL_DATA = False
 RECIEVED_GPS_RADIO_DATA = False
 BREAK_IMAGINARY_BALLOONS_THREAD = False
 
+
 BREAK_IMU_LOGGER_THREAD = False
 RECIEVED_IMU_LOCAL_DATA = False
 BREAK_IMU_DISTRO_THREAD = False
@@ -148,6 +156,7 @@ BREAK_RSSI_ALLOCATION_DISTRO_THREAD = False
 RECIEVED_RSSI_ALLOCATION_RADIO_DATA = False
 BREAK_EKF_ALL_DISTRO_THREAD = False
 RECIEVED_EKF_RADIO_DATA = False
+
 # Global Flags Mutexes  
 SEND_PACKETS_MUTEX = Lock()
 RECIEVED_PACKETS_MUTEX = Lock()
@@ -162,6 +171,7 @@ RECIEVED_GPS_LOCAL_DATA_MUTEX = Lock()
 RECIEVED_GPS_RADIO_DATA_MUTEX = Lock()
 PACKET_COUNT_MUTEX = Lock()
 BREAK_IMAGINARY_BALLOONS_MUTEX = Lock()
+
 
 BREAK_IMU_LOGGER_THREAD_MUTEX = Lock()
 RECIEVED_IMU_LOCAL_DATA_MUTEX = Lock()
@@ -189,13 +199,9 @@ GPS_LOG_MUTEX = Lock()
 EKF_LOG_MUTEX = Lock()
 TEMPERATURE_UPDATE_MUTEX = Lock()
 
-
 # Global Values 
-MESSAGE_ID = 0                      # The current message id used for sending messages
-PACKET_COUNT = 0
 SEQUENCE_NUM = 0                      # The current sequence num used for sending messages
-
-
+PACKET_COUNT = 0
 
 
 #=====================================================

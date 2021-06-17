@@ -413,6 +413,9 @@ class MESSAGE_IMU:
     Euler321_psi: float = 0
     Euler321_theta: float = 0
     Euler321_phi: float = 0
+    Gyroscope_i: float = 0
+    Gyroscope_j: float = 0
+    Gyroscope_k: float = 0
     SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
     
     def setAcceleration(self,i,j,k):
@@ -435,6 +438,11 @@ class MESSAGE_IMU:
         self.Euler321_phi = phi
         self.Euler321_psi = psi
         self.Euler321_theta = theta
+    
+    def setGyroscope(self,i,j,k):
+        self.Gyroscope_i = i
+        self.Gyroscope_j = j
+        self.Gyroscope_k = k
 
     def data_to_bytes(self):
 
@@ -460,6 +468,10 @@ class MESSAGE_IMU:
         Euler321_phi_ints = struct.pack('!d',self.Euler321_phi)
         Euler321_theta_ints = struct.pack('!d',self.Euler321_theta)
         Euler321_psi_ints = struct.pack('!d',self.Euler321_psi)
+
+        Gyroscope_i_ints = struct.pack('!d',self.Gyroscope_i)
+        Gyroscope_j_ints = struct.pack('!d',self.Gyroscope_j)
+        Gyroscope_k_ints = struct.pack('!d',self.Gyroscope_k)
 
         # append the values to the byte array for the payload 
         for x in Epoch_ints:
@@ -503,6 +515,15 @@ class MESSAGE_IMU:
 
         for x in Euler321_psi_ints:
             payloadBytes.append(x)
+
+        for x in Gyroscope_i_ints:
+            payloadBytes.append(x)
+        
+        for x in Gyroscope_j_ints:
+            payloadBytes.append(x)
+
+        for x in Gyroscope_k_ints:
+            payloadBytes.append(x)
         
         # return the payload byte array 
         return payloadBytes
@@ -511,7 +532,7 @@ class MESSAGE_IMU:
 
         # check length of payload 
         payloadLen = len(payloadBytes)
-        if payloadLen != 112:
+        if payloadLen != 136:
             return -1
         
         # convert payload values back to double
@@ -529,6 +550,9 @@ class MESSAGE_IMU:
         Euler321_phiTuple = struct.unpack('!d',payloadBytes[88:96])
         Euler321_thetaTuple = struct.unpack('!d',payloadBytes[96:104])
         Euler321_psiTuple = struct.unpack('!d',payloadBytes[104:112])
+        Gyroscope_iTuple = struct.unpack('!d',payloadBytes[112:120])
+        Gyroscope_jTuple = struct.unpack('!d',payloadBytes[120:128])
+        Gyroscope_kTuple = struct.unpack('!d',payloadBytes[128:136])
 
         # store converted values 
         self.Epoch = EpochTuple[0] 
@@ -545,5 +569,336 @@ class MESSAGE_IMU:
         self.Euler321_psi = Euler321_psiTuple[0] 
         self.Euler321_theta = Euler321_thetaTuple[0] 
         self.Euler321_phi = Euler321_phiTuple[0] 
+        self.Gyroscope_i = Gyroscope_iTuple[0]
+        self.Gyroscope_j = Gyroscope_jTuple[0]
+        self.Gyroscope_k = Gyroscope_kTuple[0]
+
+        return 0
+# Temp Payload - Message ID = 0x05
+
+@dataclass
+class MESSAGE_TEMP:
+    Epoch: float = 0   
+    Temperature: float = 0 
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setTemperature(self,temperature):
+        self.Temperature = temperature
+        
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        Temperature_ints = struct.pack('!d',self.Temperature)
+        
+
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Temperature_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 16:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        TemperatureTuple = struct.unpack('!d',payloadBytes[8:16])
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Temperature = TemperatureTuple[0] 
+        
+        return 0
+
+# RSSI Payload - Message ID = 0x06
+
+@dataclass
+class MESSAGE_RSSI:
+    FilteredRSSI: float = 0   
+    Epoch: float = 0 
+    Distance: float = 0
+    TargetPayloadID: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setFilteredRSSI(self,filteredRSSI):
+        self.FilteredRSSI = filteredRSSI
+
+    def setDistance(self,distance):
+        self.Distance = distance
+
+    def setTargetPayloadID(self,payloadID):
+        self.TargetPayloadID = payloadID        
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        Distance_ints = struct.pack('!d',self.Distance)
+        FilteredRSSI_ints = struct.pack('!d',self.FilteredRSSI)
+        TargetPayloadID_ints = struct.pack('!d',self.TargetPayloadID)
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Distance_ints:
+            payloadBytes.append(x)
+
+        for x in FilteredRSSI_ints:
+            payloadBytes.append(x)
+
+        for x in TargetPayloadID_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 32:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
+        FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
+        TargetPayloadIDTuple = struct.unpack('!d',payloadBytes[24:32])
+
+        # print(".........")
+        # print(EpochTuple)
+        # print(DistanceTuple)
+        # print(FilteredRSSITuple)
+        # print(TargetPayloadIDTuple)
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Distance = DistanceTuple[0] 
+        self.FilteredRSSI = FilteredRSSITuple[0]
+        self.TargetPayloadID = TargetPayloadIDTuple[0]
+        return 0
+
+
+
+@dataclass
+class MESSAGE_RSSI_ALLOCATION:
+    Pair: float = 0   
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setPair(self,pair):
+        self.Pair = pair
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Pair_ints = struct.pack('!d',self.Pair)
+                
+        # append the values to the byte array for the payload 
+        for x in Pair_ints:
+            payloadBytes.append(x)
+        
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 8:
+            return -1
+        
+        # convert payload values back to double
+        PairTuple = struct.unpack('!d',payloadBytes[0:8])
+        # store converted values 
+        self.Pair = PairTuple[0] 
+        return 0
+
+
+@dataclass
+class MESSAGE_RSSI:
+    FilteredRSSI: float = 0   
+    Epoch: float = 0 
+    Distance: float = 0
+    TargetPayloadID: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def setFilteredRSSI(self,filteredRSSI):
+        self.FilteredRSSI = filteredRSSI
+
+    def setDistance(self,distance):
+        self.Distance = distance
+
+    def setTargetPayloadID(self,payloadID):
+        self.TargetPayloadID = payloadID        
+
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        Distance_ints = struct.pack('!d',self.Distance)
+        FilteredRSSI_ints = struct.pack('!d',self.FilteredRSSI)
+        TargetPayloadID_ints = struct.pack('!d',self.TargetPayloadID)
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Distance_ints:
+            payloadBytes.append(x)
+
+        for x in FilteredRSSI_ints:
+            payloadBytes.append(x)
+
+        for x in TargetPayloadID_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 32:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
+        FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
+        TargetPayloadIDTuple = struct.unpack('!d',payloadBytes[24:32])
+
+        # print(".........")
+        # print(EpochTuple)
+        # print(DistanceTuple)
+        # print(FilteredRSSITuple)
+        # print(TargetPayloadIDTuple)
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Distance = DistanceTuple[0] 
+        self.FilteredRSSI = FilteredRSSITuple[0]
+        self.TargetPayloadID = TargetPayloadIDTuple[0]
+        return 0
+
+
+# EKF Payload - Message ID = 0x09
+@dataclass
+class MESSAGE_EKF:
+    Epoch: float = 0   
+    Latitude: float = 0 
+    Longitude: float = 0   
+    Altitude: float = 0   
+    PosX: float = 0
+    PosY: float = 0
+    P00: float = 0
+    P01: float = 0
+    P10: float = 0
+    P11: float = 0
+    SystemID: int = 0       # This isn't apart of the payload structure, it is used to just keep track of where the data came from  
+    
+    def data_to_bytes(self):
+
+        # create the payload byte array 
+        payloadBytes = bytearray()
+
+        # split values into 8 bit ints 
+        Epoch_ints = struct.pack('!d',self.Epoch)
+        
+        Latitude_ints = struct.pack('!d',self.Latitude)
+        Longitude_ints = struct.pack('!d',self.Longitude)
+        Altitude_ints = struct.pack('!d',self.Altitude)
+
+        PosX_ints = struct.pack('!d',self.PosX)
+        PosY_ints = struct.pack('!d',self.PosY)
+        P00_ints = struct.pack('!d',self.P00)
+        P01_ints = struct.pack('!d',self.P01)
+        P10_ints = struct.pack('!d',self.P10)
+        P11_ints = struct.pack('!d',self.P11)
+        # append the values to the byte array for the payload 
+        for x in Epoch_ints:
+            payloadBytes.append(x)
+        
+        for x in Latitude_ints:
+            payloadBytes.append(x)
+
+        for x in Longitude_ints:
+            payloadBytes.append(x)
+
+        for x in Altitude_ints:
+            payloadBytes.append(x)
+
+        for x in PosX_ints:
+            payloadBytes.append(x)
+
+        for x in PosY_ints:
+            payloadBytes.append(x)
+
+        for x in P00_ints:
+            payloadBytes.append(x)
+        
+        for x in P01_ints:
+            payloadBytes.append(x)
+        
+        for x in P10_ints:
+            payloadBytes.append(x)
+
+        for x in P11_ints:
+            payloadBytes.append(x)
+
+        # return the payload byte array 
+        return payloadBytes
+
+    def bytes_to_data(self, payloadBytes):
+
+        # check length of payload 
+        payloadLen = len(payloadBytes)
+        if payloadLen != 80:
+            return -1
+        
+        # convert payload values back to double
+        EpochTuple = struct.unpack('!d',payloadBytes[0:8])
+        LatitudeTuple = struct.unpack('!d',payloadBytes[8:16])
+        LongitudeTuple = struct.unpack('!d',payloadBytes[16:24])   
+        AltitudeTuple = struct.unpack('!d',payloadBytes[24:32])
+        PosXTuple = struct.unpack('!d',payloadBytes[32:40])
+        PosYTuple = struct.unpack('!d',payloadBytes[40:48])
+        P00Tuple = struct.unpack('!d',payloadBytes[48:56])
+        P01Tuple = struct.unpack('!d',payloadBytes[56:64])
+        P10Tuple = struct.unpack('!d',payloadBytes[64:72])
+        P11Tuple = struct.unpack('!d',payloadBytes[72:80])
+
+        # store converted values 
+        self.Epoch = EpochTuple[0] 
+        self.Latitude = LatitudeTuple[0] 
+        self.Longitude = LongitudeTuple[0]    
+        self.Altitude = AltitudeTuple[0] 
+        self.PosX = PosXTuple[0] 
+        self.PosY = PosYTuple[0] 
+        self.P00 = P00Tuple[0] 
+        self.P01 = P01Tuple[0]
+        self.P10 = P10Tuple[0] 
+        self.P11 = P11Tuple[0] 
 
         return 0

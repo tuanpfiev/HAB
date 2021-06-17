@@ -96,8 +96,8 @@ def ErrorLogger():
             try:
                 fileObj = open(GlobalVals.PACKET_STATS_FILE, "a")
             except Exception as e:
-                print("Error Reporter: Error opening packet stats log. Now breaking thread.")
-                print("Error Reporter:Exception: " + str(e.__class__))
+                print("Exception: ErrorLogger: Open File: " + str(e.__class__))
+                print("ErrorLogger thread will now stop.")
                 with GlobalVals.BREAK_ERROR_THREAD_MUTEX:
                     GlobalVals.BREAK_ERROR_THREAD = True
                 break
@@ -113,8 +113,8 @@ def ErrorLogger():
             try:
                 fileObj.write(mainStr)
             except Exception as e:
-                print("Error Reporter: Error writting to packet stats log. Now breaking thread.")
-                print("Error Reporter:Exception: " + str(e.__class__))
+                print("Exception: ErrorLogger: Write to File: " + str(e.__class__))
+                print("ErrorLogger thread will now stop.")
                 with GlobalVals.BREAK_ERROR_THREAD_MUTEX:
                     GlobalVals.BREAK_ERROR_THREAD = True
                 break
