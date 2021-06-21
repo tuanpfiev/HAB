@@ -87,7 +87,7 @@ def main():
                     GPSdata = CustMes.MESSAGE_GPS()                    
                     error = GPSdata.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: GPS data error " + str(error) + ".\n")
+                        print ("Radio Network Main: GPS data error " + str(error) )
                         continue
                     
                     
@@ -116,7 +116,7 @@ def main():
                     # recData = CustMes.MESSAGE_GPS()                 
                     # error = recData.bytes_to_data(recievedPacket.Payload)
                     # if error != 0:
-                    #     print ("Radio Network Main: GPS data error " + str(error) + ".\n")
+                    #     print ("Radio Network Main: GPS data error " + str(error) )
                     #     continue
                     
                     # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
@@ -145,7 +145,7 @@ def main():
                     IMUdata = CustMes.MESSAGE_IMU()                    
                     error = IMUdata.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: IMU data error " + str(error) + ".\n")
+                        print ("Radio Network Main: IMU data error " + str(error) )
                         continue
                     
                     print("IMU Data from " + str(recievedPacket.SystemID) + ":")
@@ -170,7 +170,7 @@ def main():
                     EKF_Data = CustMes.MESSAGE_EKF()                    
                     error = EKF_Data.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: EKF data error " + str(error) + ".\n")
+                        print ("Radio Network Main: EKF data error " + str(error) )
                         continue
                     
 
@@ -201,7 +201,7 @@ def main():
                     temperatureData = CustMes.MESSAGE_TEMP()                    
                     error = temperatureData.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: temperature data error " + str(error) + ".\n")
+                        print ("Radio Network Main: temperature data error " + str(error) )
                         continue
                     
                     # set the system id for the GPS data
@@ -222,7 +222,7 @@ def main():
                     RSSI_Data = CustMes.MESSAGE_RSSI()                    
                     error = RSSI_Data.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: RSSI data error " + str(error) + ".\n")
+                        print ("Radio Network Main: RSSI data error " + str(error) )
                         continue
                     
                     # set the system id for the GPS data
@@ -264,7 +264,7 @@ def main():
                     RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
                     error = RSSI_AllocationData.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: RSSI Allocation data error " + str(error) + ".\n")
+                        print ("Radio Network Main: RSSI Allocation data error " + str(error) )
                         continue
                     
                     # set the system id for the GPS data
@@ -366,8 +366,8 @@ if __name__ == '__main__':
     RSSI_AllocationThread = Thread(target=RSSI_Handler.RSSI_AllocationDistributor,args = ())
     RSSI_AllocationThread.start()
 
-    tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
-    tempThread.start()
+    # tempThread = Thread(target=TemperatureHandler.TemperatureLoggerSocket, args = ())
+    # tempThread.start()
 
     try:
         main()
@@ -442,10 +442,10 @@ if __name__ == '__main__':
     if RSSI_AllocationThread.is_alive():
         with GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD_MUTEX:
             GlobalVals.BREAK_RSSI_ALLOCATION_DISTRO_THREAD = True
-    if tempThread.is_alive():
-        with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
-            GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
-        tempThread.join()
+    # if tempThread.is_alive():
+    #     with GlobalVals.BREAK_TEMP_LOGGER_THREAD_MUTEX:
+    #         GlobalVals.BREAK_TEMP_LOGGER_THREAD = True
+    #     tempThread.join()
 
     
     
