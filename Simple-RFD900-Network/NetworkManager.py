@@ -355,7 +355,7 @@ def ByteProcessing(readBytes):
     if error != 0:    
         GlobalVals.reportError(1, error, 0)
         print("Packet Error: NetworkManager: Packet check error " + str(error) + " from " + str(completePacket.SystemID) + ". Getting next packet.")
-        print(readBytes.hex())
+        # print(readBytes.hex())
         return
     # print("packet ok: ",readBytes.hex())
     # update sequence trackers 
@@ -384,13 +384,13 @@ def ByteProcessing(readBytes):
                 if seqDiff != 0:
                     GlobalVals.reportError(3, seqDiff, completePacket.SystemID)
                     print("Sequence Error: NetworkManager: Packet from " + str(completePacket.SystemID) + " is out of sequence by " + str(seqDiff) + "\n")
-                    if seqDiff != 256:
-                        print("seqDiff: ",seqDiff)
+                    # if seqDiff != 256:
+                    #     print("seqDiff: ",seqDiff)
 
                     # increment packet counter with missing packets  
                     with GlobalVals.PACKET_COUNT_MUTEX:
                         GlobalVals.PACKET_COUNT = GlobalVals.PACKET_COUNT + seqDiff
-                        print("packet_count: ",GlobalVals.PACKET_COUNT)
+                        # print("packet_count: ",GlobalVals.PACKET_COUNT)
 
         else:
             # if no trackers exist make a new one

@@ -66,9 +66,9 @@ def main():
                     # if there was an error with the payload report it 
                     if error != 0:
                         print("Ping Data Error: RadioNetworkMain:" + str(error))
-                        print(recievedPacket[1].Payload.hex())
-                        print(recievedPacket[1].SystemID)
-                        print('\n')
+                        # print(recievedPacket[1].Payload.hex())
+                        # print(recievedPacket[1].SystemID)
+                        # print('\n')
                     
                     else:
                     
