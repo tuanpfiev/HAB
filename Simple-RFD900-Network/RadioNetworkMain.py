@@ -101,7 +101,10 @@ def main():
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 
                         continue
-                    print("RECEIVED GPS from ",GPSdata.SystemID,"!!")
+                    
+                    print("Lon:" + str(round(GPSdata.Longitude,2)) + ", Lat:" + str(round(GPSdata.Latitude,2)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime))
+
+                    # print("RECEIVED GPS from ",GPSdata.SystemID,"!!")
                     # put data into the buffer
                     with GlobalVals.GPS_DATA_BUFFER_MUTEX:
                         GlobalVals.GPS_DATA_BUFFER.append(GPSdata)
@@ -184,7 +187,7 @@ def main():
                         print("EKF message via RFD900 was broken. Discard it...") 
                         continue
 
-                    print("EKF EKF EKF Data from [",EKF_Data.SystemID,"], Lat: ", EKF_Data.Latitude, ", Lon: ", EKF_Data.Longitude, ", Alt: ", EKF_Data.Altitude)
+                    print("EKF EKF EKF Data from [",EKF_Data.SystemID,"], Lat: ", round(EKF_Data.Latitude,2), ", Lon: ", round(EKF_Data.Longitude,2), ", Alt: ", round(EKF_Data.Altitude,2))
                     # put data into the buffer
                     # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
                     #     GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
@@ -236,7 +239,7 @@ def main():
                         print("RSSI message via RFD900 was broken. Discard it...")
                         continue
                     
-                    print("RSSI Data from " + str(recievedPacket.SystemID) + ":" + "RSSI Distance:" + str(RSSI_Data.Distance) + "Filtered RSSI: " + str(RSSI_Data.FilteredRSSI) + "TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + "Time: " + str(RSSI_Data.Epoch) + "SysID: " + str(RSSI_Data.SystemID))
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ": " + "RSSI Distance:" + str(round(RSSI_Data.Distance,1)) + ", Filtered RSSI: " + str(round(RSSI_Data.FilteredRSSI,1)) + ", TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + ", Time: " + str(RSSI_Data.Epoch) + ", SysID: " + str(RSSI_Data.SystemID))
 
                     if GlobalVals.SYSTEM_ID == 1:
                         with GlobalVals.RSSI_ALLOCATION_MUTEX:
