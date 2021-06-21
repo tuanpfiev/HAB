@@ -16,7 +16,7 @@ N_BALLOON = GlobalVariables.N_BALLOON
 N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 REAL_BALLOON = GlobalVariables.REAL_BALLOON
 # serial settings 
-TIMEOUT = 10                       # Serial port time out 
+TIMEOUT = 3                       # Serial port time out 
 PORT = "COM8"                       # Windows COM por
 #PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
 BAUDRATE = 57600                    # the baud for the serial port connection 
