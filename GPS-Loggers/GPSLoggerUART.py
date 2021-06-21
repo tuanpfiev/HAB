@@ -448,12 +448,12 @@ def main():
                         obtainedUbloxCheck = checkGPS(GPS_Data)
 
                         with GlobalVals.GPSValuesMutex:
-            
+                            GPS_DataPrevUBlox = copy.deepcopy(GPS_Data)
                             if obtainedUbloxCheck or firstRunUblox:
                                 firstRunUblox = False
                                 print('Using Ublox GPS:')
                                 updateGlobalGPS_Data(GPS_Data)
-                                GPS_DataPrevUBlox = copy.deepcopy(GPS_Data)
+                                
                                 # print(GPS_Data)
                                 dataUbloxReady = True
                                 sensorID = 1
@@ -474,14 +474,14 @@ def main():
                                             obtainedQuectelCheck = checkGPS(GPS_Data)
                                             
                                             if not GlobalVals.GPSTimestamp:
-                                                print('Using QuecTel GPS:')
+                                                print('Using QuecTel GPS1:')
                                                 updateGlobalGPS_Data(GPS_Data)
                                                 sensorID = 2
                                                 # usedQuectel = True
                                             else:
                                                 if obtainedQuectelCheck:
                                                     if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
-                                                        print('Using QuecTel GPS:')
+                                                        print('Using QuecTel GPS2:')
                                                         updateGlobalGPS_Data(GPS_Data)
                                                         sensorID = 2
                                                         # usedQuectel = True
@@ -498,8 +498,8 @@ def main():
             
             else:
                 if time.time() - GPS_DataPrevUBlox.epoch > GlobalVals.UBLOX_SIGNAL_LOSS_TIME:
-                # test = time.time() - GPS_DataPrevUBlox.epoch
-                # print("Test time: ", test)
+                    test = time.time() - GPS_DataPrevUBlox.epoch
+                    print("Test time: ", test)
                     with GlobalVals.GPSValuesMutex:
                         with GlobalVals.GGA_QuectelBufferMutex:     
                             # loop through each value in buffer
@@ -519,13 +519,13 @@ def main():
                                         
                                     if obtainedQuectelCheck:
                                         if not GlobalVals.GPSTimestamp:
-                                            print('Using QuecTel GPS2:')
+                                            print('Using QuecTel GPS3:')
                                             updateGlobalGPS_Data(GPS_Data)
                                             sensorID = 2
                                         else:
                                             if GPS_Data.epoch > GlobalVals.GPSTimestamp[-1]:
                                                 print('dt: ',GPS_Data.epoch - GlobalVals.GPSTimestamp[-1])
-                                                print('Using QuecTel GPS2:')
+                                                print('Using QuecTel GPS4:')
                                     else:
                                         print('Using QuecTel GPS when both are unavailable')
                                         updateGlobalGPS_Data(GPS_Data)
