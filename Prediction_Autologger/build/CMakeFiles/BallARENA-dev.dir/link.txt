@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/BallARENA-dev.dir/ballet.cpp.o -o BallARENA-dev 
+/usr/bin/c++     CMakeFiles/BallARENA-dev.dir/ballet.cpp.o  -o BallARENA-dev 
