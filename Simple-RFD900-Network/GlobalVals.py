@@ -16,7 +16,7 @@ N_BALLOON = GlobalVariables.N_BALLOON
 N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 REAL_BALLOON = GlobalVariables.REAL_BALLOON
 # serial settings 
-TIMEOUT = 3                       # Serial port time out 
+TIMEOUT = 2                       # Serial port time out 
 PORT = "COM8"                       # Windows COM por
 #PORT = "/dev/ttyUSB0"              # Jetson / RasPi / Ubuntu USB COM port
 BAUDRATE = 57600                    # the baud for the serial port connection 
@@ -56,7 +56,7 @@ LORA_PAIR_NUM = GlobalVariables.LORA_PAIR_NUM
 # other settings 
 PACKET_BUFFER_IN_MAX_SIZE = 200      # This is the maximum number of packets that can be stored in the buffers 
 PACKET_CHECK_INTERVAL = 0.001        # the time in seconds the thread is paused waiting for more packets to arrive  
-SYSTEM_ID = 2                       # ID of this system on the network (max 255) 
+SYSTEM_ID = 0                       # ID of this system on the network (max 255) 
 ERROR_LOG_FILE = "../datalog/ErrorLog.txt"
 PING_LOG_FILE = "../datalog/PingLog.txt"
 PACKET_STATS_FILE = "../datalog/PacketStats.txt"

@@ -13,6 +13,8 @@ import GPSHandler
 import PingLogger
 import ImaginaryBalloons
 import EKFHandler
+import RSSI_Handler
+import TemperatureHandler
 import sys, os
 import copy
 
@@ -394,13 +396,13 @@ def main():
                     GPSdata = CustMes.MESSAGE_GPS()                    
                     error = GPSdata.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: GPS data error " + str(error) + ".\n")
+                        print ("Radio Network Main: GPS data error " + str(error) )
                         continue
                     
                     
 
-                    print("GPS Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+                    # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
+                    # print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
                     GPSdata.SystemID = recievedPacket.SystemID
@@ -409,8 +411,8 @@ def main():
                         print("GPS message via RFD900 was broken. Discard it...") 
                         continue
 
-                    print("GPS Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
+                    # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
+                    # print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # update GPS_Log
                     with GlobalVals.GPS_LOG_MUTEX:
@@ -453,7 +455,7 @@ def main():
                     EKF_Data = CustMes.MESSAGE_EKF()                    
                     error = EKF_Data.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: EKF data error " + str(error) + ".\n")
+                        print ("Radio Network Main: EKF data error " + str(error) )
                         continue
 
                     # set the system id for the GPS data
@@ -482,7 +484,7 @@ def main():
                     temperatureData = CustMes.MESSAGE_TEMP()                    
                     error = temperatureData.bytes_to_data(recievedPacket.Payload)
                     if error != 0:
-                        print ("Radio Network Main: temperature data error " + str(error) + ".\n")
+                        print ("Radio Network Main: temperature data error " + str(error) )
                         continue
                     
                     # set the system id for the GPS data
@@ -496,6 +498,81 @@ def main():
                     with GlobalVals.TEMPERATURE_UPDATE_MUTEX:
                         update_temperature(tempur)
                     # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
+
+
+                 # RSSI
+                if recievedPacket.MessageID == 7:
+
+                    # get the RSSI data
+                    RSSI_Data = CustMes.MESSAGE_RSSI()                    
+                    error = RSSI_Data.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: RSSI data error " + str(error) )
+                        continue
+                    
+                    # set the system id for the GPS data
+                    RSSI_Data.SystemID = recievedPacket.SystemID
+                    # print(RSSI_Data.SystemID)
+                    # print(RSSI_Data.TargetPayloadID)
+                    # print(GlobalVals.RSSI_ALLOCATION)
+
+                    # Check if the message was sent correctly via the RFD900
+                    if not RSSI_Handler.RSSI_FormatCheck(RSSI_Data):
+                        print("RSSI message via RFD900 was broken. Discard it...")
+                        continue
+                    
+                    print("RSSI Data from " + str(recievedPacket.SystemID) + ": " + "RSSI Distance:" + str(round(RSSI_Data.Distance,1)) + ", Filtered RSSI: " + str(round(RSSI_Data.FilteredRSSI,1)) + ", TargetPayloadID: " + str(RSSI_Data.TargetPayloadID) + ", Time: " + str(RSSI_Data.Epoch) + ", SysID: " + str(RSSI_Data.SystemID))
+
+                    if GlobalVals.SYSTEM_ID == 1:
+                        with GlobalVals.RSSI_ALLOCATION_MUTEX:
+                            # print("UPDATE RSSI ALLOCATION FROM RADIO [",RSSI_Data.SystemID,"] !!!!")
+                            # print(GlobalVals.RSSI_ALLOCATION)
+                            GlobalVals.RSSI_ALLOCATION[RSSI_Data.SystemID-1][int(RSSI_Data.TargetPayloadID)-1] = True
+                            # print("check 32")
+                            # print(GlobalVals.RSSI_ALLOCATION)
+                            RSSI_Handler.getPairAllocation()
+
+                       
+                    # put data into the buffer
+                    with GlobalVals.RSSI_DATA_BUFFER_MUTEX:
+                        GlobalVals.RSSI_DATA_BUFFER.append(RSSI_Data)
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_RSSI_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_RSSI_RADIO_DATA = True
+                
+                    continue
+
+                if recievedPacket.MessageID == 8:
+
+                    # get the RSSI data
+                    RSSI_AllocationData = CustMes.MESSAGE_RSSI_ALLOCATION()                    
+                    error = RSSI_AllocationData.bytes_to_data(recievedPacket.Payload)
+                    if error != 0:
+                        print ("Radio Network Main: RSSI Allocation data error " + str(error) )
+                        continue
+                    
+                    # set the system id for the GPS data
+                    RSSI_AllocationData.SystemID = recievedPacket.SystemID
+                    
+                    if not RSSI_Handler.RSSI_AllocationFormatCheck(RSSI_AllocationData):
+                        print("RSSI Allocation message via RFD900 was broken. Discard it...")
+                        continue
+                    
+                    print("RSSI Allocation Data from " + str(recievedPacket.SystemID) + ":" + "Pair:" + str(int(RSSI_AllocationData.Pair)))
+
+                    # put data into the buffer
+                    with GlobalVals.RSSI_DATA_ALLOCATION_BUFFER_MUTEX:
+                        # if len(GlobalVals.RSSI_DATA_ALLOCATION_BUFFER)>5:
+                        #     GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.pop(0)
+                        GlobalVals.RSSI_DATA_ALLOCATION_BUFFER.append(int(RSSI_AllocationData.Pair))
+
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_RSSI_ALLOCATION_RADIO_DATA = True
+                
+                    continue
+
 
 
 
