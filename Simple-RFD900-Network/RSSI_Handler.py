@@ -373,7 +373,7 @@ def RSSI_AllocationDistributor():
             RSSI_AllocationPacket.Payload = RSSI_Allocation.data_to_bytes()
             NetworkManager.sendPacket(RSSI_AllocationPacket)
             # print("sending RSSI ALLOCATOR (pair: ",RSSI_Allocation.Pair,") from 1...")
-        time.sleep(0.2)
+        time.sleep(0.5)
     # while True:
     #     print("Closing RSSI Allocation Distro !!!!!!!!!")
     #     time.sleep(0.5)
