@@ -16,8 +16,8 @@ def ErrorLogger():
     statTime = curTime + GlobalVals.PACKET_STATS_INTERVAL
 
     # setup count v
-    errorTypes = []
-    errorTypeCount = []
+    errorTypes = [[] for _ in range(GlobalVals.N_REAL_BALLOON+1)]
+    errorTypeCount = [[] for _ in range(GlobalVals.N_REAL_BALLOON+1)]
 
     # loop for checking errors 
     while True:
@@ -42,30 +42,36 @@ def ErrorLogger():
                 # values for updating error counters 
                 found = False
                 listIndex = 0
-                errorLen = len(errorTypes)
+                if CurError.OriginID-1 in range(GlobalVals.N_REAL_BALLOON):
+                    saveIndex = CurError.OriginID-1
+                else:
+                    saveIndex = GlobalVals.N_REAL_BALLOON
+
+                errorLen = len(errorTypes[saveIndex])
                 
                 # find the current error in the counters 
                 if errorLen > 0:
                     for x in range(errorLen):
-                        if errorTypes[x] == CurError.ErrorType:
+                        if errorTypes[saveIndex][x] == CurError.ErrorType:
                             listIndex = x
                             found = True
                             break
                 
                 # increment the counter 
                 if not found:
-                    errorTypes.append(CurError.ErrorType)
+                    errorTypes[saveIndex].append(CurError.ErrorType)
                     if CurError.ErrorType == 3:
-                        errorTypeCount.append(CurError.ErrorCode)
+                        errorTypeCount[saveIndex].append(CurError.ErrorCode)
                     else:
-                        errorTypeCount.append(1)
+                        errorTypeCount[saveIndex].append(1)
 
                 else:
                     if CurError.ErrorType == 3:
-                        errorTypeCount[listIndex] = errorTypeCount[listIndex] + CurError.ErrorCode
+                        errorTypeCount[saveIndex][listIndex] = errorTypeCount[saveIndex][listIndex] + CurError.ErrorCode
                     else:
-                        errorTypeCount[listIndex] = errorTypeCount[listIndex] + 1
-                            
+                        errorTypeCount[saveIndex][listIndex] = errorTypeCount[saveIndex][listIndex] + 1
+                if CurError.OriginID == 2:
+                    print('here')
                 # write the string to file  
                 try:
                     fileObj = open(GlobalVals.ERROR_LOG_FILE, "a")
@@ -88,7 +94,7 @@ def ErrorLogger():
             PacketCount = 0
             with GlobalVals.PACKET_COUNT_MUTEX:
                 PacketCount = GlobalVals.PACKET_COUNT
-                GlobalVals.PACKET_COUNT = 0
+                GlobalVals.PACKET_COUNT = [0]*(GlobalVals.N_REAL_BALLOON+1)
             
             curTime_int = int(curTime)
 
@@ -104,10 +110,17 @@ def ErrorLogger():
             
             # make string to be written to file 
             mainStr = str(curTime_int)
-            for x in range(len(errorTypes)):
-                tempStr =  "," + str(errorTypes[x]) + "," + str(errorTypeCount[x]) + "/" + str(PacketCount) 
-                mainStr = mainStr + tempStr
+            packetStatsPercent = [0]* (GlobalVals.N_REAL_BALLOON+1)
+
+            for i in range(GlobalVals.N_REAL_BALLOON+1):
+                for x in range(len(errorTypes[i])):
+                    tempStr = "," + str(i+1) + "," + str(errorTypes[i][x]) + "," + str(errorTypeCount[i][x]) + "/" + str(PacketCount[i]) 
+                    mainStr = mainStr + tempStr
+                    packetStatsPercent[i] = packetStatsPercent[i] + errorTypeCount[i][x]/PacketCount[i]
             mainStr = mainStr + "\n"
+            
+            with GlobalVals.PACKET_STATS_LOG_MUTEX:
+                GlobalVals.PACKET_STATS_LOG = packetStatsPercent
 
             # write to file 
             try:
@@ -121,9 +134,11 @@ def ErrorLogger():
             finally:
                 fileObj.close()
             
-            # clear error counts 
-            errorTypes.clear()
-            errorTypeCount.clear()
+            # # clear error counts 
+            # errorTypes.clear()
+            # errorTypeCount.clear()
+            errorTypes = [[] for _ in range(GlobalVals.N_REAL_BALLOON+1)]
+            errorTypeCount = [[] for _ in range(GlobalVals.N_REAL_BALLOON+1)]
 
         # check if the thread needs to break  
         with GlobalVals.BREAK_ERROR_THREAD_MUTEX:

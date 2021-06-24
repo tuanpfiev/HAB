@@ -334,17 +334,22 @@ def SerialManagerThread():
                 for x in comOut:
                     readBytes.append(x)
 
-                # increment packet counter 
-                with GlobalVals.PACKET_COUNT_MUTEX:
-                    GlobalVals.PACKET_COUNT = GlobalVals.PACKET_COUNT + 1
+                
 
                 # Put the packet data into a message frame
                 completePacket = CustMes.MESSAGE_FRAME()
                 error = completePacket.bytes_to_data(readBytes)
                 
+                # increment packet counter 
+                with GlobalVals.PACKET_COUNT_MUTEX:
+                    if completePacket.SystemID-1 in range(GlobalVals.N_REAL_BALLOON):
+                        GlobalVals.PACKET_COUNT[completePacket.SystemID-1] = GlobalVals.PACKET_COUNT[completePacket.SystemID-1] + 1
+                    else:
+                        GlobalVals.PACKET_COUNT[GlobalVals.N_REAL_BALLOON] = GlobalVals.PACKET_COUNT[GlobalVals.N_REAL_BALLOON] + 1
+
                 # if packet is corrupted  
                 if error != 0:    
-                    GlobalVals.reportError(1, error, 0)
+                    GlobalVals.reportError(1, error, completePacket.SystemID)
                     print("Network Manager: Packet check error " + str(error) + " from " + str(completePacket.SystemID) + ". Getting next packet.\n")
 
                     # look for next packet 
@@ -380,7 +385,10 @@ def SerialManagerThread():
                                 
                                 # increment packet counter with missing packets  
                                 with GlobalVals.PACKET_COUNT_MUTEX:
-                                    GlobalVals.PACKET_COUNT = GlobalVals.PACKET_COUNT + seqDiff
+                                    if completePacket.SystemID-1 in range(GlobalVals.N_REAL_BALLOON):
+                                        GlobalVals.PACKET_COUNT[completePacket.SystemID-1] = GlobalVals.PACKET_COUNT[completePacket.SystemID-1] + seqDiff
+                                    else:
+                                        GlobalVals.PACKET_COUNT[GlobalVals.N_REAL_BALLOON] = GlobalVals.PACKET_COUNT[GlobalVals.N_REAL_BALLOON] + seqDiff
 
                     else:
                         # if no trackers exist make a new one

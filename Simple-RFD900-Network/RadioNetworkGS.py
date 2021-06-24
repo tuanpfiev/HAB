@@ -141,12 +141,20 @@ def dataTruncate(dataList,nData,nBalloon):
 
 
 # global balloonPaths
+nRealBalloon = GlobalVals.N_REAL_BALLOON
 balloonPaths = []
 baloonPathAll = [Path("Balloon_254.csv", 1), Path("Balloon_253.csv", 2), Path("Balloon_255.csv", 3)]
 baloonPathAllOriginal = baloonPathAll[:]
 nTruncate = 20
-fireLocation = GPS(None,-37.62351737207409, 145.12652094970966, 0);
-
+# Can be fires or whatever was targeted by the predictions for each balloon
+targets = [-36.373326870216395, 142.36570090762967, -36.473326870216395, 142.36570090762967, -36.573326870216395, 142.36570090762967]
+targetLocation = [GPS(None, targets[0], targets[1], 0),
+                  GPS(None, targets[2], targets[3], 0),
+                  GPS(None, targets[4], targets[5], 0)]
+nFire = 2
+fireLocation = [-36.7, 142.2, -36.8, 142.4]
+predDuration = []
+predMaxAlt = np.zeros(nRealBalloon)
 
 for i in range(len(baloonPathAll)):
     baloonPathAll[i].trajectory = dataTruncate(baloonPathAll[i].trajectory,nTruncate,1)
@@ -164,10 +172,14 @@ for i in range(len(baloonPathAll)):
 
 
 
-global  count_history,pathHistory,count_t
+global  count_history,pathHistory,count_t,sumPositionError,sumPositionErrorSquare,sumTargetOffset
 count_history = 1
 pathHistory = []
 count_t = 0
+sumPositionError = np.zeros([nRealBalloon,1])
+sumPositionErrorSquare = np.zeros([nRealBalloon,1])
+sumTargetOffset = np.zeros([nRealBalloon,1])
+nSample = 0
 
 def update_temperature(tempur):
     index = tempur.sysID
@@ -211,66 +223,73 @@ def gps_lambda_handler():
         with GlobalVals.GPS_LOG_MUTEX:
             GPS_Log = copy.deepcopy(GlobalVals.GPS_ALL)
 
-        with GlobalVals.TEMPERATURE_UPDATE_MUTEX:
-            tempAll = copy.deepcopy(GlobalVals.TEMPERATURE_ALL)
+        # with GlobalVals.TEMPERATURE_UPDATE_MUTEX:
+        #     tempAll = copy.deepcopy(GlobalVals.TEMPERATURE_ALL)
 
-        count_t = count_t + 1
-        aws_message = balloonPaths[:]
-        t0 = time.time()
+        with GlobalVals.PACKET_STATS_AWS_MUTEX:
+            packetStatsLogPercent = copy.deepcopy(GlobalVals.PACKET_STATS_AWS)
 
-        for i in range(len(GPS_Log)):
-            if i < nRealBalloon:
-                predictedOffset = baloonPathAllOriginal[i].getDistance(GPS_Log[i])
-                targetOffset = baloonPathAllOriginal[i].getDistance(fireLocation)
-                temperature = tempAll[i].temperature
-            else:
-                positionENU_RelativeEKF = positionENU(GPS_Log[i],GPS_Log[i-nRealBalloon])
-                predictedOffset = math.sqrt(positionENU_RelativeEKF[0]**2+positionENU_RelativeEKF[1]**2)
-                targetOffset = 0
-                temperature = 0
-
-
-            each_balloon = {
-                'id': str(GPS_Log[i].sysID),
-                't': str(t0),
-                'lat': str(GPS_Log[i].lat ),
-                'lon': str(GPS_Log[i].lon),
-                'alt': str(GPS_Log[i].alt),
-                'prs': str(0+ random.uniform(0,10)),
-                'ss': str(0+ random.uniform(0,10)),
-                'd': str(predictedOffset),
-                'tar': str(targetOffset),
-                'tmp': str(temperature)
+        if count_t == 0:
+            aws_message = balloonPaths[:]
+            initial_message = {
+                'nBalloon': str(nRealBalloon),
+                'targets': str(targets),
+                'nFire': str(nFire),
+                'fireLocation': str(fireLocation),
+                'flightDuration': str(predDuration),
+                'maxAlt': str(predMaxAlt.tolist())
             }
-            aws_message.append(each_balloon)
+            aws_message.append(initial_message)
+        else:
+            # Create predicted paths from initial predictions (needs to update)
+            predictedPaths = []
+            for i in range(len(baloonPathAll)):
+                each_balloon = {
+                    'idP': str(baloonPathAll[i].trajectory[0].sysID),
+                    'latP': str(GPS_Log[i].lat ),
+                    'lonP': str(GPS_Log[i].lon)
+                }
+                predictedPaths.append(each_balloon)
+                for j in range(count_t*10, len(baloonPathAll[i].trajectory)):
+                    each_balloon = {
+                        'idP': str(baloonPathAll[i].trajectory[j].sysID),
+                        'latP': str(baloonPathAll[i].trajectory[j].lat),
+                        'lonP': str(baloonPathAll[i].trajectory[j].lon)
+                    }
+                    predictedPaths.append(each_balloon)
+            aws_message = predictedPaths[:]
 
+            t0 = time.time()
 
-        count_history = count_history + 1
+            for i in range(len(GPS_Log)):
+                if i < nRealBalloon:
+                    positionENU_RelativeTarget = positionENU(GPS_Log[i],targetLocation[i])
+                    targetOffset = math.sqrt(positionENU_RelativeTarget[0]**2 + positionENU_RelativeTarget[1]**2)
+                    meanEKF = 0 
+                    covarEKF = 0
+                else:
+                    positionENU_RelativeEKF = positionENU(GPS_Log[i],GPS_Log[i-nRealBalloon])
+                    targetOffset = math.sqrt(positionENU_RelativeEKF[0]**2+positionENU_RelativeEKF[1]**2)
+                    
+                    sumPositionError[i-nRealBalloon][0] = sumPositionError[i-nRealBalloon][0] + targetOffset
+                    sumPositionErrorSquare[i-nRealBalloon][0] = sumPositionErrorSquare[i-nRealBalloon][0] + targetOffset **2
+                    meanEKF = sumPositionError[i-nRealBalloon][0]/nSample
+                    covarEKF = math.sqrt(sumPositionErrorSquare[i-nRealBalloon][0]/nSample)
+                    
+    
+                each_balloon = {
+                    'id': str(GPS_Log[i].sysID),
+                    't': str(t0),
+                    'lat': str(GPS_Log[i].lat ),
+                    'lon': str(GPS_Log[i].lon),
+                    'alt': str(GPS_Log[i].alt),
+                    'mEKF': str(meanEKF),
+                    'cEKF': str(covarEKF),
+                    'tar': str(targetOffset),
+                    'comms': str(1-packetStatsLogPercent[i])
+                }
+                aws_message.append(each_balloon)
 
-        # if count_history % 5 == 0:
-        for i in range(len(GPS_Log)):
-            each_balloon = {
-                'idH': str(GPS_Log[i].sysID),
-                'tH': str(t0),
-                'latH': str(GPS_Log[i].lat),
-                'lonH': str(GPS_Log[i].lon),
-                'altH': str(random.uniform(200,300)),
-                'tmpH': str(temperature)
-            }
-            pathHistory.append(each_balloon)
-
-        pathHistory = dataTruncate(pathHistory,nTruncate,len(GPS_Log))
-
-        for i in pathHistory:
-            aws_message.append(i)
-        
-        initial_message = {
-            'nBalloon': str(nRealBalloon),  
-            'launch': "Horsham",
-            'nFire': str(2),
-            'fireLocation': str([-37.62351737207409, 145.12652094970966,-37.62351737207409, 145.12652094970966])
-        }
-        aws_message.append(initial_message)
 
         # response = k_client.put_record(
         #         StreamName=stream_name,
@@ -279,8 +298,12 @@ def gps_lambda_handler():
         # )
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         # print(json.dumps(aws_message))
-        # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        print(aws_message)
         print("Publishing to AWS Kinesis Data ...")
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+
+        count_t = count_t + 1
         time.sleep(3)
         
 # def gps_lambda_handler():
@@ -574,8 +597,12 @@ def main():
                     continue
 
 
+        with GlobalVals.PACKET_STATS_LOG_MUTEX:
+            packetStatsLogTmp = copy.deepcopy(GlobalVals.PACKET_STATS_LOG)
 
-
+        with GlobalVals.PACKET_STATS_AWS_MUTEX:
+            GlobalVals.PACKET_STATS_AWS = packetStatsLogTmp
+            
         # if radio GPS data has been recived record it 
         if GlobalVals.RECIEVED_GPS_RADIO_DATA:
 

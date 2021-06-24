@@ -64,7 +64,7 @@ GROUND_STATION_LOG_FILE = "../datalog/GSLog.txt"
 PING_WAIT_TIME = 0.1
 PING_LOOP_LIMIT = 50
 PING_INTERVAL = 10
-PACKET_STATS_INTERVAL = 60
+PACKET_STATS_INTERVAL = 30
 
 #=====================================================
 # Global Variables  
@@ -95,6 +95,8 @@ GPS_ARRAY_RADIO_CHECK = [[GPS()]*N_REAL_BALLOON]
 GPS_ALL = [GPS()]*N_REAL_BALLOON
 EKF_ALL = [EKF()]*N_REAL_BALLOON
 
+PACKET_STATS_LOG = [0]*N_REAL_BALLOON
+PACKET_STATS_AWS = [0]*N_REAL_BALLOON
 
 # Global Lists / Buffers Mutexes 
 PACKET_BUFFER_IN_MUTEX = Lock()
@@ -113,6 +115,8 @@ RECIEVED_RSSI_LOCAL_DATA_MUTEX = Lock()
 RSSI_DATA_ALLOCATION_BUFFER_MUTEX = Lock()
 RECIEVED_RSSI_ALLOCATION_RADIO_DATA_MUTEX = Lock()
 
+PACKET_STATS_LOG_MUTEX = Lock()
+PACKET_STATS_AWS_MUTEX = Lock()
 # Global Flags 
 SEND_PACKETS = False                # This flag informs the network manager to send all packets in the out going buffer
 RECIEVED_PACKETS = False            # This flag indicates that the network manager has recieved packets which are now stored in the buffer 
@@ -190,7 +194,7 @@ TEMPERATURE_UPDATE_MUTEX = Lock()
 
 # Global Values 
 MESSAGE_ID = 0                      # The current message id used for sending messages
-PACKET_COUNT = 0
+PACKET_COUNT = [0]*(N_REAL_BALLOON+1)
 
 
 
