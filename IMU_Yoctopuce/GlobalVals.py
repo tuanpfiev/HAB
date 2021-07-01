@@ -2,9 +2,10 @@ from threading import Lock
 
 host = '127.0.0.1'
 port = 5013
-socketTimeout = 60
+socketTimeout = 600000
 
-fileName = 'TemperatureYoctopuce.txt'
+fileName = 'IMU_Yoctopuce.txt'
+sysID = 0
 
 
 tempDataBuffer = []

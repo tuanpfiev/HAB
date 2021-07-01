@@ -12,6 +12,9 @@ import GlobalVariables
 #=====================================================
 # Global Constants 
 #=====================================================
+UNAME = 'groundstation'
+PWD = 'B@lloonV1deoStream'
+
 N_BALLOON = GlobalVariables.N_BALLOON
 N_REAL_BALLOON = GlobalVariables.N_REAL_BALLOON
 REAL_BALLOON = GlobalVariables.REAL_BALLOON
@@ -64,7 +67,7 @@ GROUND_STATION_LOG_FILE = "../datalog/GSLog.txt"
 PING_WAIT_TIME = 0.1
 PING_LOOP_LIMIT = 50
 PING_INTERVAL = 10
-PACKET_STATS_INTERVAL = 30
+PACKET_STATS_INTERVAL = 10
 
 #=====================================================
 # Global Variables  
@@ -92,8 +95,8 @@ RSSI_ALLOCATION = np.array([np.array([False]*N_REAL_BALLOON)]*N_REAL_BALLOON)
 RSSI_DATA_ALLOCATION_BUFFER = []
 
 GPS_ARRAY_RADIO_CHECK = [[GPS()]*N_REAL_BALLOON]
-GPS_ALL = [GPS()]*N_REAL_BALLOON
-EKF_ALL = [EKF()]*N_REAL_BALLOON
+GPS_ALL = [GPS()]*(2*N_REAL_BALLOON)
+# EKF_ALL = [EKF()]*N_REAL_BALLOON
 
 PACKET_STATS_LOG = [0]*N_REAL_BALLOON
 PACKET_STATS_AWS = [0]*N_REAL_BALLOON

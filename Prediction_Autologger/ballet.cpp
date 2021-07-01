@@ -21,9 +21,9 @@ int main(int argc, char **argv)
         std::cerr << e.what() << '\n';
         return -1;
     }
-    
-    ballet::Environment environment("/home/pi/LuxCode/Prediction_Autologger/");
-
+    std::cout << "Check 1"<<std::endl;
+    ballet::Environment environment("home/tony/HAB/Prediction_Autologger/");
+    std::cout << "Check 2"<<std::endl;
     ballet::KML kml("../", std::to_string(int(epoch)));
 
     while (environment.inEnvironment(balloon.getCurrentMercator(), epoch))

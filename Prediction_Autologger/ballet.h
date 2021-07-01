@@ -588,6 +588,7 @@ namespace ballet
 
         Environment(std::string path)
         {
+            std::cout<< "here"<<std::endl;
             std::vector<std::string> file_names = {"ugrdprs.csv", "vgrdprs.csv", "hgtprs.csv", "tmpprs.csv", "prsprs.csv", "denprs.csv"};
             std::vector<std::string> datasets;
 
@@ -606,11 +607,14 @@ namespace ballet
             std::string line, entry;
             
             std::getline(meta_data, line);
+                        std::cout<< path<<std::endl;
 
             std::stringstream epoch_info(line);
 
             std::getline(epoch_info, entry, ',');
+
             this->t0 = int64_t(std::stod(entry));
+            
             std::getline(epoch_info, entry, ',');
             this->tn = int64_t(std::stod(entry));
             std::getline(epoch_info, entry, ',');

@@ -111,7 +111,7 @@ def distanceEKF_MatrixCalculation(gpsAll,nRound):
 
     for i in range(GlobalVals.N_REAL_BALLOON):
         for j in range(i+1,GlobalVals.N_REAL_BALLOON):
-            distanceMatrix[i][j] = round(distance_calculation(gpsAll[i],gpsAll[j]),nRound)
+            distanceMatrix[i][j] = round(distance_calculation(gpsAll[GlobalVals.N_REAL_BALLOON+i],gpsAll[GlobalVals.N_REAL_BALLOON+j]),nRound)
             distanceMatrix[j][i] = distanceMatrix[i][j]
 
     return distanceMatrix
@@ -147,12 +147,13 @@ baloonPathAll = [Path("Balloon_254.csv", 1), Path("Balloon_253.csv", 2), Path("B
 baloonPathAllOriginal = baloonPathAll[:]
 nTruncate = 20
 # Can be fires or whatever was targeted by the predictions for each balloon
-targets = [-36.373326870216395, 142.36570090762967, -36.473326870216395, 142.36570090762967, -36.573326870216395, 142.36570090762967]
+# targets = [-36.373326870216395, 142.36570090762967, -36.473326870216395, 142.36570090762967, -36.573326870216395, 142.36570090762967]
+targets = [-37.67263447464716, 145.01434427800544,-37.678249800742954, 145.0194354883337,-37.66112634441829, 145.04196260796772]
 targetLocation = [GPS(None, targets[0], targets[1], 0),
                   GPS(None, targets[2], targets[3], 0),
                   GPS(None, targets[4], targets[5], 0)]
 nFire = 2
-fireLocation = [-36.7, 142.2, -36.8, 142.4]
+fireLocation = [-37.68419307606098, 145.03398691655838, -37.65732515799401, 145.0160016938692]
 predDuration = []
 predMaxAlt = np.zeros(nRealBalloon)
 
@@ -160,19 +161,33 @@ for i in range(len(baloonPathAll)):
     baloonPathAll[i].trajectory = dataTruncate(baloonPathAll[i].trajectory,nTruncate,1)
 
 for i in range(len(baloonPathAll)):
-    for j in range(len(baloonPathAll[0].trajectory)):
+    predDuration.append(baloonPathAll[i].trajectory[-1].epoch - baloonPathAll[i].trajectory[0].epoch)
+    for j in range(len(baloonPathAll[i].trajectory)):
         each_balloon = {
                     'idP': str(baloonPathAll[i].trajectory[j].sysID),
-                    'tP': str(baloonPathAll[i].trajectory[j].epoch),
                     'latP': str(baloonPathAll[i].trajectory[j].lat),
-                    'lonP': str(baloonPathAll[i].trajectory[j].lon),
-                    'altP': str(baloonPathAll[i].trajectory[j].alt)
+                    'lonP': str(baloonPathAll[i].trajectory[j].lon)
                 }
         balloonPaths.append(each_balloon)
+        predMaxAlt[i] = max(predMaxAlt[i], baloonPathAll[i].trajectory[j].alt)
+
+# for i in range(len(baloonPathAll)):
+#     baloonPathAll[i].trajectory = dataTruncate(baloonPathAll[i].trajectory,nTruncate,1)
+
+# for i in range(len(baloonPathAll)):
+#     for j in range(len(baloonPathAll[0].trajectory)):
+#         each_balloon = {
+#                     'idP': str(baloonPathAll[i].trajectory[j].sysID),
+#                     'tP': str(baloonPathAll[i].trajectory[j].epoch),
+#                     'latP': str(baloonPathAll[i].trajectory[j].lat),
+#                     'lonP': str(baloonPathAll[i].trajectory[j].lon),
+#                     'altP': str(baloonPathAll[i].trajectory[j].alt)
+#                 }
+#         balloonPaths.append(each_balloon)
 
 
 
-global  count_history,pathHistory,count_t,sumPositionError,sumPositionErrorSquare,sumTargetOffset
+global  count_history,pathHistory,count_t,sumPositionError,sumPositionErrorSquare,sumTargetOffset, nSample
 count_history = 1
 pathHistory = []
 count_t = 0
@@ -190,14 +205,14 @@ def update_GPS_Log(gps_data):
     try:    
         GlobalVals.GPS_ALL[index-1]= GPS(gps_data.SystemID, gps_data.Latitude, gps_data.Longitude, gps_data.Altitude,gps_data.GPSTime)
     except:
-        print('here')
+        print('here-update_GPS_Log')
 
 def update_EKF_Log(EKF_Data):
     index = EKF_Data.SystemID
     try:    
-        GlobalVals.EKF_ALL[index-1]= EKF(EKF_Data.SystemID, EKF_Data.Latitude, EKF_Data.Longitude, EKF_Data.Altitude,EKF_Data.Epoch)
+        GlobalVals.GPS_ALL[index-1+GlobalVals.N_REAL_BALLOON]= GPS(EKF_Data.SystemID+GlobalVals.N_REAL_BALLOON, EKF_Data.Latitude, EKF_Data.Longitude, EKF_Data.Altitude,EKF_Data.Epoch)
     except:
-        print('here')
+        print('here-update_EKF_Log')
 
 
 def distance_calculation(gps_data):
@@ -210,11 +225,15 @@ def distance_calculation(gps1,gps2):
     p2 = lla2ecef(gps2.lat,gps2.lon,gps2.alt)
     return np.linalg.norm(p1-p2)
 
-def gps_lambda_handler():
-    global count_t, count_history, pathHistory
+def gps_lambda_handler(credentials):
+    global count_t, count_history, pathHistory, nSample
 
     stream_name = 'RMITballoon_Data'
-    k_client = boto3.client('kinesis', region_name='ap-southeast-2')
+    k_client = boto3.client('kinesis', 
+                            region_name='ap-southeast-2',
+                            aws_access_key_id=credentials['AccessKeyId'],
+                            aws_secret_access_key=credentials['SecretKey'],
+                            aws_session_token=credentials['SessionToken'])
     nRealBalloon = GlobalVals.N_REAL_BALLOON
 
     time.sleep(5)
@@ -228,7 +247,7 @@ def gps_lambda_handler():
 
         with GlobalVals.PACKET_STATS_AWS_MUTEX:
             packetStatsLogPercent = copy.deepcopy(GlobalVals.PACKET_STATS_AWS)
-
+        nSample = nSample + 1
         if count_t == 0:
             aws_message = balloonPaths[:]
             initial_message = {
@@ -276,7 +295,11 @@ def gps_lambda_handler():
                     meanEKF = sumPositionError[i-nRealBalloon][0]/nSample
                     covarEKF = math.sqrt(sumPositionErrorSquare[i-nRealBalloon][0]/nSample)
                     
-    
+                if i<nRealBalloon:
+                    comms = 0.999-packetStatsLogPercent[i]
+                else:
+                    comms = 0.999-packetStatsLogPercent[i-nRealBalloon]
+
                 each_balloon = {
                     'id': str(GPS_Log[i].sysID),
                     't': str(t0),
@@ -286,7 +309,9 @@ def gps_lambda_handler():
                     'mEKF': str(meanEKF),
                     'cEKF': str(covarEKF),
                     'tar': str(targetOffset),
-                    'comms': str(1-packetStatsLogPercent[i])
+                    'comms': str(comms)
+                    # 'comms': str(1)
+
                 }
                 aws_message.append(each_balloon)
 
@@ -294,89 +319,54 @@ def gps_lambda_handler():
         # response = k_client.put_record(
         #         StreamName=stream_name,
         #         Data=json.dumps(aws_message),
-        #         PartitionKey=str(random.randrange(10000))
+        #         PartitionKey='telemetryData'
         # )
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-        # print(json.dumps(aws_message))
-        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-        print(aws_message)
+        print(json.dumps(aws_message))
+        # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        # print(aws_message)
         print("Publishing to AWS Kinesis Data ...")
         print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 
         count_t = count_t + 1
         time.sleep(3)
-        
-# def gps_lambda_handler():
-#     global count_t, count_history, pathHistory
 
-#     stream_name = 'RMITballoon_Data'
-#     k_client = boto3.client('kinesis', region_name='ap-southeast-2')
-
-#     while True:
-                    
-#         # print("***************************************************************************")
-#         # print(GlobalVals.AWS_GPS_DATA_BUFFER)
-#         # print("***************************************************************************")
-
-#         with GPS_Log_LOCK:
-#             with EKF_LOG_LOCK:
-#                 GPS_Log_tmp = GPS_Log
-
-#         aws_message = balloonPaths[:]
-#         t0 = time.time()
-
-#         for i in range(len(GPS_Log_tmp)):
-#             if i < nRealBalloon:
-#                 predictedOffset = baloonPathAllOriginal[i].getDistance(GPS_Log_tmp[i])
-#                 targetOffset = baloonPathAllOriginal[i].getDistance(fireLocation)
-#             else:
-#                 positionENU_RelativeEKF = positionENU(GPS_Log_tmp[i],GPS_Log_tmp[i-nRealBalloon])
-#                 predictedOffset = math.sqrt(positionENU_RelativeEKF[0]**2+positionENU_RelativeEKF[1]**2)
-#                 targetOffset = 0
-
-#             temperatureOutside = random.uniform(50,60)
-
-#             each_balloon = {
-#                 'id': str(GPS_Log_tmp[i].sysID),
-#                 't': str(t0),
-#                 'lat': str(GPS_Log_tmp[i].lat ),
-#                 'lon': str(GPS_Log_tmp[i].lon),
-#                 'alt': str(GPS_Log_tmp[i].alt),
-#                 'prs': str(0),
-#                 'ss': str(0),
-#                 'd': str(predictedOffset),
-#                 'tar': str(targetOffset),
-#                 'tmp': str(temperatureOutside)
-#             }
-#             # print(targetOffset)
-#             aws_message.append(each_balloon)
+def cognito_login(username, password):
+    region = 'ap-southeast-2'
+    clientID = '6s77pp2bq57348s96kujudbes5'
+    userPoolID = 'ZHCg4nUow'
+    identityPoolID = 'b8f994a8-9f48-4efb-ac58-e4101703ee87'
+    login = 'cognito-idp.' + region + '.amazonaws.com/' + region + "_" + userPoolID
+    cogIdp_client = boto3.client('cognito-idp', region_name=region)
+    cog_client = boto3.client('cognito-identity', region_name=region)
     
-#         for i in range(len(GPS_Log_tmp)):
-#             each_balloon = {
-#                 'idH': str(GPS_Log_tmp[i].sysID),
-#                 'tH': str(t0),
-#                 'latH': str(GPS_Log_tmp[i].lat),
-#                 'lonH': str(GPS_Log_tmp[i].lon),
-#                 'altH': str(GPS_Log_tmp[i].alt),
-#                 'tmpH': str(temperatureOutside)
-#             }
-#             pathHistory.append(each_balloon)
-
-#         pathHistory = dataTruncate(pathHistory,nTruncate,len(GPS_Log_tmp))
-
-#         for i in pathHistory:
-#             aws_message.append(i)
-
-#         response = k_client.put_record(
-#                 StreamName=stream_name,
-#                 Data=json.dumps(aws_message),
-#                 PartitionKey=str(random.randrange(10000))
-#         )
-#         #print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-#         #print(json.dumps(aws_message))
-#         #print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-
-#         time.sleep(3)
+    # Initiate the authentication request
+    print('Logging In')
+    authResult = cogIdp_client.initiate_auth(
+        AuthFlow = 'USER_PASSWORD_AUTH',
+        AuthParameters = {
+            'USERNAME': username,
+            'PASSWORD': password,
+            },
+        ClientId = clientID
+        )
+    # Get a cognito identity
+    print('Getting ID')
+    idResult = cog_client.get_id(
+        IdentityPoolId = region + ':' + identityPoolID,
+        Logins = {
+            login: authResult['AuthenticationResult']['IdToken'],
+            }
+        )
+    # Get credentials for the identity
+    print('Getting Credentials')
+    credResult = cog_client.get_credentials_for_identity(
+        IdentityId = idResult['IdentityId'],
+        Logins = {
+            login: authResult['AuthenticationResult']['IdToken']
+            }
+        )
+    gps_lambda_handler(credResult['Credentials'])       
 #=====================================================
 # Main function  
 #=====================================================
@@ -491,10 +481,10 @@ def main():
                     # update GPS_Log
                     with GlobalVals.EKF_LOG_MUTEX:
                         update_EKF_Log(EKF_Data)
-                        distance = distanceEKF_MatrixCalculation(GlobalVals.EKF_ALL,0,)
+                        distance = distanceEKF_MatrixCalculation(GlobalVals.GPS_ALL,0,)
 
                     print("==================================================================================================")
-                    print("EKF EKF EKF " + str(recievedPacket.SystemID) +str(recievedPacket.SystemID) +str(recievedPacket.SystemID) + ":" + " Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,1)) + ", Time:" + str(round(GPSdata.GPSTime,1)))
+                    print("EKF EKF EKF " + str(recievedPacket.SystemID) +str(recievedPacket.SystemID) +str(recievedPacket.SystemID) + ":" + " Lon:" + str(round(EKF_Data.Longitude,3)) + ", Lat:" + str(round(EKF_Data.Latitude,3)) + ", Alt:" + str(round(EKF_Data.Altitude,1)) + ", Time:" + str(round(EKF_Data.Epoch,1)))
                     print('Distance from EKF [m]:\n',distance)
 
                     continue
@@ -679,7 +669,8 @@ if __name__ == '__main__':
     # ImaginaryBalloonsThread.start()
 
     # Start AWS thread
-    AWS_GPS_Thread = Thread(target = gps_lambda_handler, args=())
+    # AWS_GPS_Thread = Thread(target = gps_lambda_handler, args=())
+    AWS_GPS_Thread = Thread(target = cognito_login, args=(GlobalVals.UNAME,GlobalVals.PWD))
     AWS_GPS_Thread.start()
 
     try:

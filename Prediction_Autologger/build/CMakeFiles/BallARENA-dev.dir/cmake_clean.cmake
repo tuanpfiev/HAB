@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/BallARENA-dev.dir/ballet.cpp.o"
-  "BallARENA-dev.pdb"
   "BallARENA-dev"
+  "BallARENA-dev.pdb"
+  "CMakeFiles/BallARENA-dev.dir/ballet.cpp.o"
 )
 
 # Per-language clean rules from dependency scanning.

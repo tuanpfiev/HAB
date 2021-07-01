@@ -70,8 +70,8 @@ def ErrorLogger():
                         errorTypeCount[saveIndex][listIndex] = errorTypeCount[saveIndex][listIndex] + CurError.ErrorCode
                     else:
                         errorTypeCount[saveIndex][listIndex] = errorTypeCount[saveIndex][listIndex] + 1
-                if CurError.OriginID == 2:
-                    print('here')
+                # if CurError.OriginID == 2:
+                #     print('here')
                 # write the string to file  
                 try:
                     fileObj = open(GlobalVals.ERROR_LOG_FILE, "a")
