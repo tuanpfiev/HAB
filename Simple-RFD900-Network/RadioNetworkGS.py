@@ -418,7 +418,9 @@ def main():
                     # print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
-                    GPSdata.SystemID = recievedPacket.SystemID
+                    # GPSdata.SystemID = recievedPacket.SystemID
+                    if GPSdata.SystemID != recievedPacket.SystemID:
+                        print("GPS SysID mismatched")
 
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 

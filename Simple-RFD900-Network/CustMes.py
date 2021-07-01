@@ -121,7 +121,7 @@ class MESSAGE_GPS:
         Latitude_ints = struct.pack('!d',self.Latitude)
         Altitude_ints = struct.pack('!d',self.Altitude)
         GPSTime_ints = struct.pack('!d',self.GPSTime)
-
+        SystemID_ints = struct.pack('!d',self.SystemID)
         # append the values to the byte array for the payload 
         for x in Longitude_ints:
             payloadBytes.append(x)
@@ -135,6 +135,9 @@ class MESSAGE_GPS:
         for x in GPSTime_ints:
             payloadBytes.append(x)
         
+        for x in SystemID_ints:
+            payloadBytes.append(x)
+        
         # return the payload byte array 
         return payloadBytes
 
@@ -142,7 +145,7 @@ class MESSAGE_GPS:
 
         # check length of payload 
         payloadLen = len(payloadBytes)
-        if payloadLen != 32:
+        if payloadLen != 40:
             return -1
         
         # convert payload values back to double
@@ -150,12 +153,14 @@ class MESSAGE_GPS:
         LatitudeTuple = struct.unpack('!d',payloadBytes[8:16])
         AltitudeTuple = struct.unpack('!d',payloadBytes[16:24])
         GPSTimeTuple = struct.unpack('!d',payloadBytes[24:32])
+        SystemIDTuple = struct.unpack('!d',payloadBytes[32:40])
 
         # store converted values 
         self.Longitude = LongitudeTuple[0]
         self.Latitude = LatitudeTuple[0]
         self.Altitude = AltitudeTuple[0]
         self.GPSTime = GPSTimeTuple[0]
+        self.SystemID = SystemIDTuple[0]
 
         return 0
 
