@@ -7,7 +7,7 @@ import GlobalVariables
 #=====================================================
 # Global Constants 
 #=====================================================
-
+SYSID = 0
 HOST = '127.0.0.1'
 TIMEOUT = 10                                   # Serial port time out 
 PORT = "COM17"                                  # Windows COM por
