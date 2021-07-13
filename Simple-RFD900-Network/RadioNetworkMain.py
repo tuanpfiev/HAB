@@ -110,14 +110,14 @@ def main():
                     GPSdata.SystemID = int(GPSdata.SystemID)
                     if GPSdata.SystemID != recievedPacket.SystemID:
                         countGPS_Mismatched = countGPS_Mismatched + 1
-                        print("GPS SysID mismatched (", countGPS_Mismatched,"/",countGPS_Total,round(countGPS_Mismatched/countGPS_Total,1),")")
+                        print("GPS SysID mismatched (", countGPS_Mismatched,"/",countGPS_Total,", ", 100*round(countGPS_Mismatched/countGPS_Total,1),"%)")
                         continue
 
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 
                         continue
                     
-                    print("Lon:" + str(round(GPSdata.Longitude,2)) + ", Lat:" + str(round(GPSdata.Latitude,2)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime))
+                    print("SysID: ", GPSdata.SystemID, ", Lon:" + str(round(GPSdata.Longitude,2)) + ", Lat:" + str(round(GPSdata.Latitude,2)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime))
 
                     # print("RECEIVED GPS from ",GPSdata.SystemID,"!!")
                     # put data into the buffer
@@ -202,7 +202,7 @@ def main():
                     EKF_Data.SystemID = int(EKF_Data.SystemID)
                     if EKF_Data.SystemID != recievedPacket.SystemID:
                         countEKF_Mismatched = countEKF_Mismatched + 1
-                        print("EKF SysID mismatched (", countEKF_Mismatched,"/",countEKF_Total,round(countEKF_Mismatched/countEKF_Total,1),")")
+                        print("EKF SysID mismatched (", countEKF_Mismatched,"/",countEKF_Total,", ",100*round(countEKF_Mismatched/countEKF_Total,1),"%)")
                         continue
 
                     if not EKFHandler.EKF_FormatCheck(EKF_Data):
@@ -260,7 +260,7 @@ def main():
                     RSSI_Data.SystemID = int(RSSI_Data.SystemID)
                     if RSSI_Data.SystemID != recievedPacket.SystemID:
                         countRSSI_Mismatched = countRSSI_Mismatched + 1
-                        print("RSSI SysID mismatched (", countRSSI_Mismatched,"/",countRSSI_Total,round(countRSSI_Mismatched/countRSSI_Total,1),")")
+                        print("RSSI SysID mismatched (", countRSSI_Mismatched,"/",countRSSI_Total,", ",100*round(countRSSI_Mismatched/countRSSI_Total,1),"%)")
                         continue
 
                     # Check if the message was sent correctly via the RFD900
