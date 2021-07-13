@@ -144,7 +144,11 @@ def distanceCalculation(gps1, gps2):
 
 def RSSI_Calibration(rssi,gpsAll,sysID,targetBalloon):
 
+    if not GlobalVals.RSSI_ONLINE_CALIB:
+        print("Using fix params for RSSI")
+        rssi = RSSI_ToDistance(rssi,GlobalVals.RSSI_PARAMS)
 
+        return GlobalVals.RSSI_PARAMS, True, rssi, 0
 
     if not checkGPS(gpsAll[sysID-1]) or not checkGPS(gpsAll[targetBalloon-1]):
         if not GlobalVals.RSSI_CALIBRATION_FINISHED:

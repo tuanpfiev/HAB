@@ -17,6 +17,8 @@ WAITING_TIMEOUT = 2
 RSSI_COMMAND = bytes(b'\xaf\xaf\x00\x00\xaf\x80\x06\x02\x00\x00\x95\x0d\x0a')
 RSSI_LOG_FILE = "RSSILog.txt"
 
+RSSI_ONLINE_CALIB = False
+
 # Buffer
 RSSI_filtered = []
 distance = []
@@ -62,7 +64,7 @@ REAL_BALLOON = GlobalVariables.REAL_BALLOON
 GPS_ALL = np.array([GPS()]*N_BALLOON)
 Y = np.zeros([1,1])
 X = np.zeros([1,2])
-RSSI_PARAMS = np.ones([1,2])
+RSSI_PARAMS = GlobalVariables.RSSI_PARAMS_ALL[SYSID-1]
 RSSI_CALIBRATION_FINISHED = False
 SYSID = 1
 LORA_ALLOCATION = 1

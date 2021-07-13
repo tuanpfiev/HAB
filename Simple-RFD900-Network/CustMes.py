@@ -692,6 +692,7 @@ class MESSAGE_RSSI:
         Distance_ints = struct.pack('!d',self.Distance)
         FilteredRSSI_ints = struct.pack('!d',self.FilteredRSSI)
         TargetPayloadID_ints = struct.pack('!d',self.TargetPayloadID)
+        SystemID_ints = struct.pack('!d',self.SystemID)
         # append the values to the byte array for the payload 
         for x in Epoch_ints:
             payloadBytes.append(x)
@@ -705,6 +706,9 @@ class MESSAGE_RSSI:
         for x in TargetPayloadID_ints:
             payloadBytes.append(x)
 
+        for x in SystemID_ints:
+            payloadBytes.append(x)
+
         # return the payload byte array 
         return payloadBytes
 
@@ -712,7 +716,7 @@ class MESSAGE_RSSI:
 
         # check length of payload 
         payloadLen = len(payloadBytes)
-        if payloadLen != 32:
+        if payloadLen != 40:
             return -1
         
         # convert payload values back to double
@@ -720,7 +724,7 @@ class MESSAGE_RSSI:
         DistanceTuple = struct.unpack('!d',payloadBytes[8:16])
         FilteredRSSITuple = struct.unpack('!d',payloadBytes[16:24])
         TargetPayloadIDTuple = struct.unpack('!d',payloadBytes[24:32])
-
+        SystemIDTuple = struct.unpack('!d',payloadBytes[32:40])
         # print(".........")
         # print(EpochTuple)
         # print(DistanceTuple)
@@ -732,6 +736,7 @@ class MESSAGE_RSSI:
         self.Distance = DistanceTuple[0] 
         self.FilteredRSSI = FilteredRSSITuple[0]
         self.TargetPayloadID = TargetPayloadIDTuple[0]
+        self.SystemID = SystemIDTuple[0]
         return 0
 
 
@@ -768,6 +773,7 @@ class MESSAGE_EKF:
         P01_ints = struct.pack('!d',self.P01)
         P10_ints = struct.pack('!d',self.P10)
         P11_ints = struct.pack('!d',self.P11)
+        SystemID_ints = struct.pack('!d',self.SystemID)
         # append the values to the byte array for the payload 
         for x in Epoch_ints:
             payloadBytes.append(x)
@@ -798,6 +804,9 @@ class MESSAGE_EKF:
 
         for x in P11_ints:
             payloadBytes.append(x)
+        
+        for x in SystemID_ints:
+            payloadBytes.append(x)
 
         # return the payload byte array 
         return payloadBytes
@@ -806,7 +815,7 @@ class MESSAGE_EKF:
 
         # check length of payload 
         payloadLen = len(payloadBytes)
-        if payloadLen != 80:
+        if payloadLen != 88:
             return -1
         
         # convert payload values back to double
@@ -820,6 +829,7 @@ class MESSAGE_EKF:
         P01Tuple = struct.unpack('!d',payloadBytes[56:64])
         P10Tuple = struct.unpack('!d',payloadBytes[64:72])
         P11Tuple = struct.unpack('!d',payloadBytes[72:80])
+        SystemIDTuple = struct.unpack('!d',payloadBytes[80:88])
 
         # store converted values 
         self.Epoch = EpochTuple[0] 
@@ -832,5 +842,6 @@ class MESSAGE_EKF:
         self.P01 = P01Tuple[0]
         self.P10 = P10Tuple[0] 
         self.P11 = P11Tuple[0] 
+        self.SystemID = SystemIDTuple[0]
 
         return 0

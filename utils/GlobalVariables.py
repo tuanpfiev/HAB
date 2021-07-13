@@ -7,6 +7,9 @@ N_REAL_BALLOON = 3
 REAL_BALLOON = np.array([1,2,3])
 ALL_BALLOON = np.array([1,2,3,4,5])
 LORA_PAIR_NUM = np.array([1,2,3])
+
+RSSI_PARAMS_ALL = [np.array([[-37,2.2]]), np.array([[-30.88, 2.05]]), np.array([[-35, 2.2]])]
+
 # GPS-Loggers.py
 GPS_READER_SOCKET = 5001
 

@@ -1,6 +1,7 @@
 # import libraries 
 import time
 from threading import Thread
+from typing import Counter
 
 # import files 
 import GlobalVals
@@ -24,8 +25,16 @@ from common_class import *
 #=====================================================
 # Main function  
 #=====================================================
+global countGPS_Total, countGPS_Mismatched, countEKF_Total, countEKF_Mismatched, countRSSI_Total, countRSSI_Mismatched 
+countGPS_Total = 0
+countGPS_Mismatched = 0
+countEKF_Total = 0
+countEKF_Mismatched = 0
+countRSSI_Total = 0
+countRSSI_Mismatched = 0
 def main():
-    
+    global countGPS_Total, countGPS_Mismatched, countEKF_Total, countEKF_Mismatched, countRSSI_Total, countRSSI_Mismatched 
+
     recievedPackets = False
     # sendTime = int(time.time() + 1)
 
@@ -97,8 +106,12 @@ def main():
 
                     # set the system id for the GPS data
                     # GPSdata.SystemID = recievedPacket.SystemID
+                    countGPS_Total = countGPS_Total + 1
+                    GPSdata.SystemID = int(GPSdata.SystemID)
                     if GPSdata.SystemID != recievedPacket.SystemID:
-                        print("GPS SysID mismatched")
+                        countGPS_Mismatched = countGPS_Mismatched + 1
+                        print("GPS SysID mismatched (", countGPS_Mismatched,"/",countGPS_Total,round(countGPS_Mismatched/countGPS_Total,1),")")
+                        continue
 
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 
@@ -144,30 +157,30 @@ def main():
 
                     continue
 
-                if recievedPacket.MessageID == 4:
+                # if recievedPacket.MessageID == 4:
                     
-                    # get the GPS data
-                    IMUdata = CustMes.MESSAGE_IMU()                    
-                    error = IMUdata.bytes_to_data(recievedPacket.Payload)
-                    if error != 0:
-                        print ("Radio Network Main: IMU data error " + str(error) )
-                        continue
+                #     # get the GPS data
+                #     IMUdata = CustMes.MESSAGE_IMU()                    
+                #     error = IMUdata.bytes_to_data(recievedPacket.Payload)
+                #     if error != 0:
+                #         print ("Radio Network Main: IMU data error " + str(error) )
+                #         continue
                     
-                    print("IMU Data from " + str(recievedPacket.SystemID) + ":")
-                    print("Euler:" + str(IMUdata.Euler321_theta) + "\n")
+                #     print("IMU Data from " + str(recievedPacket.SystemID) + ":")
+                #     print("Euler:" + str(IMUdata.Euler321_theta) + "\n")
 
-                    # set the system id for the GPS data
-                    IMUdata.SystemID = recievedPacket.SystemID
+                #     # set the system id for the GPS data
+                #     IMUdata.SystemID = recievedPacket.SystemID
 
-                    # put data into the buffer
-                    with GlobalVals.IMU_DATA_BUFFER_MUTEX:
-                        GlobalVals.IMU_DATA_BUFFER.append(GPSdata)
+                #     # put data into the buffer
+                #     with GlobalVals.IMU_DATA_BUFFER_MUTEX:
+                #         GlobalVals.IMU_DATA_BUFFER.append(GPSdata)
 
-                    # set the flags for the buffer 
-                    with GlobalVals.RECIEVED_IMU_RADIO_DATA_MUTEX:
-                        GlobalVals.RECIEVED_IMU_RADIO_DATA = True
+                #     # set the flags for the buffer 
+                #     with GlobalVals.RECIEVED_IMU_RADIO_DATA_MUTEX:
+                #         GlobalVals.RECIEVED_IMU_RADIO_DATA = True
                     
-                    continue
+                #     continue
 
                 if recievedPacket.MessageID == 5:
                     
@@ -183,7 +196,14 @@ def main():
                     # print("Lon:" + str(GPSdata.Longitude) + ", Lat:" + str(GPSdata.Latitude) + ", Alt:" + str(GPSdata.Altitude) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
-                    EKF_Data.SystemID = recievedPacket.SystemID
+                    # EKF_Data.SystemID = recievedPacket.SystemID
+
+                    countEKF_Total = countEKF_Total + 1
+                    EKF_Data.SystemID = int(EKF_Data.SystemID)
+                    if EKF_Data.SystemID != recievedPacket.SystemID:
+                        countEKF_Mismatched = countEKF_Mismatched + 1
+                        print("EKF SysID mismatched (", countEKF_Mismatched,"/",countEKF_Total,round(countEKF_Mismatched/countEKF_Total,1),")")
+                        continue
 
                     if not EKFHandler.EKF_FormatCheck(EKF_Data):
                         print("EKF message via RFD900 was broken. Discard it...") 
@@ -200,23 +220,23 @@ def main():
                     
                     continue
                 # Temperature
-                if recievedPacket.MessageID == 6:
+                # if recievedPacket.MessageID == 6:
 
-                    # get the RSSI data
-                    temperatureData = CustMes.MESSAGE_TEMP()                    
-                    error = temperatureData.bytes_to_data(recievedPacket.Payload)
-                    if error != 0:
-                        print ("Radio Network Main: temperature data error " + str(error) )
-                        continue
+                #     # get the RSSI data
+                #     temperatureData = CustMes.MESSAGE_TEMP()                    
+                #     error = temperatureData.bytes_to_data(recievedPacket.Payload)
+                #     if error != 0:
+                #         print ("Radio Network Main: temperature data error " + str(error) )
+                #         continue
                     
-                    # set the system id for the GPS data
-                    temperatureData.SystemID = recievedPacket.SystemID
+                #     # set the system id for the GPS data
+                #     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if not TemperatureHandler.temperatureFormatCheck(temperatureData):
-                        print("Temperature message via RFD900 was broken. Discard it...")
-                        continue
+                #     if not TemperatureHandler.temperatureFormatCheck(temperatureData):
+                #         print("Temperature message via RFD900 was broken. Discard it...")
+                #         continue
                     
-                    # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
+                #     # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
 
 
 
@@ -231,10 +251,17 @@ def main():
                         continue
                     
                     # set the system id for the GPS data
-                    RSSI_Data.SystemID = recievedPacket.SystemID
+                    # RSSI_Data.SystemID = recievedPacket.SystemID
                     # print(RSSI_Data.SystemID)
                     # print(RSSI_Data.TargetPayloadID)
                     # print(GlobalVals.RSSI_ALLOCATION)
+                    
+                    countRSSI_Total = countRSSI_Total + 1
+                    RSSI_Data.SystemID = int(RSSI_Data.SystemID)
+                    if RSSI_Data.SystemID != recievedPacket.SystemID:
+                        countRSSI_Mismatched = countRSSI_Mismatched + 1
+                        print("RSSI SysID mismatched (", countRSSI_Mismatched,"/",countRSSI_Total,round(countRSSI_Mismatched/countRSSI_Total,1),")")
+                        continue
 
                     # Check if the message was sent correctly via the RFD900
                     if not RSSI_Handler.RSSI_FormatCheck(RSSI_Data):

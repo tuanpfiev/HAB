@@ -19,28 +19,25 @@ from common_class import *
 
 def KLD1(x,mu_r,sigma_r):
     # x[2] = 1
-    return 1/2*1/sigma_r*(np.linalg.norm(np.array([x[0]-mu_r[0],x[1]-mu_r[1]]))**2+2*0.5**2)-np.log(x[2]**2/sigma_r)
+    return (1/2*1/sigma_r*(np.linalg.norm(np.array([x[0]-mu_r[0],x[1]-mu_r[1]]))**2+2*x[2])-np.log(x[2]/1))*1
 
 def KLD2(x,mu_a_x,mu_a_y,d_r_a,sigma_d_r_a):    
     #sigma_d_r_a = .01
     # x[2] = 1
     d = 0
     for i in np.arange(start=0,stop=mu_a_x.__len__(),step=1):
-        d = d+ (-2*d_r_a[i]*np.sqrt(x[2]**2*np.pi/2)*
-        hyp1f1(-1/2,1,-np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2/(2*x[2]**2))+
-        np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2+2*x[2]**2)/(2*sigma_d_r_a[i])
-        # a = (2*d_r_a[i]*np.sqrt(x[2]*np.pi/2)*
-        # hyp1f1(-1/2,1,-np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2/(2*x[2])))
-        # print(np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2)
+        d = d+ (-2*d_r_a[i]*np.sqrt(x[2]*np.pi/2)*
+        hyp1f1(-1/2,1,-np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2/(2*x[2]))+
+        np.linalg.norm(np.array([x[0]-mu_a_x[i],x[1]-mu_a_y[i]]))**2+2*x[2])/(2*sigma_d_r_a[i])
     return d
 
 def KLD3(x,mu_m_x,mu_m_y,sigma_m,d_r_m,sigma_d_r_m):    
     d = 0
     # x[2] = 1
     for i in np.arange(start=0,stop=mu_m_x.__len__(),step=1):
-        d = d+(-2*d_r_m[i]*np.sqrt((x[2]**2+sigma_m[i])*np.pi/2)*
-        hyp1f1(-1/2,1,-np.linalg.norm(np.array([x[0]-mu_m_x[i],x[1]-mu_m_y[i]]))**2/(2*(x[2]**2+sigma_m[i])))+
-        np.linalg.norm(np.array([x[0]-mu_m_x[i],x[1]-mu_m_y[i]]))**2+2*x[2]**2)/(2*sigma_d_r_m[i])
+        d = d+(-2*d_r_m[i]*np.sqrt((x[2]+sigma_m[i])*np.pi/2)*
+        hyp1f1(-1/2,1,-np.linalg.norm(np.array([x[0]-mu_m_x[i],x[1]-mu_m_y[i]]))**2/(2*(x[2]+sigma_m[i])))+
+        np.linalg.norm(np.array([x[0]-mu_m_x[i],x[1]-mu_m_y[i]]))**2+2*x[2])/(2*sigma_d_r_m[i])
     return d
 
 def new_func2(func1, func2):

@@ -370,8 +370,12 @@ def cognito_login(username, password):
 #=====================================================
 # Main function  
 #=====================================================
+global countT, countE
+countT = 0
+countE = 0
 def main():
-    
+    global countT, countE
+
     recievedPackets = False
     # sendTime = int(time.time() + 1)
 
@@ -419,8 +423,13 @@ def main():
 
                     # set the system id for the GPS data
                     # GPSdata.SystemID = recievedPacket.SystemID
+                    countT = countT + 1
+                    GPSdata.SystemID = int(GPSdata.SystemID)
                     if GPSdata.SystemID != recievedPacket.SystemID:
                         print("GPS SysID mismatched")
+                        countE = countE + 1
+                        print(countE,"/",countT,round(countE/countT,2))
+                        continue
 
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
                         print("GPS message via RFD900 was broken. Discard it...") 

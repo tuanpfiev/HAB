@@ -109,6 +109,7 @@ def EKFLoggerSocket():
             EKF_Data.P01 = ekf.p01
             EKF_Data.P10 = ekf.p10
             EKF_Data.P11 = ekf.p11
+            EKF_Data.SystemID = GlobalVals.SYSTEM_ID
 
             # add data to the gps buffer 
             # with GlobalVals.EKF_DATA_BUFFER_MUTEX:
