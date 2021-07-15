@@ -140,6 +140,15 @@ def dataTruncate(dataList,nData,nBalloon):
     return result
 
 
+global countGPS_Total, countGPS_Mismatched, countEKF_Total, countEKF_Mismatched, countRSSI_Total, countRSSI_Mismatched 
+countGPS_Total = 0
+countGPS_Mismatched = 0
+countEKF_Total = 0
+countEKF_Mismatched = 0
+countRSSI_Total = 0
+countRSSI_Mismatched = 0
+
+
 # global balloonPaths
 nRealBalloon = GlobalVals.N_REAL_BALLOON
 balloonPaths = []
@@ -148,12 +157,17 @@ baloonPathAllOriginal = baloonPathAll[:]
 nTruncate = 20
 # Can be fires or whatever was targeted by the predictions for each balloon
 # targets = [-36.373326870216395, 142.36570090762967, -36.473326870216395, 142.36570090762967, -36.573326870216395, 142.36570090762967]
-targets = [-37.67263447464716, 145.01434427800544,-37.678249800742954, 145.0194354883337,-37.66112634441829, 145.04196260796772]
+# targets = [-37.67263447464716, 145.01434427800544,-37.678249800742954, 145.0194354883337,-37.66112634441829, 145.04196260796772]
+# targetLocation = [GPS(None, targets[0], targets[1], 0),
+#                   GPS(None, targets[2], targets[3], 0),
+#                   GPS(None, targets[4], targets[5], 0)]
+targets = [-37.62391508809444, 145.1269913343681,-37.62391508809444, 145.1269913343681,-37.62391508809444, 145.1269913343681]
 targetLocation = [GPS(None, targets[0], targets[1], 0),
                   GPS(None, targets[2], targets[3], 0),
                   GPS(None, targets[4], targets[5], 0)]
-nFire = 2
-fireLocation = [-37.68419307606098, 145.03398691655838, -37.65732515799401, 145.0160016938692]
+
+nFire = 1
+fireLocation = [-37.62348660193806, 145.12656085382181]
 predDuration = []
 predMaxAlt = np.zeros(nRealBalloon)
 
@@ -322,7 +336,7 @@ def gps_lambda_handler(credentials):
         #         PartitionKey='telemetryData'
         # )
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-        print(json.dumps(aws_message))
+        # print(json.dumps(aws_message))
         # print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         # print(aws_message)
         print("Publishing to AWS Kinesis Data ...")
@@ -374,7 +388,7 @@ global countT, countE
 countT = 0
 countE = 0
 def main():
-    global countT, countE
+    global countGPS_Total, countGPS_Mismatched, countEKF_Total, countEKF_Mismatched, countRSSI_Total, countRSSI_Mismatched 
 
     recievedPackets = False
     # sendTime = int(time.time() + 1)
@@ -416,19 +430,16 @@ def main():
                         print ("Radio Network Main: GPS data error " + str(error) )
                         continue
                     
-                    
-
                     # print("GPS Data from " + str(recievedPacket.SystemID) + ":")
                     # print("Lon:" + str(round(GPSdata.Longitude,3)) + ", Lat:" + str(round(GPSdata.Latitude,3)) + ", Alt:" + str(round(GPSdata.Altitude,2)) + ", Time:" + str(GPSdata.GPSTime) + "\n")
 
                     # set the system id for the GPS data
                     # GPSdata.SystemID = recievedPacket.SystemID
-                    countT = countT + 1
+                    countGPS_Total = countGPS_Total + 1
                     GPSdata.SystemID = int(GPSdata.SystemID)
                     if GPSdata.SystemID != recievedPacket.SystemID:
-                        print("GPS SysID mismatched")
-                        countE = countE + 1
-                        print(countE,"/",countT,round(countE/countT,2))
+                        countGPS_Mismatched = countGPS_Mismatched + 1
+                        print("GPS SysID mismatched (", countGPS_Mismatched,"/",countGPS_Total,", ", 100*round(countGPS_Mismatched/countGPS_Total,1),"%)")
                         continue
 
                     if not GPSHandler.GPS_FormatCheck(GPSdata):
@@ -447,12 +458,12 @@ def main():
                     print('Distance from GPS [m]:\n',distance)
 
                     # put data into the buffer
-                    # with GlobalVals.GPS_DATA_BUFFER_MUTEX:
-                    #     GlobalVals.GPS_DATA_BUFFER.append(GPSdata)
+                    with GlobalVals.GPS_DATA_BUFFER_MUTEX:
+                        GlobalVals.GPS_DATA_BUFFER.append(GPSdata)
 
                     # set the flags for the buffer 
-                    # with GlobalVals.RECIEVED_GPS_RADIO_DATA_MUTEX:
-                    #     GlobalVals.RECIEVED_GPS_RADIO_DATA = True
+                    with GlobalVals.RECIEVED_GPS_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_GPS_RADIO_DATA = True
                     
                     continue
 
@@ -483,7 +494,13 @@ def main():
                         continue
 
                     # set the system id for the GPS data
-                    EKF_Data.SystemID = recievedPacket.SystemID
+                    # EKF_Data.SystemID = recievedPacket.SystemID
+                    countEKF_Total = countEKF_Total + 1
+                    EKF_Data.SystemID = int(EKF_Data.SystemID)
+                    if EKF_Data.SystemID != recievedPacket.SystemID:
+                        countEKF_Mismatched = countEKF_Mismatched + 1
+                        print("EKF SysID mismatched (", countEKF_Mismatched,"/",countEKF_Total,", ",100*round(countEKF_Mismatched/countEKF_Total,1),"%)")
+                        continue
                     
                     if not EKFHandler.EKF_FormatCheck(EKF_Data):
                         print("EKF message via RFD900 was broken. Discard it...") 
@@ -497,31 +514,38 @@ def main():
                     print("==================================================================================================")
                     print("EKF EKF EKF " + str(recievedPacket.SystemID) +str(recievedPacket.SystemID) +str(recievedPacket.SystemID) + ":" + " Lon:" + str(round(EKF_Data.Longitude,3)) + ", Lat:" + str(round(EKF_Data.Latitude,3)) + ", Alt:" + str(round(EKF_Data.Altitude,1)) + ", Time:" + str(round(EKF_Data.Epoch,1)))
                     print('Distance from EKF [m]:\n',distance)
+                    
+                    # put data into the buffer
+                    with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+                        GlobalVals.EKF_DATA_BUFFER.append(EKF_Data)
 
+                    # set the flags for the buffer 
+                    with GlobalVals.RECIEVED_EKF_RADIO_DATA_MUTEX:
+                        GlobalVals.RECIEVED_EKF_RADIO_DATA = True
                     continue
 
                 # if the packet is an temperature data packet 
                 # Temperature
-                if recievedPacket.MessageID == 6:
+                # if recievedPacket.MessageID == 6:
 
-                    # get the RSSI data
-                    temperatureData = CustMes.MESSAGE_TEMP()                    
-                    error = temperatureData.bytes_to_data(recievedPacket.Payload)
-                    if error != 0:
-                        print ("Radio Network Main: temperature data error " + str(error) )
-                        continue
+                #     # get the RSSI data
+                #     temperatureData = CustMes.MESSAGE_TEMP()                    
+                #     error = temperatureData.bytes_to_data(recievedPacket.Payload)
+                #     if error != 0:
+                #         print ("Radio Network Main: temperature data error " + str(error) )
+                #         continue
                     
-                    # set the system id for the GPS data
-                    temperatureData.SystemID = recievedPacket.SystemID
+                #     # set the system id for the GPS data
+                #     temperatureData.SystemID = recievedPacket.SystemID
                     
-                    if not TemperatureHandler.temperatureFormatCheck(temperatureData):
-                        print("Temperature message via RFD900 was broken. Discard it...")
-                        continue
+                #     if not TemperatureHandler.temperatureFormatCheck(temperatureData):
+                #         print("Temperature message via RFD900 was broken. Discard it...")
+                #         continue
                     
-                    tempur = TEMPERATURE(temperatureData.SystemID,temperatureData.Temperature,temperatureData.Epoch)
-                    with GlobalVals.TEMPERATURE_UPDATE_MUTEX:
-                        update_temperature(tempur)
-                    # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
+                #     tempur = TEMPERATURE(temperatureData.SystemID,temperatureData.Temperature,temperatureData.Epoch)
+                #     with GlobalVals.TEMPERATURE_UPDATE_MUTEX:
+                #         update_temperature(tempur)
+                #     # print(" Temperature Data from " + str(recievedPacket.SystemID) + ":" + "Temperature:" + str(round(temperatureData.Temperature,1)))
 
 
                  # RSSI
@@ -535,10 +559,16 @@ def main():
                         continue
                     
                     # set the system id for the GPS data
-                    RSSI_Data.SystemID = recievedPacket.SystemID
+                    # RSSI_Data.SystemID = recievedPacket.SystemID
                     # print(RSSI_Data.SystemID)
                     # print(RSSI_Data.TargetPayloadID)
                     # print(GlobalVals.RSSI_ALLOCATION)
+                    countRSSI_Total = countRSSI_Total + 1
+                    RSSI_Data.SystemID = int(RSSI_Data.SystemID)
+                    if RSSI_Data.SystemID != recievedPacket.SystemID:
+                        countRSSI_Mismatched = countRSSI_Mismatched + 1
+                        print("RSSI SysID mismatched (", countRSSI_Mismatched,"/",countRSSI_Total,", ",100*round(countRSSI_Mismatched/countRSSI_Total,1),"%)")
+                        continue
 
                     # Check if the message was sent correctly via the RFD900
                     if not RSSI_Handler.RSSI_FormatCheck(RSSI_Data):
@@ -632,6 +662,33 @@ def main():
                 print(e)
                 print("Error using GPS data log file")
 
+        # if radio GPS data has been recived record it 
+        if GlobalVals.RECIEVED_EKF_RADIO_DATA:
+
+            logString = ""
+            with GlobalVals.EKF_DATA_BUFFER_MUTEX:
+                while len(GlobalVals.EKF_DATA_BUFFER) > 0:
+
+                    # get the GPS data
+                    EKF_Data = GlobalVals.EKF_DATA_BUFFER.pop(0)
+                    Longitude = EKF_Data.Longitude
+                    Latitude = EKF_Data.Latitude
+                    Altitude = EKF_Data.Altitude
+                    EKF_Time = int(EKF_Data.Epoch)
+                    SystemID = EKF_Data.SystemID
+
+                    # create message string 
+                    logString = logString + str(EKF_Time) + "," + str(SystemID) + "," + str(Longitude) + "," + str(Latitude) + "," + str(Altitude) + "\n"
+
+            # write the log string to file  
+            try:
+                fileObj = open(GlobalVals.GROUND_STATION_LOG_FILE_EKF, "a")
+                fileObj.write(logString)
+                fileObj.close()
+            except Exception as e:
+                print("Exception: " + str(e.__class__))
+                print(e)
+                print("Error using EKF data log file")
 
 
 #=====================================================
@@ -653,6 +710,7 @@ if __name__ == '__main__':
     GlobalVals.PING_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PingLog.txt"
     GlobalVals.PACKET_STATS_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-PacketStats.txt"
     GlobalVals.GROUND_STATION_LOG_FILE = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-GPS_GroundStationLogger.txt"
+    GlobalVals.GROUND_STATION_LOG_FILE_EKF = "../datalog/"+time.strftime("%Y%m%d-%H%M%S")+"-EKF_GroundStationLogger.txt"
 
     # Start serial thread 
     NetworkThread = Thread(target=NetworkManager.SerialManagerThread,args=())
