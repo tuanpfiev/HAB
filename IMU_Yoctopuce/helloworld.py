@@ -19,7 +19,10 @@ sys.path.insert(1,'Sources')
 
 import GlobalVals
 import time
+import math
 
+from threading import Thread
+import socket
 
 from yocto_api import *
 from yocto_tilt import *
@@ -28,7 +31,8 @@ from yocto_gyro import *
 from yocto_accelerometer import *
 from yocto_magnetometer import *
 
-
+DEG2RAD = math.pi/180
+GRAV_0 = 9.81
 def usage():
     scriptname = os.path.basename(sys.argv[0])
     print("Usage:")
@@ -71,37 +75,47 @@ def main():
     accelerometer = YAccelerometer.FindAccelerometer(serial + ".accelerometer")
     gyro = YGyro.FindGyro(serial + ".gyro")
     magneticVector = YMagnetometer.FindMagnetometer(serial + ".magnetometer")
-    qt = YQt.FindQt(serial + ".qt1")
+    qt = YGyro.FindGyro(serial + ".qt1")
 
 
     if not (tilt1.isOnline()):
         die("Module not connected (check identification and USB cable)")
 
     while tilt1.isOnline():
-        ax = accelerometer.get_xValue()
-        ay = accelerometer.get_yValue()
-        az = accelerometer.get_zValue()
+        time_start = time.time()
+        ax = accelerometer.get_xValue() * GRAV_0
+        ay = accelerometer.get_yValue() * GRAV_0
+        az = accelerometer.get_zValue() * GRAV_0
         # print(ax,ay,az)
 
-        gx = gyro.get_xValue()
-        gy = gyro.get_yValue()
-        gz = gyro.get_zValue()
+        gx = gyro.get_xValue() * DEG2RAD
+        gy = gyro.get_yValue() * DEG2RAD
+        gz = gyro.get_zValue() * DEG2RAD
         # print(gx,gy,gz)
 
         magX = magneticVector.get_xValue()
         magY = magneticVector.get_yValue()
         magZ = magneticVector.get_zValue()
 
-        qtW = qt.get_quaternionW()
-        qtX = qt.get_quaternionX()
-        qtY = qt.get_quaternionY()
-        qtZ = qt.get_quaternionZ()
+        qtW = gyro.get_quaternionW()
+        qtX = gyro.get_quaternionX()
+        qtY = gyro.get_quaternionY()
+        qtZ = gyro.get_quaternionZ()
+        # print("qt: ",math.sqrt(qtW**2 + qtX**2 + qtY**2 + qtZ**2))
+        qt_vec = math.sqrt(qtW**2 + qtX**2 + qtY**2 + qtZ**2)
+        if qt_vec < 1e-5:
+            qt_vec = 1e-5
+
+        qtW = qtW/qt_vec
+        qtX = qtX/qt_vec
+        qtY = -qtY/qt_vec
+        qtZ = -qtZ/qt_vec
 
         roll = gyro.get_roll()
-        pitch = gyro.get_pitch()
+        pitch = - gyro.get_pitch()
         yaw = gyro.get_heading()
 
-        time_ms = time.time() * 1000
+        time_ms = round(time.time() * 1000,1)
 
         msg = "{|SYSTEM_ID}: " + str(0) + "; " \
             + "EPOCH: " + str(time_ms) + "; " \
@@ -110,16 +124,97 @@ def main():
                         + "MAGNETIC_VECTOR: " + str(magX) + "," + str(magY) + "," + str(magZ) + "; " \
                             + "RAW_QT: " + str(qtW) + "," + str(qtX) + "," + str(qtY) + "," + str(qtZ) + "; "\
                                 + "EULER_321: " + str(roll) + "," + str(pitch) + "," + str(yaw) + ";}"
+
+        with GlobalVals.DATA_BUFFER_MUTEX:
+            GlobalVals.DATA_BUFFER.append(msg)
+
+        with GlobalVals.NEW_DATA_MUTEX:
+            GlobalVals.NEW_DATA = True
+
+        logString = str(GlobalVals.sysID) + ',' + str(time_ms) + ',' + str(ax) + ',' + str(ay) + ',' + str(az)\
+            + ',' + str(gx) + ',' + str(gy) + ',' + str(gz) \
+                + ',' + str(magX) + ',' + str(magY) + ',' + str(magZ) \
+                    + ',' + str(qtW) + ',' + str(qtX) + ',' + str(qtY) + ',' + str(qtZ) \
+                        + ',' + str(roll) + ',' + str(pitch) + ',' + str(yaw) + '\n'
+
+        try:
+            fileObj = open(GlobalVals.fileName, "a")
+            fileObj.write(logString)
+            fileObj.close()
+        except Exception as e:
+            print("Exception: " + str(e.__class__))
+            print("Error using error log file, ending error thread")
+            break
+
+        # msg = "{|SYSTEM_ID}: " + str(0) + "; " \
+        #     + "EPOCH: " + str(time_ms) + "; " \
+        #         + "ACCELERATION: " + str(round(ax,3)) + "," + str(round(ay,3)) + "," + str(round(az,3)) + "; " \
+        #             + "GYRO: " + str(round(gx,5)) + "," + str(round(gy,5)) + "," + str(round(gz,5)) + "; " \
+        #                 + "MAGNETIC_VECTOR: " + str(magX) + "," + str(magY) + "," + str(magZ) + "; " \
+        #                     + "RAW_QT: " + str(round(qtW,4)) + "," + str(round(qtX,4)) + "," + str(round(qtY,4)) + "," + str(round(qtZ,4)) + "; "\
+        #                         + "EULER_321: " + str(roll) + "," + str(pitch) + "," + str(yaw) + ";}"
+        # print(msg)
         
-        
-        
-        
-        YAPI.Sleep(100, errmsg)
+        time_end=time.time()
+        YAPI.Sleep(500, errmsg)
+        print('interval: ',time.time()-time_start ,'(',time_end-time_start,')')
     YAPI.FreeAPI()
 
+def threadIMU_Socket():
+    Logger_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    Logger_Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+    Logger_Socket.bind((GlobalVals.host, GlobalVals.port))
+    Logger_Socket.settimeout(GlobalVals.socketTimeout)
 
+    try: 
+        Logger_Socket.listen(1)
+        Logger_Connection, addr = Logger_Socket.accept()  
+        Logger_Connection.settimeout(GlobalVals.socketTimeout) 
+        print("Connected to: ",addr)
+    except Exception as e:
+        print("Exception: " + str(e.__class__))
+        print("Error in the logger socket. Now closing thread.")
+        with GlobalVals.endTempSocketMutex:
+            GlobalVals.endTempSocket = True
+        return 
 
-if __name___ == '__main__':
+    breakThread = False
+
+    while not breakThread:
+        # Check if socket ends
+        with GlobalVals.END_IMU_SOCKET_MUTEX:
+            if GlobalVals.END_IMU_SOCKET:
+                breakThread = True
+                continue
+        
+        # Check if new data
+        with GlobalVals.NEW_DATA_MUTEX:
+            newData = GlobalVals.NEW_DATA
+            GlobalVals.NEW_DATA = False
+        
+        if newData:
+            with GlobalVals.DATA_BUFFER_MUTEX:
+                while len(GlobalVals.DATA_BUFFER)>0:
+                    msg = GlobalVals.DATA_BUFFER.pop(0)
+                    socketPayload = msg.encode("utf-8")
+
+                    try:
+                        Logger_Connection.sendall(socketPayload)
+                    except Exception as e:
+                        print("Exception: " + str(e.__class__))
+                        print("Error in the logger socket. Now closing thread.")
+                        breakThread = True
+                        break
+        else:
+            time.sleep(0.01)
+
+    if breakThread:
+        with GlobalVals.END_IMU_SOCKET_MUTEX:
+            GlobalVals.END_IMU_SOCKET = True
+
+    Logger_Connection.close()
+
+if __name__ == '__main__':
     numArgs = len(sys.argv)
     if numArgs >= 2:
         GlobalVals.sysID = sys.argv[1]
@@ -142,8 +237,15 @@ if __name___ == '__main__':
         print("Exception: " + str(e.__class__))
         print("Error using error log file, ending ...")
 
+    IMU_Thread = Thread(target=threadIMU_Socket, args = ())
+    IMU_Thread.start()
 
     try: 
         main()
     except(KeyboardInterrupt, SystemExit):
         print("Closing Program.")
+
+    if IMU_Thread.is_alive():
+        with GlobalVals.END_IMU_SOCKET_MUTEX:
+            GlobalVals.END_IMU_SOCKET = True
+        IMU_Thread.join()

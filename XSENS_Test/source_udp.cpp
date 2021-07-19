@@ -221,9 +221,9 @@ int main(int argc,char **argv)
 					data_packet += "EULER_321: " + std::to_string(euler.roll()) + "," + std::to_string(euler.pitch()) + "," + std::to_string(euler.yaw()) + ";}";
 
 					sendto(udpSocket, data_packet.c_str(), strlen(data_packet.c_str()), 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-					std::cout << "ACCELERATION: " + std::to_string(r_acc[0]) + ", " + std::to_string(r_acc[1]) + ", " + std::to_string(r_acc[2]) + ", ===GYRO: " + std::to_string(gyr[0]) + ", " + std::to_string(gyr[1]) + ", " + std::to_string(gyr[2]) + " ===EULER_321: " + std::to_string(euler.roll()) + ", " + std::to_string(euler.pitch()) + ", " + std::to_string(euler.yaw()) <<std::endl;
+					std::cout << "ACCELERATION: " + std::to_string(r_acc[0]) + ", " + std::to_string(r_acc[1]) + ", " + std::to_string(r_acc[2]) + ", ===GYRO: " + std::to_string(gyr[0]) + ", " + std::to_string(gyr[1]) + ", " + std::to_string(gyr[2]) + " ===EULER_321: " + std::to_string(euler.roll()) + ", " + std::to_string(euler.pitch()) + ", " + std::to_string(euler.yaw()) + "MAGNETIC_VECTOR: " + std::to_string(mag[0]) + "," + std::to_string(mag[1]) + "," + std::to_string(mag[2]) + "; " +"RAW_QT: " + std::to_string(quaternion.w()) + "," + std::to_string(quaternion.x()) + "," + std::to_string(quaternion.y()) + "," + std::to_string(quaternion.z()) + "; "<<std::endl;
 					recorded = true;
-					XsTime::msleep(10);
+					XsTime::msleep(200);
 				}
 			}
 		}

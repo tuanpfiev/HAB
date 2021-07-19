@@ -1,19 +1,18 @@
 from threading import Lock
 
 host = '127.0.0.1'
-port = 5013
+port = 5003
 socketTimeout = 600000
 
 fileName = 'IMU_Yoctopuce.txt'
 sysID = 0
 
 
-tempDataBuffer = []
-timeDataBuffer = []
+DATA_BUFFER = []
 
-newTempData = False
-endTempSocket = False
+NEW_DATA = False
+END_IMU_SOCKET = False
 
-endTempSocketMutex = Lock()
-newTempDataMutex = Lock()
-appendTempDataMutex = Lock()
+DATA_BUFFER_MUTEX = Lock()
+NEW_DATA_MUTEX = Lock()
+END_IMU_SOCKET_MUTEX = Lock()

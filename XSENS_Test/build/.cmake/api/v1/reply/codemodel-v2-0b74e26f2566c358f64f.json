@@ -18,7 +18,7 @@
 					]
 				}
 			],
-			"name" : "",
+			"name" : "Debug",
 			"projects" : 
 			[
 				{
@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "XSENS_Test::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-XSENS_Test-ca0d720e679a5f283f58.json",
+					"jsonFile" : "target-XSENS_Test-Debug-7145b3fc888494c7dad0.json",
 					"name" : "XSENS_Test",
 					"projectIndex" : 0
 				}
